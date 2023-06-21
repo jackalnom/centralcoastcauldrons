@@ -1,0 +1,6 @@
+test
+.github
+.pytest_cache
+.ruff_cache
+.vscode
+.git

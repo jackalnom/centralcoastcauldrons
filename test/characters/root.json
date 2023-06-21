@@ -1,0 +1,302 @@
+[
+    {
+        "character_id": 5011,
+        "character": "\"BRILL\"",
+        "movie": "enemy of the state",
+        "number_of_lines": 13
+    },
+    {
+        "character_id": 1866,
+        "character": "\"V\"",
+        "movie": "lost highway",
+        "number_of_lines": 13
+    },
+    {
+        "character_id": 7954,
+        "character": "1ST ASSISTANT",
+        "movie": "sunset blvd.",
+        "number_of_lines": 6
+    },
+    {
+        "character_id": 2558,
+        "character": "1ST DEPUTY",
+        "movie": "raging bull",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 3676,
+        "character": "1ST MAN",
+        "movie": "annie hall",
+        "number_of_lines": 17
+    },
+    {
+        "character_id": 5374,
+        "character": "1ST MAN",
+        "movie": "the french connection",
+        "number_of_lines": 3
+    },
+    {
+        "character_id": 8188,
+        "character": "2ND BOY",
+        "movie": "the x files",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 4388,
+        "character": "2ND DRIVER",
+        "movie": "cellular",
+        "number_of_lines": 3
+    },
+    {
+        "character_id": 3677,
+        "character": "2ND MAN",
+        "movie": "annie hall",
+        "number_of_lines": 5
+    },
+    {
+        "character_id": 5375,
+        "character": "2ND MAN",
+        "movie": "the french connection",
+        "number_of_lines": 11
+    },
+    {
+        "character_id": 8550,
+        "character": "A.D.A. KELLY",
+        "movie": "traffic",
+        "number_of_lines": 6
+    },
+    {
+        "character_id": 4599,
+        "character": "A.T.L.",
+        "movie": "contact",
+        "number_of_lines": 5
+    },
+    {
+        "character_id": 7527,
+        "character": "AARON",
+        "movie": "the searchers",
+        "number_of_lines": 6
+    },
+    {
+        "character_id": 5522,
+        "character": "AARONOW",
+        "movie": "glengarry glen ross",
+        "number_of_lines": 184
+    },
+    {
+        "character_id": 612,
+        "character": "ABBOTT",
+        "movie": "the bourne supremacy",
+        "number_of_lines": 49
+    },
+    {
+        "character_id": 4215,
+        "character": "ABBOTT",
+        "movie": "the bourne identity",
+        "number_of_lines": 19
+    },
+    {
+        "character_id": 1289,
+        "character": "ABE",
+        "movie": "hellboy",
+        "number_of_lines": 16
+    },
+    {
+        "character_id": 1290,
+        "character": "ABE'S VOICE",
+        "movie": "hellboy",
+        "number_of_lines": 5
+    },
+    {
+        "character_id": 1807,
+        "character": "ABERNATHY",
+        "movie": "the life of david gale",
+        "number_of_lines": 7
+    },
+    {
+        "character_id": 4331,
+        "character": "ACE",
+        "movie": "casino",
+        "number_of_lines": 465
+    },
+    {
+        "character_id": 7828,
+        "character": "ACE",
+        "movie": "starship troopers",
+        "number_of_lines": 21
+    },
+    {
+        "character_id": 7241,
+        "character": "ACKBAR",
+        "movie": "star wars: episode vi - return of the jedi",
+        "number_of_lines": 6
+    },
+    {
+        "character_id": 2827,
+        "character": "ACOSTA",
+        "movie": "smokin' aces",
+        "number_of_lines": 10
+    },
+    {
+        "character_id": 4521,
+        "character": "ACTIVIST",
+        "movie": "clerks.",
+        "number_of_lines": 25
+    },
+    {
+        "character_id": 3678,
+        "character": "ACTOR",
+        "movie": "annie hall",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 3679,
+        "character": "ACTRESS",
+        "movie": "annie hall",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 5955,
+        "character": "AD MAN #1",
+        "movie": "the hudsucker proxy",
+        "number_of_lines": 8
+    },
+    {
+        "character_id": 5956,
+        "character": "AD MAN #2",
+        "movie": "the hudsucker proxy",
+        "number_of_lines": 7
+    },
+    {
+        "character_id": 3979,
+        "character": "ADAM",
+        "movie": "beetle juice",
+        "number_of_lines": 118
+    },
+    {
+        "character_id": 6714,
+        "character": "ADAM",
+        "movie": "mulholland dr.",
+        "number_of_lines": 48
+    },
+    {
+        "character_id": 8975,
+        "character": "ADAMSON",
+        "movie": "watchmen",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 3599,
+        "character": "ADDISON",
+        "movie": "all about eve",
+        "number_of_lines": 132
+    },
+    {
+        "character_id": 5957,
+        "character": "ADDISON",
+        "movie": "the hudsucker proxy",
+        "number_of_lines": 5
+    },
+    {
+        "character_id": 2863,
+        "character": "ADELE",
+        "movie": "spider-man",
+        "number_of_lines": 5
+    },
+    {
+        "character_id": 6974,
+        "character": "ADELE",
+        "movie": "out of sight",
+        "number_of_lines": 40
+    },
+    {
+        "character_id": 5192,
+        "character": "ADELLE",
+        "movie": "the family man",
+        "number_of_lines": 13
+    },
+    {
+        "character_id": 2990,
+        "character": "ADMIRAL HAYES",
+        "movie": "star trek: first contact",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 8499,
+        "character": "ADMIRAL ROEBUCK",
+        "movie": "tomorrow never dies",
+        "number_of_lines": 7
+    },
+    {
+        "character_id": 4375,
+        "character": "ADONIS",
+        "movie": "catwoman",
+        "number_of_lines": 12
+    },
+    {
+        "character_id": 1834,
+        "character": "ADRIAN",
+        "movie": "little nicky",
+        "number_of_lines": 31
+    },
+    {
+        "character_id": 7264,
+        "character": "ADRIAN",
+        "movie": "rocky",
+        "number_of_lines": 82
+    },
+    {
+        "character_id": 1761,
+        "character": "ADVISOR",
+        "movie": "legally blonde",
+        "number_of_lines": 4
+    },
+    {
+        "character_id": 1915,
+        "character": "AGATHA",
+        "movie": "minority report",
+        "number_of_lines": 28
+    },
+    {
+        "character_id": 3742,
+        "character": "AGENT",
+        "movie": "apocalypse now",
+        "number_of_lines": 22
+    },
+    {
+        "character_id": 4018,
+        "character": "AGENT",
+        "movie": "being john malkovich",
+        "number_of_lines": 3
+    },
+    {
+        "character_id": 8172,
+        "character": "AGENT",
+        "movie": "the truman show",
+        "number_of_lines": 10
+    },
+    {
+        "character_id": 6516,
+        "character": "AGENT JONES",
+        "movie": "the matrix",
+        "number_of_lines": 6
+    },
+    {
+        "character_id": 6517,
+        "character": "AGENT SMITH",
+        "movie": "the matrix",
+        "number_of_lines": 13
+    },
+    {
+        "character_id": 8807,
+        "character": "AIDE",
+        "movie": "wag the dog",
+        "number_of_lines": 7
+    },
+    {
+        "character_id": 8928,
+        "character": "AIRK",
+        "movie": "willow",
+        "number_of_lines": 10
+    }
+]
