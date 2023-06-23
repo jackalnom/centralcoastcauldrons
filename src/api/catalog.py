@@ -11,14 +11,12 @@ def get_catalog():
 
     # Can return a max of 20 items.
 
-    return {
-        "items": [
+    return [
             {
                 "sku": "blah",
                 "name": "item1",
                 "quantity": 5,
                 "price": 1.00,
-                "description": "item1 description",
+                "potion_type": "[100, 0, 0]",
             }
         ]
-    }

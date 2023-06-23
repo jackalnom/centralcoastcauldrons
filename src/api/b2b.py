@@ -56,9 +56,15 @@ class WholesaleCatalog(BaseModel):
     barrels: list[Barrel]
 
 
+@router.post("/wholesaler/deliver")
+def post_deliver_barrels(barrels_delivered: list[Barrel]):
+    """ """
+
+    return "OK"
+
 # Gets called once a day
-@router.post("/wholesaler")
-def post_wholesale_purchase_plan(wholesale_catalog: WholesaleCatalog):
+@router.get("/wholesaler/plan")
+def get_wholesale_purchase_plan(wholesale_catalog: WholesaleCatalog):
     """ """
 
     return [
@@ -75,7 +81,7 @@ def post_wholesale_purchase_plan(wholesale_catalog: WholesaleCatalog):
     #  money / cost of small red barrels.
 
 
-@router.post("/deliver_bottles")
+@router.post("/bottler/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
 
@@ -83,8 +89,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
 
 
 # Gets called 4 times a day
-@router.post("/bottler")
-def post_bottle_plan():
+@router.get("/bottler/plan")
+def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
