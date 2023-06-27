@@ -63,7 +63,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     return "OK"
 
 # Gets called once a day
-@router.get("/wholesaler/plan")
+@router.post("/wholesaler/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: WholesaleCatalog):
     """ """
 
@@ -89,7 +89,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
 
 
 # Gets called 4 times a day
-@router.get("/bottler/plan")
+@router.post("/bottler/plan")
 def get_bottle_plan():
     """
     Go from barrel to bottle.
