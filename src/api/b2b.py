@@ -51,11 +51,6 @@ class Barrel(BaseModel):
 
     quantity: int
 
-
-class WholesaleCatalog(BaseModel):
-    barrels: list[Barrel]
-
-
 @router.post("/wholesaler/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
@@ -64,7 +59,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 
 # Gets called once a day
 @router.post("/wholesaler/plan")
-def get_wholesale_purchase_plan(wholesale_catalog: WholesaleCatalog):
+def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
 
     return [
