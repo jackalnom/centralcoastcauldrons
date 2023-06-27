@@ -64,13 +64,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     return [
         {
-            "sku": "blah",
-            "quantity": 5,
-        },
-        {
-            "sku": "blah",
-            "quantity": 5,
-        },
+            "sku": "SMALL_RED_BARREL",
+            "quantity": 1,
+        }
     ]
     # Initial logic: buy number of small red barrels equal to
     #  money / cost of small red barrels.
