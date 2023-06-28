@@ -45,7 +45,7 @@ class PotionEnum(str, Enum):
 class Barrel(BaseModel):
     sku: str
 
-    liters_per_barrel: int
+    ml_per_barrel: int
     color: PotionEnum
     price: int
 
