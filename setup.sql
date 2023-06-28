@@ -1,3 +1,4 @@
+-- TODO: RENAME
 CREATE OR REPLACE FUNCTION public.refresh_catalog()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -15,6 +16,12 @@ BEGIN
   FOR shop_record IN SELECT * FROM shops LOOP
     INSERT INTO public.jobs(shop_id, job_type, tick_id)
     VALUES(shop_record.id, 'PURCHASE_BARRELS', new.id);
+  END LOOP;
+
+  -- do modulo for potion mixing
+  FOR shop_record IN SELECT * FROM shops LOOP
+    INSERT INTO public.jobs(shop_id, job_type, tick_id)
+    VALUES(shop_record.id, 'MIX_POTIONS', new.id);
   END LOOP;
 
   return new;
@@ -145,33 +152,24 @@ DECLARE
   stack text;
   message text;
 BEGIN
-  url := api_url || 'catalog/';
   BEGIN
+    url := api_url || 'catalog/';
+
     PERFORM http_set_curlopt('CURLOPT_TIMEOUT_MS', '10001');
     result := http_get(url);
-  EXCEPTION WHEN OTHERS THEN
-      GET STACKED DIAGNOSTICS stack = PG_EXCEPTION_CONTEXT, message = MESSAGE_TEXT;
-      error := (message || stack);
-      return;
-  END;
 
-  INSERT INTO http_responses (url, status, content, shop_id, tick_id)
-  VALUES (url, result.status, result.content, shop_id, tick_id);
-  COMMIT;
-
-  BEGIN
-  insert into catalog_items (sku, name, quantity, potion_type, tick_id, shop_id, price)
-    select sku, name, quantity, potion_type, tick_id, shop_id, price
-    from
-    json_populate_recordset(null::record, result.content::json)
-    AS
-    (
-        sku text,
-        name text,
-        quantity smallint,
-        price smallint,
-        potion_type smallint[3]
-    );
+    insert into potion_catalog_items (sku, name, quantity, potion_type, tick_id, shop_id, price)
+      select sku, name, quantity, potion_type, tick_id, shop_id, price
+      from
+      json_populate_recordset(null::record, result.content::json)
+      AS
+      (
+          sku text,
+          name text,
+          quantity smallint,
+          price smallint,
+          potion_type smallint[3]
+      );
     EXCEPTION WHEN OTHERS THEN
       GET STACKED DIAGNOSTICS stack = PG_EXCEPTION_CONTEXT, message = MESSAGE_TEXT;
       error := (message || stack);
@@ -183,46 +181,57 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE run_jobs()
+DROP PROCEDURE run_jobs;
+
+CREATE OR REPLACE PROCEDURE run_jobs(out error text)
 LANGUAGE plpgsql
 AS $$
 DECLARE
   job jobs%ROWTYPE;
   shop shops%ROWTYPE;
   error_message text;
+  stack text;
+  message text;
   counter integer := 0;
 BEGIN
   while counter < 5 loop
-    counter := counter + 1;
-    raise log 'Counter %', counter;
-    SELECT * INTO job FROM jobs WHERE success IS NULL ORDER BY created_at LIMIT 1;
+    BEGIN
+      counter := counter + 1;
+      raise log 'Counter %', counter;
+      SELECT * INTO job FROM jobs WHERE success IS NULL ORDER BY created_at LIMIT 1;
 
-    if not found then
-      raise LOG 'No jobs to execute.';
-      return;
-    end if;
+      if not found then
+        raise LOG 'No jobs to execute.';
+        return;
+      end if;
 
-    SELECT * INTO shop FROM shops WHERE id = job.shop_id;
+      SELECT * INTO shop FROM shops WHERE id = job.shop_id;
 
-    error_message := null;
+      error_message := null;
 
-	  case 
-		  when job.job_type = 'REFRESH_CATALOG' then
-        CALL catalog_for_shop(shop.api_url, job.shop_id, job.tick_id, error_message);
-      when job.job_type = 'PURCHASE_POTIONS' then
-        CALL purchase_from_shop(shop.api_url, shop.api_key, job.shop_id, job.tick_id, error_message);
-      WHEN job.job_type = 'PURCHASE_BARRELS' then
-        CALL purchase_barrels(shop.api_url, shop.api_key, job.shop_id, job.tick_id, error_message);
+      case 
+        when job.job_type = 'REFRESH_CATALOG' then
+          CALL catalog_for_shop(shop.api_url, job.shop_id, job.tick_id, error_message);
+        when job.job_type = 'PURCHASE_POTIONS' then
+          CALL purchase_from_shop(shop.api_url, shop.api_key, job.shop_id, job.tick_id, error_message);
+        WHEN job.job_type = 'PURCHASE_BARRELS' then
+          CALL purchase_barrels(shop.api_url, shop.api_key, job.shop_id, job.tick_id, error_message);
+        WHEN job.job_type = 'MIX_POTIONS' then
+          CALL mix_potions(shop.api_url, shop.api_key, job.shop_id, job.tick_id, error_message);
+        else
+          error_message := ('Unknown job type: ' || job.job_type);
+      end case;  
+      
+      if error_message is null then
+        UPDATE jobs SET success = TRUE WHERE id = job.id;
       else
-        error_message := ('Unknown job type: ' || job.job_type);
-    end case;  
-    
-    if error_message is null then
-      UPDATE jobs SET success = TRUE WHERE id = job.id;
-    else
-      UPDATE jobs SET success = FALSE, error = error_message where id = job.id;
-    end if;
-    COMMIT;
+        UPDATE jobs SET success = FALSE, error = error_message where id = job.id;
+      end if;
+    EXCEPTION WHEN OTHERS THEN
+      GET STACKED DIAGNOSTICS stack = PG_EXCEPTION_CONTEXT, message = MESSAGE_TEXT;
+      error := (message || stack);
+      return;
+    END;
   end loop;
 END;
 $$;
@@ -293,8 +302,9 @@ create table
 
   DROP TABLE catalog_items;
   
+  -- TODO: Rename to potion_catalog_items
   create table
-  public.catalog_items (
+  public.potion_catalog_items (
     id bigint generated by default as identity not null,
     created_at timestamp with time zone null default now(),
     sku text null,
@@ -509,7 +519,7 @@ BEGIN
         LEAST(ci.quantity - COALESCE(pp_supply.total_purchased, 0), dp.num_potions_to_buy - COALESCE(pp_demand.total_purchased, 0)) AS num_purchasing,
         ci.price
       FROM
-        catalog_items AS ci
+        potion_catalog_items AS ci
         CROSS JOIN demand_plan AS dp
         LEFT JOIN already_purchased_supply AS pp_supply ON pp_supply.shop_id = generate_purchase_plans.shop_id AND pp_supply.tick_id = generate_purchase_plans.tick_id AND pp_supply.supplied_potion = ci.potion_type
         LEFT JOIN already_purchased_demand AS pp_demand ON pp_demand.customer_id = dp.customer_id AND pp_demand.tick_id = generate_purchase_plans.tick_id AND pp_demand.demanded_potion = dp.potion_type

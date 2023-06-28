@@ -9,14 +9,9 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-
 class PotionInventory(BaseModel):
-    red_amount: int
-    blue_amount: int
-    green_amount: int
-
+    potion_type: list[int]
     quantity: int
-
 
 # Taxes? Pay 20% of profit if records aren't kept. If records are
 # accurate than pay 10% of profit.
