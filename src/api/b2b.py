@@ -20,6 +20,7 @@ class Audit(BaseModel):
     liters_red: int
     liters_blue: int
     liters_green: int
+    liters_dark: int
     potions: list[PotionInventory]
 
 
@@ -35,6 +36,7 @@ class PotionEnum(str, Enum):
     red = "red"
     blue = "blue"
     green = "green"
+    dark = "dark"
 
 
 class Barrel(BaseModel):
@@ -89,7 +91,7 @@ def get_bottle_plan():
 
     return [
             {
-                "potion_type": [100, 0, 0],
+                "potion_type": [100, 0, 0, 0],
                 "quantity": 5,
             }
         ]
