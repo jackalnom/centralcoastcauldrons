@@ -12,17 +12,19 @@ BEGIN
     VALUES(shop_record.id, 'REFRESH_CATALOG', new.id);
   END LOOP;
 
-  -- do modulo for barrel shopping
-  FOR shop_record IN SELECT * FROM shops LOOP
-    INSERT INTO public.jobs(shop_id, job_type, tick_id)
-    VALUES(shop_record.id, 'PURCHASE_BARRELS', new.id);
-  END LOOP;
+  if MOD(new.id, 12) = 0 then
+    FOR shop_record IN SELECT * FROM shops LOOP
+      INSERT INTO public.jobs(shop_id, job_type, tick_id)
+      VALUES(shop_record.id, 'PURCHASE_BARRELS', new.id);
+    END LOOP;
+  end if;
 
-  -- do modulo for potion mixing
-  FOR shop_record IN SELECT * FROM shops LOOP
-    INSERT INTO public.jobs(shop_id, job_type, tick_id)
-    VALUES(shop_record.id, 'MIX_POTIONS', new.id);
-  END LOOP;
+  if MOD(new.id, 2) = 0 then
+    FOR shop_record IN SELECT * FROM shops LOOP
+      INSERT INTO public.jobs(shop_id, job_type, tick_id)
+      VALUES(shop_record.id, 'MIX_POTIONS', new.id);
+    END LOOP;
+  end if;
 
   return new;
 END;
@@ -685,7 +687,7 @@ BEGIN
         )::http_request);
 
     if result.status <> 200 then
-      error := 'Error retrieving wholesale plan: ' || result.status || '/' || result.content;
+      error := 'Error delivering barrels: ' || result.status || '/' || result.content;
       return;
     end if;
 
@@ -724,7 +726,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 CREATE OR REPLACE PROCEDURE mix_potions(api_url text, api_key text, shop_id bigint, tick_id bigint, out error text)
 LANGUAGE plpgsql
 AS $fn$
@@ -734,13 +735,10 @@ DECLARE
   stack text;
   message text;
   cart_id text;
-  barrel_catalog json;
-  catalog_purchase purchase_plans%ROWTYPE;
-  gold int;
-  shop_gold int;
   amount_purchased int;
   invalid_skus text;
   quantity_check text;
+  potion_delivery text;
 BEGIN
   BEGIN
     result := http((
@@ -752,7 +750,7 @@ BEGIN
         )::http_request);
 
     if result.status <> 200 then
-      error := 'Error retrieving wholesale plan: ' || result.status || '/' || result.content;
+      error := 'Error retrieving bottling plan: ' || result.status || '/' || result.content;
       return;
     end if;
 
@@ -803,7 +801,27 @@ BEGIN
 
     -- Add new potions to ledger
     insert into potion_ledger_items (shop_id, tick_id, quantity_changed, potion_type)
-      SELECT mix_potions.shop_id, mix_potions.tick_id, quantity, potion_type FROM potion_mixes;
+      SELECT mix_potions.shop_id, mix_potions.tick_id, quantity, potion_type FROM potion_mixes
+      WHERE potion_mixes.shop_id = mix_potions.shop_id AND potion_mixes.tick_id = mix_potions.tick_id;
+
+    -- deliver potions
+    SELECT json_agg(potions) into potion_delivery from 
+      (SELECT potion_type, quantity FROM potion_mixes
+        WHERE potion_mixes.shop_id = mix_potions.shop_id AND potion_mixes.tick_id = mix_potions.tick_id
+      ) potions;
+
+    result := http((
+          'POST',
+           api_url || 'b2b/bottler/deliver',
+           ARRAY[http_header('access_token',api_key)],
+           'application/json',
+           potion_delivery
+        )::http_request);
+
+    if result.status <> 200 then
+      error := 'Error delivering bottles: ' || result.status || '/' || result.content;
+      return;
+    end if;
 
   EXCEPTION WHEN OTHERS THEN
       GET STACKED DIAGNOSTICS stack = PG_EXCEPTION_CONTEXT, message = MESSAGE_TEXT;
