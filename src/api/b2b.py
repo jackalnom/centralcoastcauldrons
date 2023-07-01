@@ -31,19 +31,11 @@ def post_audit(audit: Audit):
 
     return "OK"
 
-
-class PotionEnum(str, Enum):
-    red = "red"
-    blue = "blue"
-    green = "green"
-    dark = "dark"
-
-
 class Barrel(BaseModel):
     sku: str
 
     ml_per_barrel: int
-    color: PotionEnum
+    potion_type: list[int]
     price: int
 
     quantity: int
