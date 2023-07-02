@@ -54,12 +54,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     return [
         {
             "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
+            "quantity": 10,
         }
     ]
-    # Initial logic: buy number of small red barrels equal to
-    #  money / cost of small red barrels.
-
 
 @router.post("/bottler/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
@@ -84,6 +81,6 @@ def get_bottle_plan():
     return [
             {
                 "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
+                "quantity": 50,
             }
         ]
