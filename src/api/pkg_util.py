@@ -2,6 +2,7 @@ from fastapi import APIRouter
 import os
 import pkg_resources
 import sys
+import subprocess
 
 router = APIRouter()
 
@@ -24,7 +25,10 @@ def version():
 
 @router.get("/files_open/")
 def files_open():
-    return os.listdir("/proc/self/fd")
+    command = "lsof -p $(pgrep -f 'python app.py')"
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    output = result.stdout
+    return output
 
 @router.get("/pkgsize/")
 def get_pkgsize():
