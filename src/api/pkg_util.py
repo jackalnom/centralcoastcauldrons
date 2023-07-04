@@ -24,7 +24,7 @@ def version():
 
 @router.get("/files_open/")
 def files_open():
-    return len(os.listdir("/proc/self/fd"))
+    return os.listdir("/proc/self/fd")
 
 @router.get("/pkgsize/")
 def get_pkgsize():
