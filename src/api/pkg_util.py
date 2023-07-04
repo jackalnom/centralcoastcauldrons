@@ -22,6 +22,10 @@ def version():
     return sys.version_info
 
 
+@router.get("/files_open/")
+def files_open():
+    return len(os.listdir("/proc/self/fd"))
+
 @router.get("/pkgsize/")
 def get_pkgsize():
     dists = [d for d in pkg_resources.working_set]
