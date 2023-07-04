@@ -25,7 +25,7 @@ def version():
 
 @router.get("/files_open/")
 def files_open():
-    command = "lsof -p $(pgrep -f 'python app.py')"
+    command = "lsof -p $(pgrep -f 'python /src/api/server.py')"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
     output = result.stdout
     return output
