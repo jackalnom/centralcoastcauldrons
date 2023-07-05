@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
+import logging
+
+log = logging.getLogger("central-coast-cauldrons")
 
 router = APIRouter(
     prefix="/carts",
@@ -14,6 +17,8 @@ class NewCart(BaseModel):
 @router.post("/")
 def create_cart(request: Request, new_cart: NewCart):
     """ """
+    log.info(new_cart)
+
     if request.state.is_demo:
         return {"cart_id": 1, "is_demo": True}
 
@@ -34,7 +39,7 @@ class CartItem(BaseModel):
 @router.put("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
+    log.info(f"cart_id: {cart_id}, item_sku: {item_sku}, cart_item: {cart_item}")
     # Handle case with invalid sku
 
     # Handle invalid quantity of sku
@@ -48,6 +53,7 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
+    log.info(f"cart_id: {cart_id}, cart_checkout: {cart_checkout}")
 
     return {"order_id": 1}
 
@@ -62,7 +68,7 @@ class CartPickup(BaseModel):
 @router.post("/{cart_id}/pickup")
 def pickup_order(cart_id: int, cart_pickup: CartPickup):
     """ """
-
+    log.info(f"cart_id: {cart_id}, cart_pickup: {cart_pickup}")
     return {"order_id": 1}
 
 class CartRefund(BaseModel):
@@ -71,5 +77,5 @@ class CartRefund(BaseModel):
 @router.post("/{cart_id}/refund")
 def refund_order(cart_id: int, cart_refund: CartRefund):
     """ """
-
+    log.info(f"cart_id: {cart_id}, cart_refund: {cart_refund}")
     return {"order_id": 1}

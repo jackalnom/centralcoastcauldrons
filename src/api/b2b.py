@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+import logging
+
+log = logging.getLogger("central-coast-cauldrons")
 
 router = APIRouter(
     prefix="/b2b",
@@ -43,6 +46,7 @@ class Barrel(BaseModel):
 @router.post("/wholesaler/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
+    log.info(barrels_delivered)
 
     return "OK"
 
@@ -50,6 +54,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 @router.post("/wholesaler/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
+    log.info(wholesale_catalog)
 
     return [
         {
@@ -61,6 +66,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 @router.post("/bottler/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
+    log.info(potions_delivered)
 
     return "OK"
 
