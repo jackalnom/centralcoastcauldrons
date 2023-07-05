@@ -5,12 +5,14 @@ from src.api import carts, pkg_util, catalog, b2b
 import json
 import logging
 
-
-log = logging.getLogger("central-coast-cauldrons")
-
 description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
 """
+logging.basicConfig(
+    level=logging.INFO,  # Set the desired log level
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 app = FastAPI(
     title="Central Coast Cauldrons",
@@ -31,7 +33,7 @@ app.include_router(b2b.router)
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(request, exc):
-    log.error(f"The client sent invalid data!: {exc}")
+    logging.error(f"The client sent invalid data!: {exc}")
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
     for error in exc_json:
