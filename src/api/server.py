@@ -9,12 +9,6 @@ import sys
 description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
 """
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.INFO,  # Set the desired log level
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
 app = FastAPI(
     title="Central Coast Cauldrons",

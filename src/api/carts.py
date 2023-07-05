@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
-import logging
 
 router = APIRouter(
     prefix="/carts",
@@ -15,8 +14,7 @@ class NewCart(BaseModel):
 @router.post("/")
 def create_cart(request: Request, new_cart: NewCart):
     """ """
-    logging.info(f"new_cart: {new_cart}")
-    print(f"new cart other way: {new_cart}")
+    print(f"new cart: {new_cart}")
 
     if request.state.is_demo:
         return {"cart_id": 1, "is_demo": True}
@@ -38,7 +36,7 @@ class CartItem(BaseModel):
 @router.put("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    logging.info(f"cart_id: {cart_id}, item_sku: {item_sku}, cart_item: {cart_item}")
+    print(f"cart_id: {cart_id}, item_sku: {item_sku}, cart_item: {cart_item}")
     # Handle case with invalid sku
 
     # Handle invalid quantity of sku
@@ -52,7 +50,7 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    logging.info(f"cart_id: {cart_id}, cart_checkout: {cart_checkout}")
+    print(f"cart_id: {cart_id}, cart_checkout: {cart_checkout}")
 
     return {"order_id": 1}
 
@@ -67,7 +65,7 @@ class CartPickup(BaseModel):
 @router.post("/{cart_id}/pickup")
 def pickup_order(cart_id: int, cart_pickup: CartPickup):
     """ """
-    logging.info(f"cart_id: {cart_id}, cart_pickup: {cart_pickup}")
+    print(f"cart_id: {cart_id}, cart_pickup: {cart_pickup}")
     return {"order_id": 1}
 
 class CartRefund(BaseModel):
@@ -76,5 +74,5 @@ class CartRefund(BaseModel):
 @router.post("/{cart_id}/refund")
 def refund_order(cart_id: int, cart_refund: CartRefund):
     """ """
-    logging.info(f"cart_id: {cart_id}, cart_refund: {cart_refund}")
+    print(f"cart_id: {cart_id}, cart_refund: {cart_refund}")
     return {"order_id": 1}
