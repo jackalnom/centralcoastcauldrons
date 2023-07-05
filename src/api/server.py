@@ -4,11 +4,13 @@ from pydantic import ValidationError
 from src.api import carts, pkg_util, catalog, b2b
 import json
 import logging
+import sys
 
 description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
 """
 logging.basicConfig(
+    stream=sys.stdout,
     level=logging.INFO,  # Set the desired log level
     format='%(asctime)s [%(levelname)s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'

@@ -16,6 +16,7 @@ class NewCart(BaseModel):
 def create_cart(request: Request, new_cart: NewCart):
     """ """
     logging.info(f"new_cart: {new_cart}")
+    print(f"new cart other way: {new_cart}")
 
     if request.state.is_demo:
         return {"cart_id": 1, "is_demo": True}
