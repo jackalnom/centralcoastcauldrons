@@ -56,7 +56,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     return [
         {
             "sku": "SMALL_RED_BARREL",
-            "quantity": 10,
+            "quantity": 1,
         }
     ]
 
@@ -84,6 +84,6 @@ def get_bottle_plan():
     return [
             {
                 "potion_type": [100, 0, 0, 0],
-                "quantity": 50,
+                "quantity": 5,
             }
         ]
