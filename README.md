@@ -32,8 +32,34 @@ The first version of your application should introduce basic persistence. Follow
 
 1. Create an account on [Supabase](https://supabase.com/).
 2. Build a new database featuring a `global_inventory` table. This table should have columns named `num_potions`, `num_ml`, and `gold` to keep track of your current resources.
-3. Add your database connection details to your Vercel environment variables. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your actual database password. Back in Vercel, add this modified string as a new environment variable named `SUPABASE_URI`.
-4. In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `SUPABASE_URI` from environment variables. Leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling red potions at this stage.
+3. Add your database connection details to your Vercel environment variables. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your actual database password. Back in Vercel, add this modified string as a new environment variable named `DB_URI`.
+4. In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `DB_URI` from environment variables. Leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling red potions at this stage.
+
+Create a database.py file in your src folder with the following code:
+```py
+import os
+import dotenv
+from sqlalchemy import create_engine
+
+def database_connection_url():
+    dotenv.load_dotenv()
+
+    return os.environ.get("POSTGRES_URI")
+
+engine = create_engine(database_connection_url())
+```
+
+In your endpoint definition files add these imports:
+```py
+import sqlalchemy
+from src import database as db
+```
+
+And execute SQL as:
+```py
+with db.engine.connect() as connection:
+        result = connection.execute("SELECT * FROM global_inventory")
+```
 
 ## Version 2
 
