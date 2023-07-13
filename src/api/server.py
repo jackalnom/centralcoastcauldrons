@@ -21,7 +21,6 @@ app = FastAPI(
     },
 )
 
-app.include_router(pkg_util.router)
 app.include_router(carts.router)
 app.include_router(catalog.router)
 app.include_router(bottler.router)

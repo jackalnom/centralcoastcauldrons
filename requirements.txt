@@ -5,4 +5,3 @@ sqlalchemy==2.0.7
 psycopg2-binary~=2.9.3
 python-dotenv
 pre-commit
-supertokens-python
