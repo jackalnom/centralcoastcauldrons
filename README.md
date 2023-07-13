@@ -2,14 +2,7 @@
 
 Central Coast Cauldrons is a working example ecommerce backend that can be paired with https://potion-exchange.vercel.app/. The current example backend has no persistance store and returns the same json responses every time. The intent is for people to build their own forked versions of Central Coast Cauldrons that add in persistance and logic. The background for the simulation is you are in a fantasy RPG world where adventurers buy potions of various properties. You operate one of many shops with the intention of serving these adventurers and making the most gold possible.
 
-## Basics of the game loop
-You start the game with 100 gold, no potions, and no barrels. Every tick (currently defined as every 5 minutes but later I'll move to every 2 hours), your backend API will be called. There are 3 core activities that can happen on these ticks:
-
-1. On every tick, your catalog endpoint will be hit and one or more simulated customers will attempt to purchase the potions you have available for sale. The customers that come at any point in time varies based on time of day and each customer has their own preference for what types of potions they are lookin# Central Coast Cauldrons - Improved Instructions
-
-Central Coast Cauldrons serves as a sample ecommerce backend which can be integrated with the frontend at https://potion-exchange.vercel.app/. As it stands, this backend lacks a persistence store and consistently delivers the same JSON responses. The primary goal is to encourage users to create their own version of Central Coast Cauldrons, incorporating both persistence and custom logic. The simulated environment emulates a fantasy RPG setting where adventurers purchase potions with diverse characteristics. As an operator of a potion shop, your aim is to cater to these adventurers while maximizing profits.
-
-## Understanding the Game Mechanism
+## The Basic Gameloop
 
 Starting with 100 gold, an empty potion inventory, and no barrels, your backend API will be triggered at regular intervals known as 'ticks' (initially set to occur every 5 minutes, with plans to adjust to every 2 hours). Three core actions can occur during these ticks:
 
