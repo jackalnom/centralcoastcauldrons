@@ -14,6 +14,8 @@ With an initial capital of 100 gold, no potions in your inventory, and devoid of
 
 3. **Barrel Purchasing**: On every 12th tick, you have an opportunity to purchase additional barrels of various colors. Your API receives a catalogue of barrels available for sale and should respond with your purchase decisions. The gold cost of each barrel is deducted from your balance upon purchase.
 
+For more information please reference the [API Spec](APISpec.md)
+
 ## Initial Setup
 
 Follow these steps to get your potion shop up and running:
