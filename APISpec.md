@@ -175,3 +175,20 @@ Posts delivery of barrels.
   }
 ]
 ```
+
+### 4. Admin Functions
+
+### 4.1. Reset Shop - `/admin/reset` (POST)
+
+A call to reset shop will delete all inventory and in-flight carts and reset gold back to 100.
+
+### 4.2. Shop Info - `/admin/shop_info` (GET)
+
+Returns the name of the shop and who the shop owner is.
+
+```json
+{
+    "shop_name": "string",
+    "shop_owner": "string",
+}
+```
