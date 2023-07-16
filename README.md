@@ -2,7 +2,7 @@
 
 Central Coast Cauldrons is a stubbed out API meant to serve as a starting point for learning how to build backend servies that integrate with a persistance layer. You will progressively build out your own forked version of the API and integrate with a progressively more sophisticated database backend. When you register your backend at the [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) simulated customers will shop at your store using your API. 
 
-The application's setting is a simulated fantasy RPG world with adventurers seeking to buy potions. You are one of many shops in this world that offer a variety (over 100k possibilities) of potions. j
+The application's setting is a simulated fantasy RPG world with adventurers seeking to buy potions. You are one of many shops in this world that offer a variety (over 100k possibilities) of potions.
 
 ## Understanding the Game Mechanics
 
@@ -32,20 +32,21 @@ For more information please reference the [API Spec](APISpec.md)
 
 Follow these steps to get your potion shop up and running:
 
-1. Fork the Central Coast Cauldrons GitHub repository.
-2. Register on [Vercel](https://vercel.com/) and deploy your forked repository as a new Vercel project. When forking your repository, name it something unique from centralcoastcauldrons.
+1. Fork the Central Coast Cauldrons GitHub repository. When forking your repository, name it something unique from centralcoastcauldrons.
+2. Register on [Vercel](https://vercel.com/) and deploy your forked repository as a new Vercel project. 
 3. Inside Vercel, go to Settings -> Environment Variables to create a new environment variable named `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications.
-4. Navigate to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed Vercel site and the `API_KEY` you set earlier.
-5. Return to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance, potion inventory, and other assets. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
+4. Visit your newly deployed Vercel project to ensure it's functioning as expected. Try navigating to https://<your-project-url>/docs. Once there, click the 'Authorize' button in the upper right corner and enter your API_KEY. After authorization, try out various endpoints to confirm their functionality.
+5. Navigate to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed Vercel site and the `API_KEY` you set earlier.
+6. Return to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance, potion inventory, and other assets. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
 
 ## Version 1 - Adding persistance
 
 The first version of your improved store will simply keep track of how many red potions are available. Follow these steps:
 
 1. Create an account on [Supabase](https://supabase.com/).
-2. We will start with the simplest possible schema: a single row in a single table. Create a new project in Supabase, select Table Editor on the left-hand nav, then click the "Create a new table" button. Create a table called `global_inventory`. This table should have columns named `num_red_potions` (int4), `num_red_ml` (int4), and `gold` (int4) to keep track of your current resources.
+2. We will start with the simplest possible schema: a single row in a single table. Create a new project in Supabase, select the 'Table Editor' on the left-hand navigation menu, and then click the "Create a new table" button. Create a table called `global_inventory`. This table should have columns named `num_red_potions` (int4), `num_red_ml` (int4), and `gold` (int4) to keep track of your current resources.
 3. Insert an initial row in your database and set `num_red_potions` to 0, `num_red_ml` to 0, and `gold` to 100.
-3. Add your database connection details to your Vercel environment variables. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your database password. Back in Vercel, add this modified string as a new environment variable named `DB_URI`.
+3. Add your database connection details to the environment variables in your Vercel project. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your database password. Back in Vercel, add this modified string as a new environment variable named `DB_URI`.
 
 In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `DB_URI` from environment variables. To do so, create a database.py file in your src folder with the following code:
 ```py
@@ -62,6 +63,7 @@ engine = create_engine(database_connection_url())
 ```
 
 Next, we will leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling red potions at this stage.
+
 In your endpoint definition files add these imports:
 ```py
 import sqlalchemy
@@ -80,6 +82,8 @@ As a very basic initial logic, purchase a new small red potion barrel only if th
 
 Once you've finished making your changes, go back to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
 
+In this updated version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
+
 ## Version 2 - Expand Offerings
 
 Enhance your application to include not just red, but also green, blue, and dark potions in your offerings. You will need to adjust your `global_inventory` table and relevant API responses accordingly.
@@ -88,6 +92,6 @@ Enhance your application to include not just red, but also green, blue, and dark
 
 Further upgrade your application to produce mixtures of red, green, blue, and dark potions. These mixed potions could appeal to a wider range of customers and fetch higher profits. Modify your offerings based on time, customer preferences, and market demand to maximize your return.
 
-## Version 4 - Interate and Optimize
+## Version 4 - Iterate and Optimize
 
- This phase will require sophisticated logic and possibly machine learning algorithms to predict and match customer preferences accurately.
+This phase might require sophisticated logic and possibly machine learning algorithms to accurately predict and match customer preferences.
