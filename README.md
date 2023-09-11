@@ -59,7 +59,7 @@ def database_connection_url():
 
     return os.environ.get("POSTGRES_URI")
 
-engine = create_engine(database_connection_url())
+engine = create_engine(database_connection_url(), pool_pre_ping=True)
 ```
 
 Next, we will leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling red potions at this stage.
