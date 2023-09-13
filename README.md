@@ -46,9 +46,9 @@ The first version of your improved store will simply keep track of how many red 
 1. Create an account on [Supabase](https://supabase.com/).
 2. We will start with the simplest possible schema: a single row in a single table. Create a new project in Supabase, select the 'Table Editor' on the left-hand navigation menu, and then click the "Create a new table" button. Create a table called `global_inventory`. This table should have columns named `num_red_potions` (int4), `num_red_ml` (int4), and `gold` (int4) to keep track of your current resources.
 3. Insert an initial row in your database and set `num_red_potions` to 0, `num_red_ml` to 0, and `gold` to 100.
-3. Add your database connection details to the environment variables in your Vercel project. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your database password. Back in Vercel, add this modified string as a new environment variable named `DB_URI`.
+3. Add your database connection details to the environment variables in your Vercel project. Within your Supabase project settings, go to Database -> Connection String -> URI, copy the connection string, and replace `PASSWORD` with your database password. Back in Vercel, add this modified string as a new environment variable named `POSTGRES_URI`.
 
-In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `DB_URI` from environment variables. To do so, create a database.py file in your src folder with the following code:
+In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `POSTGRES_URI` from environment variables. To do so, create a database.py file in your src folder with the following code:
 ```py
 import os
 import dotenv
