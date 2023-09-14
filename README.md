@@ -84,13 +84,6 @@ Once you've finished making your changes, go back to [Consortium of Concotions a
 
 In this updated version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
 
-## Version 2 - Expand Offerings
-
-Enhance your application to include not just red, but also green, blue, and dark potions in your offerings. You will need to adjust your `global_inventory` table and relevant API responses accordingly.
-
-## Version 3 - Custom Potions
-
-Further upgrade your application to produce mixtures of red, green, blue, and dark potions. These mixed potions could appeal to a wider range of customers and fetch higher profits. Modify your offerings based on time, customer preferences, and market demand to maximize your return.
 
 ## Version 4 - Iterate and Optimize
 
