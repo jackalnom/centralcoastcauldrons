@@ -8,8 +8,10 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+
 class NewCart(BaseModel):
     customer: str
+
 
 @router.post("/")
 def create_cart(new_cart: NewCart):
@@ -28,18 +30,20 @@ class CartItem(BaseModel):
     quantity: int
 
 
-@router.put("/{cart_id}/items/{item_sku}")
+@router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
-    return {"success": True}
+    return "OK"
+
 
 class CartCheckout(BaseModel):
     payment: str
     gold_paid: int
 
+
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-    return {"success": True}
+    return {"total_potions_bought": 1, "total_gold_paid": 50}
