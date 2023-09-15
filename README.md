@@ -32,10 +32,10 @@ For more information please reference the [API Spec](APISpec.md)
 
 Follow these steps to get your potion shop up and running:
 
-1. Fork the Central Coast Cauldrons GitHub repository. When forking your repository, name it something unique from centralcoastcauldrons.
-2. Register on [Vercel](https://vercel.com/) and deploy your forked repository as a new Vercel project. 
-3. Inside Vercel, go to Settings -> Environment Variables to create a new environment variable named `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications.
-4. Visit your newly deployed Vercel project to ensure it's functioning as expected. Try navigating to https://`your-project-url`/docs. The correct project url will end in `vercel.app`. Once there, click the 'Authorize' button in the upper right corner and enter your API_KEY. After authorization, try out various endpoints to confirm their functionality.
+1. Create your own Github repository based on Central Coast Cauldrons GitHub repository. When creating your repository, name it something unique from centralcoastcauldrons.
+2. Register on [Render](https://render.com/). Click New + and select Web Service. We only need free tier here, so do not enter any credit card information at any point. We will do a basic Build and deploy from a Git repository. Connect it to your Github repository and point it the new repository you created on step 1. 
+3. Inside your new Web Service instance on Render, go to Settings -> Environment to create two new environment variables. The first is called `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications. You will use it later when testing your service and registering it. The second is called `PYTHON_VERSION`. We will set this to 3.11.4.
+4. Visit your newly deployed project to ensure it's functioning as expected. Try navigating to https://`your-project`.onrender.com/docs. Once there, click the 'Authorize' button in the upper right corner and enter the same `API_KEY` you entered into environment variables earlier. After authorization, try out various endpoints to confirm their functionality.
 5. Navigate to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed Vercel site and the `API_KEY` you set earlier.
 6. Return to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance, potion inventory, and other assets. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
 
@@ -82,9 +82,5 @@ As a very basic initial logic, purchase a new small red potion barrel only if th
 
 Once you've finished making your changes, go back to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
 
-In this updated version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
+With the release of this version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
 
-
-## Version 4 - Iterate and Optimize
-
-This phase might require sophisticated logic and possibly machine learning algorithms to accurately predict and match customer preferences.
