@@ -73,7 +73,7 @@ from src import database as db
 And execute SQL in each of your endpoints (barrels.py, bottler.py, carts.py, and catalog.py) as:
 ```py
 with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute)
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
 ```
 
 You will need to use SELECT and UPDATE sql statements. In this version you won't need to do any INSERTs or DELETEs.
