@@ -14,7 +14,7 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        sql_to_execute = "SELECT * FROM global_inventory"
+        sql_to_execute = "select * from global_inventory"
         result = connection.execute(sql_to_execute)
 
     return {"number_of_potions": result.potions_match, "ml_in_barrels": result.barrels_match, "gold": result.gold_match}
