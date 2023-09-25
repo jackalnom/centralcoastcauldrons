@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 
 import sqlalchemy
 from fastapi import APIRouter, Depends
@@ -13,16 +14,18 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+class Column(Enum):
+    POTIONS = 0
+    ML_IN_BARREL= 1
+    GOLD = 2
 
 @router.get("/inventory")
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
         sql_to_execute = sqlalchemy.text("select * from global_inventory")
-        result = connection.execute(sql_to_execute)
-        connection.commit()
-        print(result.__dict__)
-    return {"number_of_potions": result.num_red_potions, "ml_in_barrels": result.num_red_ml, "gold": result.gold}
+        result = connection.execute(sql_to_execute).one()
+    return {"number_of_potions": result[Column.POTIONS], "ml_in_barrels": result[Column.ML_IN_BARREL], "gold": result[Column.GOLD]}
 
 
 class Result(BaseModel):
