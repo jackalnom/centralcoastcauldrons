@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
-from src import database as db
 
 router = APIRouter(
     prefix="/barrels",
@@ -23,9 +22,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
     # purchase a new small red potion barrel only if the number of potions in inventory is less than 10
-    sql_to_execute = "SELECT num_red_potions FROM global_inventory"
-    with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute)
     return "OK"
 
 # Gets called once a day
