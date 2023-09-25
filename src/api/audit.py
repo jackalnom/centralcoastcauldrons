@@ -1,8 +1,11 @@
+import os
+
 import sqlalchemy
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
 from src import database as db
+import dotenv
 
 router = APIRouter(
     prefix="/audit",
@@ -10,19 +13,23 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+
 @router.get("/inventory")
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
         sql_to_execute = sqlalchemy.text("select * from global_inventory")
         result = connection.execute(sql_to_execute)
-        connection.close()
+        connection.commit()
+        print(result.__dict__)
     return {"number_of_potions": result.num_red_potions, "ml_in_barrels": result.num_red_ml, "gold": result.gold}
+
 
 class Result(BaseModel):
     gold_match: bool
     barrels_match: bool
     potions_match: bool
+
 
 # Gets called once a day
 @router.post("/results")
