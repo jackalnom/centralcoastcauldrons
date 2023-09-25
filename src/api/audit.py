@@ -17,9 +17,7 @@ def get_inventory():
         sql_to_execute = sqlalchemy.text("select * from global_inventory")
         result = connection.execute(sql_to_execute)
         connection.close()
-        for row in result:
-            print(row)
-    return {"number_of_potions": result.potions_match, "ml_in_barrels": result.barrels_match, "gold": result.gold_match}
+    return {"number_of_potions": result.num_red_potions, "ml_in_barrels": result.num_red_ml, "gold": result.gold}
 
 class Result(BaseModel):
     gold_match: bool
