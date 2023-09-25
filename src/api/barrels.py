@@ -1,6 +1,8 @@
+import sqlalchemy
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
+from src.api.audit import get_inventory
 
 router = APIRouter(
     prefix="/barrels",
@@ -21,7 +23,6 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
-    # purchase a new small red potion barrel only if the number of potions in inventory is less than 10
     return "OK"
 
 # Gets called once a day
@@ -29,10 +30,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-
+    inventory = get_inventory()
+    to_buy = 0
+    if inventory["number_of_potions"] < 10:
+        to_buy = 1
     return [
         {
             "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
+            "quantity": to_buy,
         }
     ]
