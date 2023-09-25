@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, Request
+import sqlalchemy
+from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
 from src.api import auth
+from src import database as db
 
 
 router = APIRouter(
@@ -17,14 +19,25 @@ class NewCart(BaseModel):
 @router.post("/")
 def create_cart(new_cart: NewCart):
     """ """
-    return {"cart_id": 1}
+    sql_to_execute1 = sqlalchemy.text("insert into global_carts (customer_name) values ('{0}')".format(new_cart.customer))
+    sql_to_execute2 = sqlalchemy.text("select max(cart_id) from global_carts")
+    with db.engine.begin() as connection:
+        connection.execute(sql_to_execute1)
+        result = connection.execute(sql_to_execute2).one()
+    return {"cart_id": result[0]}
 
 
 @router.get("/{cart_id}")
 def get_cart(cart_id: int):
     """ """
+    sql_to_execute = sqlalchemy.text("select * from global_carts where cart_id = {}".format(cart_id))
+    with db.engine.begin() as connection:
+        try:
+            result = connection.execute(sql_to_execute).one()
+        except sqlalchemy.exc.NoResultFound:
+            raise HTTPException(status_code=404, detail="Item not found")
 
-    return {}
+    return {"customer": result[1]}
 
 
 class CartItem(BaseModel):
