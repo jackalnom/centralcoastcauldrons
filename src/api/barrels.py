@@ -1,9 +1,10 @@
 import sqlalchemy
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from src import database as db
 from src.api import auth
 from src.api.audit import get_inventory
-from src import database as db
 
 router = APIRouter(
     prefix="/barrels",
@@ -27,11 +28,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
     for barrel in barrels_delivered:
-        sql_to_execute = sqlalchemy.text("update global_inventory set num_red_ml = {0}, gold = gold - {1}"
-                                         .format(barrel.ml_per_barrel * barrel.quantity, barrel.price * barrel.quantity)
-                                         )
+        update_inventory_sql = sqlalchemy.text("update global_inventory set num_red_ml = {0}, gold = gold - {1}"
+                                               .format(barrel.ml_per_barrel * barrel.quantity,
+                                                       barrel.price * barrel.quantity)
+                                               )
+        print("update_inventory_sql for barrel:", barrel, ": ", update_inventory_sql)
         with db.engine.begin() as connection:
-            connection.execute(sql_to_execute)
+            connection.execute(update_inventory_sql)
+            print("Executed update_inventory_sql for barrel:", barrel)
     return "OK"
 
 

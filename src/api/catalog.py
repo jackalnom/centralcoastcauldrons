@@ -12,15 +12,19 @@ def get_catalog():
     Each unique item combination must have only a single price.
     """
     with db.engine.begin() as connection:
-        sql_to_execute = sqlalchemy.text("select * from global_inventory")
-        result = connection.execute(sql_to_execute).one()
+        get_catalog_sql = sqlalchemy.text("select * from global_inventory")
+        print("get_catalog_sql: ", get_catalog_sql)
+        result = connection.execute(get_catalog_sql).one()
+        print("Executed get_catalog_sql, result: ", result)
     # Can return a max of 20 items.
-    return [
+    payload = [
             {
                 "sku": "RED_POTION_0",
                 "name": "red potion",
                 "quantity": result[0],
-                "price": 50,
+                "price": 45,
                 "potion_type": [100, 0, 0, 0],
             }
         ]
+    print(payload)
+    return payload

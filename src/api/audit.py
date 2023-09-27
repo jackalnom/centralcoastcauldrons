@@ -25,7 +25,8 @@ def get_inventory():
     with db.engine.begin() as connection:
         sql_to_execute = sqlalchemy.text("select * from global_inventory")
         result = connection.execute(sql_to_execute).one()
-    return {"number_of_potions": result[Column.POTIONS.value], "ml_in_barrels": result[Column.ML_IN_BARREL.value], "gold": result[Column.GOLD.value]}
+        payload = {"number_of_potions": result[Column.POTIONS.value], "ml_in_barrels": result[Column.ML_IN_BARREL.value], "gold": result[Column.GOLD.value]}
+    return payload
 
 
 class Result(BaseModel):

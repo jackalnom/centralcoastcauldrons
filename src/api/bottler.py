@@ -1,9 +1,10 @@
 import sqlalchemy
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from src import database as db
 from src.api import auth
 from src.api.audit import get_inventory
-from src import database as db
 
 router = APIRouter(
     prefix="/bottler",
@@ -21,6 +22,14 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
+    red_potions_delivered = list(filter(lambda potion: potion.potion_type == [100, 0, 0, 0], potions_delivered))[0]
+    num_red_potions_delivered = red_potions_delivered.quantity if red_potions_delivered else 0
+    update_potion_inventory_sql = sqlalchemy.text(
+        "update global_inventory set num_red_potions = num_red_potions + {}".format(num_red_potions_delivered))
+    print("update_potion_inventory_sql", update_potion_inventory_sql)
+    with db.engine.begin() as connection:
+        connection.execute(update_potion_inventory_sql)
+        print("Executed update_potion_inventory_sql")
 
     return "OK"
 
@@ -38,15 +47,20 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
     inventory = get_inventory()
+    print("inventory:", inventory)
     num_potions_to_brew = inventory["ml_in_barrels"] // 100
-    sql_to_execute = sqlalchemy.text(
+    print("num_potions_to_brew:", num_potions_to_brew)
+    update_potions_sql = sqlalchemy.text(
         "update global_inventory set num_red_ml = num_red_ml - {0}, num_red_potions = num_red_potions + {1} "
         .format(num_potions_to_brew * 100, num_potions_to_brew))
+    print("update_potions_sql:", update_potions_sql)
     with db.engine.begin() as connection:
-        connection.execute(sql_to_execute)
-    return [
+        connection.execute(update_potions_sql)
+    payload = [
         {
             "potion_type": [100, 0, 0, 0],
             "quantity": num_potions_to_brew,
         }
     ]
+    print(payload)
+    return payload
