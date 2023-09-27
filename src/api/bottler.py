@@ -22,14 +22,17 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
-    red_potions_delivered = list(filter(lambda potion: potion.potion_type == [100, 0, 0, 0], potions_delivered))[0]
-    num_red_potions_delivered = red_potions_delivered.quantity if red_potions_delivered else 0
-    update_potion_inventory_sql = sqlalchemy.text(
-        "update global_inventory set num_red_potions = num_red_potions + {}".format(num_red_potions_delivered))
-    print("update_potion_inventory_sql", update_potion_inventory_sql)
-    with db.engine.begin() as connection:
-        connection.execute(update_potion_inventory_sql)
-        print("Executed update_potion_inventory_sql")
+    red_potions_delivered = list(filter(lambda potion: potion.potion_type == [100, 0, 0, 0], potions_delivered))
+    if len(red_potions_delivered) > 1:
+        num_red_potions_delivered = red_potions_delivered.quantity if red_potions_delivered else 0
+        update_potion_inventory_sql = sqlalchemy.text(
+            "update global_inventory set num_red_potions = num_red_potions + {}".format(num_red_potions_delivered))
+        print("update_potion_inventory_sql", update_potion_inventory_sql)
+        with db.engine.begin() as connection:
+            connection.execute(update_potion_inventory_sql)
+            print("Executed update_potion_inventory_sql")
+    else:
+        print("No red potions delivered")
 
     return "OK"
 
