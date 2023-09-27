@@ -15,6 +15,10 @@ class Barrel(BaseModel):
 
     quantity: int
 
+class PotionInventory(BaseModel):
+    potion_type: list[int]
+    quantity: int
+
 
 class GlobalInventory:
 #columns of created_at, num_red_potions, num_red_ml, gold
@@ -83,7 +87,7 @@ class GlobalInventory:
             }
             )
 
-        return array_of_potion_types
+        return array_of_potion_types  
 
 
     def get_wholesale_plan(self, wholesale_catalog: list[Barrel]):
@@ -105,5 +109,14 @@ class GlobalInventory:
         else:
             return []
 
+    def accept_delivery(self, potions_delivered: list[PotionInventory]):
+        for potion in potions_delivered:
+            if(potion.potion_type == [100, 0, 0, 0]):
+                #update the specific row in the table self.id
+                sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = num_red_potions + :quantity WHERE id = :id")
+                with db.engine.begin() as connection:
+                    connection.execute(sql_to_execute, {"quantity": potion.quantity})
+
+        return "OK"
 
 

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
-from ..models.global_inventory import GlobalInventory
+from ..models.global_inventory import GlobalInventory, PotionInventory
+# from ..models.global_inventory import PotionInventory
 
 router = APIRouter(
     prefix="/bottler",
@@ -10,16 +11,13 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-class PotionInventory(BaseModel):
-    potion_type: list[int]
-    quantity: int
+
 
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
-
-    return "OK"
+    return GlobalInventory.get_singleton().accept_delivery(potions_delivered)
 
 # Gets called 4 times a day
 @router.post("/plan")
