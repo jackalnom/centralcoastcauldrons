@@ -109,14 +109,23 @@ class GlobalInventory:
         else:
             return []
 
-    def accept_delivery(self, potions_delivered: list[PotionInventory]):
+    def accept_potions_delivery(self, potions_delivered: list[PotionInventory]):
         for potion in potions_delivered:
             if(potion.potion_type == [100, 0, 0, 0]):
                 #update the specific row in the table self.id
                 sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = num_red_potions + :quantity WHERE id = :id")
                 with db.engine.begin() as connection:
-                    connection.execute(sql_to_execute, {"quantity": potion.quantity})
+                    connection.execute(sql_to_execute, {"quantity": potion.quantity, "id": self.id})
 
         return "OK"
 
+    def accept_barrels_delivery(self, barrels_delivered: list[Barrel]):
+        for barrel in barrels_delivered:
+            if(barrel.sku == "SMALL_RED_BARREL"):
+                #update the specific row in the table self.id
+                #also decrease gold by the cost of the barrel
+                sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_ml = num_red_ml + :quantity, gold = gold - :cost_of_barrel WHERE id = :id")
+                with db.engine.begin() as connection:
+                    connection.execute(sql_to_execute, {"quantity": barrel.quantity, "cost_of_barrel": barrel.price, "id": self.id})
+        return "OK"
 
