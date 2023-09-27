@@ -41,9 +41,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     inventory = get_inventory()
-    to_buy = inventory["gold"] // filter(
-        wholesale_catalog, lambda barrel: barrel.potion_type == [100, 0, 0, 0]
-    )[0].price
+    to_buy = inventory["gold"] // list(filter(
+        lambda barrel: barrel.potion_type == [100, 0, 0, 0]
+        , wholesale_catalog))[0].price
     if inventory["number_of_potions"] >= 10:
         to_buy = 0
     return [
