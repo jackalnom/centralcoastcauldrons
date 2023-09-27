@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+import sqlalchemy
+from src import database as db
 
 router = APIRouter()
 
@@ -11,11 +13,16 @@ def get_catalog():
 
     # Can return a max of 20 items.
 
+    # Get count of Red Potions
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+        for row in result:
+            quantity_red = row[1]
     return [
             {
                 "sku": "RED_POTION_0",
                 "name": "red potion",
-                "quantity": 1,
+                "quantity": quantity_red,
                 "price": 50,
                 "potion_type": [100, 0, 0, 0],
             }
