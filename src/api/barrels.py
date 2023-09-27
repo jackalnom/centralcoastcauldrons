@@ -35,6 +35,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
       result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
       for row in result:
         print(row)
+    print("done")
 
     return [
         {
