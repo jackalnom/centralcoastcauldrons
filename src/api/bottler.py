@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+from models.global_inventory import GlobalInventory
 
 router = APIRouter(
     prefix="/bottler",
@@ -32,10 +33,6 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     # Initial logic: bottle all barrels into red potions.
+    bottlerPlan = GlobalInventory().get_singleton().get_bottler_plan()
 
-    return [
-            {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
-            }
-        ]
+    return bottlerPlan

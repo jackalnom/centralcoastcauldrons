@@ -1,6 +1,7 @@
 #This class should represent the global inventory of the game
 import sqlalchemy
 from src import database as db
+from src.api.barrels import Barrel
 
 
 class GlobalInventory:
@@ -43,7 +44,39 @@ class GlobalInventory:
         return GlobalInventory.singleton
             #if there is, then set the singleton to that row
             #if there isn't, then create a row with the default values
-    
+    def get_bottler_plan(self):
+
+        quantity_of_red_to_bottle = self.num_red_ml%100 
+        array_of_potion_types = []
+        if(quantity_of_red_to_bottle != 0):
+            array_of_potion_types.append(
+                {
+                "potion_type": [100, 0, 0, 0],
+                "quantity": quantity_of_red_to_bottle,
+            }
+            )
+
+        return array_of_potion_types
+
+
+    def get_wholesale_plan(self, wholesale_catalog: list[Barrel]):
+        if(len(wholesale_catalog) == 0):
+            return []
+        
+        buy_one_barrel = False
+        
+        for catalog_item in wholesale_catalog:
+            if (catalog_item.sku == "SMALL_RED_BARREL" & catalog_item.quantity > 0 & self.gold >= catalog_item.price):
+                buy_one_barrel = True
+                break
+
+        if(buy_one_barrel):
+             return [{
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+             }]
+        else:
+            return []
 
 
 

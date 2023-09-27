@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
+from models.global_inventory import GlobalInventory
 
 router = APIRouter(
     prefix="/barrels",
@@ -30,9 +31,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
-        }
-    ]
+    wholesale_plan = GlobalInventory().get_singleton().get_wholesale_plan(wholesale_catalog)
+
+    return wholesale_plan
