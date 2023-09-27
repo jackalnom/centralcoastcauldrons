@@ -17,12 +17,12 @@ def get_catalog():
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         red_potion_no, num_red_ml, gold= result.fetchone()
 
-    return [
-            {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": red_potion_no,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
-            }
-        ]
+        return [
+                {
+                    "sku": "RED_POTION_0",
+                    "name": "red potion",
+                    "quantity": red_potion_no,
+                    "price": 50,
+                    "potion_type": [100, 0, 0, 0],
+                }
+            ]
