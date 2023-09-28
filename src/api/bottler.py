@@ -19,15 +19,15 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     for order in potions_delivered:
-        if order.potion_type == [0]:
+        if order.potion_type == [100, 0, 0, 100]: # full red
             count = order.quantity
     
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-            for row in result:
-                current_red = row[1]
-            updated_red = current_red - count
-            result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {updated_red}"))
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+                for row in result:
+                    current_red = row[1]
+                updated_red = current_red + count
+                result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {updated_red}"))
 
     print(potions_delivered)
 
@@ -55,7 +55,7 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {max_bottles}"))
     return [
             {
-                "potion_type": [100, 0, 0, 0],
+                "potion_type": [100, 0, 0, 100],
                 "quantity": max_bottles,
             }
         ]

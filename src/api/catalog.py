@@ -18,12 +18,15 @@ def get_catalog():
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         for row in result:
             quantity_red = row[1]
-    return [
+    if quantity_red > 0:
+        return [
             {
                 "sku": "RED_POTION_0",
                 "name": "red potion",
                 "quantity": quantity_red,
                 "price": 50,
-                "potion_type": [100, 0, 0, 0],
+                "potion_type": [100, 0, 0, 100],
             }
         ]
+    else:
+        return []
