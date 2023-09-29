@@ -19,7 +19,7 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     for order in potions_delivered:
-        if order.potion_type == [100, 0, 0, 100]: # full red
+        if order.potion_type == [100, 0, 0, 0]: # full red
             count = order.quantity
     
             with db.engine.begin() as connection:
@@ -29,6 +29,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                 updated_red = current_red + count
                 result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {updated_red}"))
 
+    print("Delivering Potions")
     print(potions_delivered)
 
     return "OK"
@@ -55,7 +56,7 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {max_bottles}"))
     return [
             {
-                "potion_type": [100, 0, 0, 100],
+                "potion_type": [100, 0, 0, 0],
                 "quantity": max_bottles,
             }
         ]
