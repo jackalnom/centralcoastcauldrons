@@ -50,13 +50,26 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("inventory:", inventory)
     wholesale_red_barrels = list(filter(lambda barrel: barrel.potion_type == [1, 0, 0, 0], wholesale_catalog))
     print("wholesale_red_barrels:", wholesale_red_barrels)
+    gold_remaining = inventory["gold"]
+    list_to_buy = []
     highest_value_barrel = max(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel)
     print("highest_value_barrel:", highest_value_barrel)
-    payload = [
-        {
-            "sku": highest_value_barrel.sku,
-            "quantity": inventory["gold"] // highest_value_barrel.price,
-        }
-    ]
-    print("payload:", payload)
-    return payload
+
+    while gold_remaining > highest_value_barrel.price:
+        quantity_to_buy = gold_remaining // highest_value_barrel.price
+        list_to_buy.append({"sku": highest_value_barrel.sku, "quantity": quantity_to_buy})
+        wholesale_red_barrels.remove(highest_value_barrel)
+        gold_remaining -= highest_value_barrel.price * quantity_to_buy
+        highest_value_barrel = max(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel)
+
+    best_affordable_barrel = max(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel if barrel.price/barrel.ml_per_barrel <= gold_remaining else 0)
+    print("best_affordable_barrel:", best_affordable_barrel)
+    while gold_remaining > best_affordable_barrel.price:
+        quantity_to_buy = gold_remaining // best_affordable_barrel.price
+        list_to_buy.append({"sku": best_affordable_barrel.sku, "quantity": quantity_to_buy})
+        wholesale_red_barrels.remove(best_affordable_barrel)
+        gold_remaining -= best_affordable_barrel.price * quantity_to_buy
+        best_affordable_barrel = max(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel if barrel.price/barrel.ml_per_barrel <= gold_remaining else 0)
+
+    print("list_to_buy:", list_to_buy)
+    return list_to_buy

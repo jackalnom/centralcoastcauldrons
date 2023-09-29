@@ -53,12 +53,6 @@ def get_bottle_plan():
     print("inventory:", inventory)
     num_potions_to_brew = inventory["ml_in_barrels"] // 100
     print("num_potions_to_brew:", num_potions_to_brew)
-    # update_potions_sql = sqlalchemy.text(
-    #     "update global_inventory set num_red_ml = num_red_ml - {0}, num_red_potions = num_red_potions + {1} "
-    #     .format(num_potions_to_brew * 100, num_potions_to_brew))
-    # print("update_potions_sql:", update_potions_sql)
-    # with db.engine.begin() as connection:
-    #     connection.execute(update_potions_sql)
     payload = [
         {
             "potion_type": [100, 0, 0, 0],
