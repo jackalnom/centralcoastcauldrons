@@ -11,6 +11,7 @@ router = APIRouter(
 
 @router.get("/inventory")
 def get_inventory():
+    #TODO: implement get_inventory
     """ """
     
     return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
@@ -23,6 +24,7 @@ class Result(BaseModel):
 # Gets called once a day
 @router.post("/results")
 def post_audit_results(audit_explanation: Result):
+    #TODO: implement post_audit_results
     """ """
     print(audit_explanation)
 

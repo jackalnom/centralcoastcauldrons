@@ -10,6 +10,7 @@ router = APIRouter(
 
 @router.post("/reset")
 def reset():
+    #TODO: implement reset
     """
     Reset the game state. Gold goes to 100, all potions are removed from
     inventory, and all barrels are removed from inventory. Carts are all reset.
@@ -19,6 +20,7 @@ def reset():
 
 @router.get("/shop_info/")
 def get_shop_info():
+    #TODO: implement get_shop_info
     """ """
 
     # TODO: Change me!

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
+from ..models.cart import Cart, NewCart
+
 
 router = APIRouter(
     prefix="/carts",
@@ -9,18 +11,22 @@ router = APIRouter(
 )
 
 
-class NewCart(BaseModel):
-    customer: str
+
 
 
 @router.post("/")
 def create_cart(new_cart: NewCart):
+    #return a unique cart id
     """ """
-    return {"cart_id": 1}
+
+    cart = Cart(new_cart)
+
+    return {"cart_id": cart.id}
 
 
 @router.get("/{cart_id}")
 def get_cart(cart_id: int):
+    #what do we return from this endpoint??
     """ """
 
     return {}
@@ -32,6 +38,8 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
+    #do we just set this to one? or do we set it to the max possible? 
+    #when stuff is in the cart is it reserved for them? should it be taken out of the db?
     """ """
 
     return "OK"
@@ -43,5 +51,5 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
+    #when you checkout 
     return {"total_potions_bought": 1, "total_gold_paid": 50}
