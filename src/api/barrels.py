@@ -66,7 +66,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         highest_value_barrel = min(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel)
 
     print("remaining red barrels:", wholesale_red_barrels)
-    print("remaining gold:", gold_remaining")
+    print("remaining gold:", gold_remaining)
     wholesale_red_barrels = list(filter(lambda barrel: barrel.price < gold_remaining, wholesale_red_barrels))
     print("remaining affordable red barrels:", wholesale_red_barrels)
     if len(wholesale_red_barrels) == 0:
