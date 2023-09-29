@@ -39,20 +39,24 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     return "OK"
 
 
+
+
 # Gets called once a day
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     inventory = get_inventory()
-    to_buy = inventory["gold"] // list(filter(
-        lambda barrel: barrel.potion_type == [100, 0, 0, 0]
-        , wholesale_catalog))[0].price
-    if inventory["number_of_potions"] >= 10:
-        to_buy = 0
-    return [
+    print("inventory:", inventory)
+    wholesale_red_barrels = list(filter(lambda barrel: barrel.potion_type == [1, 0, 0, 0], wholesale_catalog))
+    print("wholesale_red_barrels:", wholesale_red_barrels)
+    highest_value_barrel = max(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel)
+    print("highest_value_barrel:", highest_value_barrel)
+    payload = [
         {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": to_buy,
+            "sku": highest_value_barrel.sku,
+            "quantity": inventory["gold"] // highest_value_barrel.price,
         }
     ]
+    print("payload:", payload)
+    return payload
