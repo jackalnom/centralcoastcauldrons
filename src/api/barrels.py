@@ -58,8 +58,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     while gold_remaining > highest_value_barrel.price:
         quantity_to_buy = gold_remaining // highest_value_barrel.price
         list_to_buy.append({"sku": highest_value_barrel.sku, "quantity": quantity_to_buy})
-        wholesale_red_barrels.remove(highest_value_barrel)
+        print("new state of list:", list_to_buy)
         gold_remaining -= highest_value_barrel.price * quantity_to_buy
+        wholesale_red_barrels[wholesale_red_barrels.index(highest_value_barrel)].quantity -= quantity_to_buy
+        if wholesale_red_barrels[wholesale_red_barrels.index(highest_value_barrel)].quantity == 0:
+            wholesale_red_barrels.remove(highest_value_barrel)
         highest_value_barrel = min(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel)
 
     best_affordable_barrel = min(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel if barrel.price <= gold_remaining else 0)
@@ -67,8 +70,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     while gold_remaining > best_affordable_barrel.price:
         quantity_to_buy = gold_remaining // best_affordable_barrel.price
         list_to_buy.append({"sku": best_affordable_barrel.sku, "quantity": quantity_to_buy})
-        wholesale_red_barrels.remove(best_affordable_barrel)
+        print("new state of list:", list_to_buy)
         gold_remaining -= best_affordable_barrel.price * quantity_to_buy
+        wholesale_red_barrels[wholesale_red_barrels.index(best_affordable_barrel)].quantity -= quantity_to_buy
+        if wholesale_red_barrels[wholesale_red_barrels.index(best_affordable_barrel)].quantity == 0:
+            wholesale_red_barrels.remove(best_affordable_barrel)
         best_affordable_barrel = min(wholesale_red_barrels, key=lambda barrel: barrel.price/barrel.ml_per_barrel if barrel.price <= gold_remaining else 0)
 
     print("list_to_buy:", list_to_buy)
