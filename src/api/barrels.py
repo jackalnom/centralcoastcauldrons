@@ -67,7 +67,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     print("remaining red barrels:", wholesale_red_barrels)
     print("remaining gold:", gold_remaining)
-    wholesale_red_barrels = list(filter(lambda barrel: barrel.price < gold_remaining, wholesale_red_barrels))
+    wholesale_red_barrels = list(filter(lambda barrel: barrel.price <= gold_remaining, wholesale_red_barrels))
     print("remaining affordable red barrels:", wholesale_red_barrels)
     if len(wholesale_red_barrels) == 0:
         return list_to_buy
