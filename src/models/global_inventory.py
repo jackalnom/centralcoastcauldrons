@@ -21,8 +21,11 @@ class PotionInventory(BaseModel):
 
 
 class GlobalInventory:
-#columns of created_at, num_red_potions, num_red_ml, gold
+    #these are temporary placeholders to acccount for decreased functionality
     table_name = "global_inventory"
+    red_potion_sku = "RED_POTION_0"
+    red_potion_barrel_sku = "SMALL_RED_BARREL"
+    price_of_red_potion = 50
     singleton = None
     def __init__(self, id, created_at, num_red_potions, num_red_ml, gold):
         self.id = id
@@ -68,10 +71,10 @@ class GlobalInventory:
         
         return [
             {
-                "sku": "RED_POTION_0",
+                "sku": GlobalInventory.red_potion_sku,
                 "name": "red potion",
                 "quantity": self.num_red_potions,
-                "price": 50,
+                "price": GlobalInventory.price_of_red_potion,
                 "potion_type": [100, 0, 0, 0],
             }
         ]
@@ -97,13 +100,13 @@ class GlobalInventory:
         buy_one_barrel = False
         
         for catalog_item in wholesale_catalog:
-            if (catalog_item.sku == "SMALL_RED_BARREL" and catalog_item.quantity > 0 and self.gold >= catalog_item.price):
+            if (catalog_item.sku == GlobalInventory.red_potion_barrel_sku and catalog_item.quantity > 0 and self.gold >= catalog_item.price):
                 buy_one_barrel = True
                 break
 
         if(buy_one_barrel):
              return [{
-                "sku": "SMALL_RED_BARREL",
+                "sku": GlobalInventory.red_potion_barrel_sku,
                 "quantity": 1,
              }]
         else:
@@ -121,7 +124,7 @@ class GlobalInventory:
 
     def accept_barrels_delivery(self, barrels_delivered: list[Barrel]):
         for barrel in barrels_delivered:
-            if(barrel.sku == "SMALL_RED_BARREL"):
+            if(barrel.sku == GlobalInventory.red_potion_barrel_sku):
                 #update the specific row in the table self.id
                 #also decrease gold by the cost of the barrel
                 sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_ml = num_red_ml + :quantity, gold = gold - :cost_of_barrel WHERE id = :id")
@@ -129,3 +132,24 @@ class GlobalInventory:
                     connection.execute(sql_to_execute, {"quantity": barrel.quantity, "cost_of_barrel": barrel.price, "id": self.id})
         return "OK"
 
+    def items_available(self, items: dict[str, int]):
+        for item_sku, quantity in items.items():
+            if item_sku == GlobalInventory.red_potion_sku:
+                if quantity > self.num_red_potions:
+                    raise Exception("Not enough red potions available")
+            else:
+                raise Exception("Item not found")
+            
+
+    def adjust_inventory(self, items: dict[str, int]):
+        #update the specific row in the table self.id
+
+        try:
+            total_gold_paid = GlobalInventory.price_of_red_potion*items[GlobalInventory.red_potion_sku]
+            sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = num_red_potions - :quantity, gold = gold + :total_gold_paid WHERE id = :id")
+            with db.engine.begin() as connection:
+                connection.execute(sql_to_execute, {"quantity": items[GlobalInventory.red_potion_sku], "id": self.id, "total_gold_paid": total_gold_paid})
+        except: 
+            raise Exception("Could not adjust inventory")
+
+        return {"total_potions_bought": items[GlobalInventory.red_potion_sku], "total_gold_paid": total_gold_paid}
