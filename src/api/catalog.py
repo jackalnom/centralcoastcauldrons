@@ -32,4 +32,4 @@ def get_catalog():
         ]
     else:
         print("Inventory is Empty")
-        return []
+        return [{}]
