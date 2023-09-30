@@ -29,7 +29,7 @@ def get_shop_info():
 
     # TODO: Change me!
     return {
-        "shop_name": "Potion Shop",
-        "shop_owner": "Potion Seller",
+        "shop_name": "Potionality",
+        "shop_owner": "Matthew Wong",
     }
 
