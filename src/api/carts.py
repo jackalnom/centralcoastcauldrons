@@ -45,6 +45,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         result = connection.execute(sqlalchemy.text(
             f"UPDATE carts SET sku_item0='{item_sku}', quantity_item0={cart_item.quantity}, cost_item0=50 WHERE cartid={cart_id}"
              ))
+    print(f"Added {cart_item.quantity} of {item_sku} to cart {cart_item}...")
     return "OK"
 
 
@@ -70,4 +71,5 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     # update database
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold + cost}, num_red_potions={current_red_pot - quantity}"))
+    print(f"Cart ID {cart_id} purchased {quantity} potions and paid {cost} gold")
     return {"total_potions_bought": quantity, "total_gold_paid": cost}
