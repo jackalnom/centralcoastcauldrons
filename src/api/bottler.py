@@ -58,6 +58,7 @@ def get_bottle_plan():
         result_ml = current_ml - max_bottles*100
         # result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml = {result_ml}"))
         # result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {max_bottles}"))
+    print(f"Plan produces {max_bottles} red potions...")
     return [
             {
                 "potion_type": [100, 0, 0, 0],

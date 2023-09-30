@@ -24,7 +24,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     ## Start new implimentation
     for indiv_barrel in barrels_delivered:
-        if(indiv_barrel.potion_type == [0]):
+        ml_total_delivered=0
+        cost_total=0
+        current_gold=0
+        current_red_ml=0
+        if(indiv_barrel.potion_type == [1,0,0,0]):
             ml_total_delivered = indiv_barrel.quantity*indiv_barrel.ml_per_barrel
             cost_total = indiv_barrel.quantity*indiv_barrel.price
         with db.engine.begin() as connection:
@@ -52,7 +56,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     # Start new implimentation
 
     for for_sale in wholesale_catalog:  # go through catalog
+        print("Going through catalog...")
         if for_sale.sku == "SMALL_RED_BARREL":
+            print("Checking Small Red Barrels...")
             # only buy small red for now
 
             # check current inventory
@@ -68,6 +74,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             
             # only buy if stock is below 10
             if current_red_potion < 10:
+                print(f"Purchacing {max_barrel} small red barrels...")
                 return [
                     {
                         "sku": "SMALL_RED_BARREL",
