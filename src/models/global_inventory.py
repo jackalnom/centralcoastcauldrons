@@ -65,7 +65,15 @@ class GlobalInventory:
             #if there is, then set the singleton to that row
             #if there isn't, then create a row with the default values
         return GlobalInventory.singleton
-    
+
+
+    def get_inventory(self):
+        return {
+            "number_of_potions": self.num_red_potions,
+            "ml_in_barrels": self.num_red_ml,
+            "gold": self.gold,
+        }
+
     def get_catalog(self):
         
         return [

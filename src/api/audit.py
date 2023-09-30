@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
 import math
+from ..models.global_inventory import GlobalInventory, PotionInventory
 
 router = APIRouter(
     prefix="/audit",
@@ -13,8 +14,8 @@ router = APIRouter(
 def get_inventory():
     #TODO: implement get_inventory
     """ """
-    
-    return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
+    inventory = GlobalInventory.get_singleton().get_inventory()
+    return inventory 
 
 class Result(BaseModel):
     gold_match: bool
