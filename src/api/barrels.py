@@ -32,6 +32,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
             for row in result:
                 current_red_ml = row[2] + ml_total_delivered
                 current_gold = row[3] - cost_total
+            print(f"Delivery taken of {ml_total_delivered}mL of red potion, at cost of {cost_total}.")
+            print(f"Current red potion stock is {current_red_ml}mL, current gold is {current_gold}")
+            
             result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml = {current_red_ml}"))
             result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = {current_gold}"))
 
@@ -72,9 +75,4 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     }
                 ]
     
-    return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 0,
-        }
-    ]
+    return []
