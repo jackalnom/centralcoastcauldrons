@@ -78,6 +78,10 @@ class Cart:
     Cart.virtual_carts_table.pop(self.id)
 
     return checkout_result
+
+  @staticmethod
+  def delete_all_carts():
+    Cart.virtual_carts_table = {}
   
 
 

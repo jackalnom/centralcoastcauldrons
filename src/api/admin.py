@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
+from ..models.global_inventory import GlobalInventory, PotionInventory
+from ..models.cart import Cart
 
 router = APIRouter(
     prefix="/admin",
@@ -10,11 +12,13 @@ router = APIRouter(
 
 @router.post("/reset")
 def reset():
-    #TODO: implement reset
     """
     Reset the game state. Gold goes to 100, all potions are removed from
     inventory, and all barrels are removed from inventory. Carts are all reset.
     """
+
+    GlobalInventory.get_singleton().reset()
+    Cart.delete_all_carts()
     return "OK"
 
 
@@ -25,7 +29,7 @@ def get_shop_info():
 
     # TODO: Change me!
     return {
-        "shop_name": "Potion Shop",
-        "shop_owner": "Potion Seller",
+        "shop_name": "Lit Potion Muh Town",
+        "shop_owner": "Potion King of Muh Town (Alfred)",
     }
 

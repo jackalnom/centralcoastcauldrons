@@ -1,6 +1,7 @@
 #This class should represent the global inventory of the game
 import sqlalchemy
 from src import database as db
+import math
 from pydantic import BaseModel
 from sqlalchemy.sql import text
 
@@ -74,6 +75,16 @@ class GlobalInventory:
             "gold": self.gold,
         }
 
+    def reset(self):
+        sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = 0, num_red_ml = 0, gold = 100")
+        with db.engine.begin() as connection:
+            connection.execute(sql_to_execute)
+        return "OK"
+
+
+
+    
+
     def get_catalog(self):
         
         return [
@@ -87,7 +98,7 @@ class GlobalInventory:
         ]
     def get_bottler_plan(self):
 
-        quantity_of_red_to_bottle = self.num_red_ml%100 
+        quantity_of_red_to_bottle = math.floor(self.num_red_ml/100)
         array_of_potion_types = []
         if(quantity_of_red_to_bottle != 0):
             array_of_potion_types.append(
@@ -136,7 +147,7 @@ class GlobalInventory:
                 #also decrease gold by the cost of the barrel
                 sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_ml = num_red_ml + :quantity, gold = gold - :cost_of_barrel WHERE id = :id")
                 with db.engine.begin() as connection:
-                    connection.execute(sql_to_execute, {"quantity": barrel.quantity, "cost_of_barrel": barrel.price, "id": self.id})
+                    connection.execute(sql_to_execute, {"ml_red": barrel.quantity * barrel.ml_per_barrel, "cost_of_barrel": barrel.quantity* barrel.price, "id": self.id})
         return "OK"
 
     def items_available(self, items: dict[str, int]):
