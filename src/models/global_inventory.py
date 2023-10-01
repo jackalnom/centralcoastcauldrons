@@ -86,16 +86,19 @@ class GlobalInventory:
     
 
     def get_catalog(self):
-        
-        return [
-            {
+
+        catalog_array = []
+        if(self.num_red_potions > 0):
+            catalog_array.append({
                 "sku": GlobalInventory.red_potion_sku,
                 "name": "red potion",
                 "quantity": self.num_red_potions,
                 "price": GlobalInventory.price_of_red_potion,
                 "potion_type": [100, 0, 0, 0],
-            }
-        ]
+            })
+        
+        return catalog_array
+            
     def get_bottler_plan(self):
 
         quantity_of_red_to_bottle = math.floor(self.num_red_ml/100)
