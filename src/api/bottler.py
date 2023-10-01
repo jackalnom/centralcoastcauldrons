@@ -23,7 +23,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
     red_potions_delivered = list(filter(lambda potion: potion.potion_type == [100, 0, 0, 0], potions_delivered))
-    if len(red_potions_delivered) > 1:
+    print("red_potions_delivered:", red_potions_delivered)
+    if red_potions_delivered:
         num_red_potions_delivered = red_potions_delivered[0].quantity
         update_potion_inventory_sql = sqlalchemy.text(
             "update global_inventory set num_red_potions = num_red_potions + {0}, num_red_ml = num_red_ml - {1}".format(num_red_potions_delivered, num_red_potions_delivered * 100))
