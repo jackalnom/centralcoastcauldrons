@@ -45,9 +45,11 @@ def get_bottle_plan():
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
-  return [
-    {
-      "potion_type": [100, 0, 0, 0],
-      "quantity": first_row.num_red_ml/100,
-    }
-  ]
+    if first_row.num_red_ml >= 100:
+      return [
+        {
+          "potion_type": [100, 0, 0, 0],
+          "quantity": first_row.num_red_ml/100,
+        }
+      ]
+  return []
