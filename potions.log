@@ -1,0 +1,20 @@
+2023-09-29 14:15:30,287 - potions - INFO - test log
+2023-09-29 14:17:56,859 - potions - INFO - in new cart
+2023-09-29 14:18:23,832 - potions - INFO - in new cart
+2023-09-29 14:19:23,856 - potions - INFO - customer='string'
+2023-10-02 10:03:38,829 - potions - INFO - customer='string'
+2023-10-02 10:04:25,009 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 10:04:52,456 - potions - INFO - customer='string'
+2023-10-02 10:05:07,747 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 10:05:42,162 - potions - INFO - checkout
+2023-10-02 10:05:42,166 - potions - INFO - currentCart
+2023-10-02 10:06:16,842 - potions - INFO - customer='string'
+2023-10-02 10:06:25,379 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 10:06:42,560 - potions - INFO - checkout
+2023-10-02 10:06:42,564 - potions - INFO - currentCart
+2023-10-02 10:17:53,736 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 10:18:02,504 - potions - INFO - customer='string'
+2023-10-02 10:18:23,356 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 10:18:30,767 - potions - INFO - checkout
+2023-10-02 10:18:30,769 - potions - INFO - currentCart
+2023-10-02 10:19:08,314 - potions - INFO - customer='string'

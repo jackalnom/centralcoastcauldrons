@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+import sqlalchemy
+from src.api import database as db
 
 router = APIRouter()
 
@@ -10,13 +12,11 @@ def get_catalog():
     """
 
     # Can return a max of 20 items.
-
-    return [
-            {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
-            }
-        ]
+    response = {
+        "sku": "RED_POTION_0",
+        "name": "red potion",
+        "price": 50,
+        "potion_type": 50,
+        "quantity": 1,
+    }
+    return response

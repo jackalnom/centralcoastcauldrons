@@ -10,6 +10,15 @@ description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
 """
 
+# setting up logging
+logger = logging.getLogger("potions")
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler("potions.log")
+
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
 app = FastAPI(
     title="Central Coast Cauldrons",
     description=description,
@@ -28,6 +37,7 @@ app.include_router(bottler.router)
 app.include_router(barrels.router)
 app.include_router(admin.router)
 
+
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(request, exc):
@@ -35,9 +45,10 @@ async def validation_exception_handler(request, exc):
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
     for error in exc_json:
-        response['message'].append(f"{error['loc']}: {error['msg']}")
+        response["message"].append(f"{error['loc']}: {error['msg']}")
 
     return JSONResponse(response, status_code=422)
+
 
 @app.get("/")
 async def root():
