@@ -43,7 +43,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     logger.info("pot cart_id/items/itemSKU")
     cart = carts[cart_id]
-    cart[item_sku] = cart_item.quantity
+    cart[item_sku] = cart.get(item_sku, 0) + cart_item.quantity
     return "OK"
 
 
@@ -79,4 +79,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     # logic to update database
     del carts[cart_id]
-    return {"total_potions_bought": red_quantity, "total_gold_paid": POTION_PRICE}
+    return {
+        "total_potions_bought": red_quantity,
+        "total_gold_paid": POTION_PRICE * red_quantity,
+    }

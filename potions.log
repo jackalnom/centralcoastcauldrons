@@ -18,3 +18,8 @@
 2023-10-02 10:18:30,767 - potions - INFO - checkout
 2023-10-02 10:18:30,769 - potions - INFO - currentCart
 2023-10-02 10:19:08,314 - potions - INFO - customer='string'
+2023-10-02 13:50:31,833 - potions - INFO - customer='string'
+2023-10-02 13:50:32,384 - potions - INFO - customer='string'
+2023-10-02 13:52:31,900 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 13:55:37,868 - potions - INFO - pot cart_id/items/itemSKU
+2023-10-02 13:55:47,561 - potions - INFO - checkout
