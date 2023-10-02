@@ -62,7 +62,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     print("Calling set_item_quantity:", "cart_id:", cart_id, "item_sku:", item_sku, "cart_item:", cart_item)
     set_item_sql = sqlalchemy.text(
-        "update global_carts set num_red_potions = {0}, total_price = 50 where cart_id = {1}".format(cart_item.quantity, cart_id))
+        "update global_carts set num_red_potions = {0}, total_price = 50 * {0} where cart_id = {1}".format(cart_item.quantity, cart_id))
     print("sql_item_sql:", set_item_sql)
     with db.engine.begin() as connection:
         connection.execute(set_item_sql)
