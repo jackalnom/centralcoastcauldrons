@@ -62,7 +62,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     print("Calling set_item_quantity:", "cart_id:", cart_id, "item_sku:", item_sku, "cart_item:", cart_item)
     set_item_sql = sqlalchemy.text(
-        "update global_carts set num_red_potions = {0} where cart_id = {1}".format(cart_item.quantity, cart_id))
+        "update global_carts set num_red_potions = {0}, total_price = 50 where cart_id = {1}".format(cart_item.quantity, cart_id))
     print("sql_item_sql:", set_item_sql)
     with db.engine.begin() as connection:
         connection.execute(set_item_sql)
@@ -82,14 +82,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     reset_cart_sql = sqlalchemy.text(
         "update global_carts set num_red_potions = 0, total_price = 0 where cart_id = {0}".format(cart_id))
     print("reset_cart_sql:", reset_cart_sql)
-    update_inventory_sql = None
     with db.engine.begin() as connection:
         result = connection.execute(get_cart_sql).one()
         print("Executed get_cart_sql")
         print("get_cart result:", result)
         update_inventory_sql = sqlalchemy.text(
-            "update global_inventory set num_red_potions = num_red_potions - {0}, gold = gold + {1} where num_red_potions >= {0}"
-            .format(result[2], result[3]))
+            "update global_inventory set num_red_potions = num_red_potions - {0}, gold = gold + {1} where cart_id = {2}}"
+            .format(result[2], result[3], cart_id))
         print("update_inventory_sql:", update_inventory_sql)
         connection.execute(reset_cart_sql)
         print("Executed reset_cart_sql")
