@@ -23,7 +23,7 @@ def get_catalog():
     CATALOG_OFFER_SIZE = 3
     sku_count = 0
     while quantity_red > 0:
-        if quantity_red > CATALOG_OFFER_SIZE:
+        if quantity_red >= CATALOG_OFFER_SIZE:
             # more than desired split size
             return_list += [{
                 "sku": f"RED_POTION_{sku_count}",
