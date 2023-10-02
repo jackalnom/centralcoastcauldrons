@@ -76,6 +76,7 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
+    payment = 0
     print("Calling checkout:", "cart_id:", cart_id, "cart_checkout:", cart_checkout)
     get_cart_sql = sqlalchemy.text("select * from global_carts where cart_id = {}".format(cart_id))
     print("get_cart_sql:", get_cart_sql)
@@ -86,6 +87,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         result = connection.execute(get_cart_sql).one()
         print("Executed get_cart_sql")
         print("get_cart result:", result)
+        payment = result[3]
         update_inventory_sql = sqlalchemy.text(
             "update global_inventory set num_red_potions = num_red_potions - {0}, gold = gold + {1}"
             .format(result[2], result[3]))
@@ -95,4 +97,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         connection.execute(update_inventory_sql)
         print("Executed update_inventory_sql")
 
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    return CartCheckout(payment="{}".format(payment))
