@@ -67,7 +67,6 @@ class Cart:
       GlobalInventory.get_singleton().items_available(self.items)
     except:
       raise Exception("Transaction Failed: Not enough items available")
-
     try: 
       checkout_result = GlobalInventory.get_singleton().adjust_inventory(self.items)
     except:
