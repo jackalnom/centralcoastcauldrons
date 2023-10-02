@@ -16,7 +16,7 @@ router = APIRouter(
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
-    print(potions_delivered)
+    print("deliver/potions: potions delivered -> ", potions_delivered)
     return GlobalInventory.get_singleton().accept_potions_delivery(potions_delivered)
 
 # Gets called 4 times a day

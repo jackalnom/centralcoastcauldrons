@@ -14,7 +14,7 @@ router = APIRouter(
 @router.post("/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
-    print(barrels_delivered)
+    print("barrels/deliver: barrels_delivered -> ", barrels_delivered)
     return GlobalInventory.get_singleton().accept_barrels_delivery(barrels_delivered)
 
 
@@ -22,7 +22,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    print(wholesale_catalog)
+    print("barrels/plan: wholesale_catalog -> ", wholesale_catalog)
 
     wholesale_plan = GlobalInventory.get_singleton().get_wholesale_plan(wholesale_catalog)
 
