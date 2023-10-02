@@ -87,8 +87,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         print("Executed get_cart_sql")
         print("get_cart result:", result)
         update_inventory_sql = sqlalchemy.text(
-            "update global_inventory set num_red_potions = num_red_potions - {0}, gold = gold + {1} where cart_id = {2}}"
-            .format(result[2], result[3], cart_id))
+            "update global_inventory set num_red_potions = num_red_potions - {0}, gold = gold + {1}"
+            .format(result[2], result[3]))
         print("update_inventory_sql:", update_inventory_sql)
         connection.execute(reset_cart_sql)
         print("Executed reset_cart_sql")
