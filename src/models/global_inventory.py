@@ -28,7 +28,7 @@ class GlobalInventory:
     red_potion_barrel_sku = "SMALL_RED_BARREL"
     price_of_red_potion = 50
     singleton = None
-    def __init__(self, id, created_at, num_red_potions, num_red_ml, gold):
+    def __init__(self, id: int, created_at, num_red_potions: int, num_red_ml: int, gold: int):
         self.id = id
         self.created_at = created_at
         self.num_red_potions = num_red_potions
@@ -134,24 +134,33 @@ class GlobalInventory:
             return []
 
     def accept_potions_delivery(self, potions_delivered: list[PotionInventory]):
-        for potion in potions_delivered:
-            if(potion.potion_type == [100, 0, 0, 0]):
-                #update the specific row in the table self.id
-                sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = num_red_potions + :quantity WHERE id = :id")
-                with db.engine.begin() as connection:
-                    connection.execute(sql_to_execute, {"quantity": potion.quantity, "id": self.id})
+        try: 
 
-        return "OK"
+            for potion in potions_delivered:
+                if(potion.potion_type == [100, 0, 0, 0]):
+                    #update the specific row in the table self.id
+                    sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = num_red_potions + :quantity WHERE id = :id")
+                    with db.engine.begin() as connection:
+                        connection.execute(sql_to_execute, {"quantity": potion.quantity, "id": self.id})
+            return "OK"
+        except Exception as error:
+            print("unable to accept potion delivery: ", error)
+            return "ERROR"
 
     def accept_barrels_delivery(self, barrels_delivered: list[Barrel]):
-        for barrel in barrels_delivered:
-            if(barrel.sku == GlobalInventory.red_potion_barrel_sku):
-                #update the specific row in the table self.id
-                #also decrease gold by the cost of the barrel
-                sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_ml = num_red_ml + :quantity, gold = gold - :cost_of_barrel WHERE id = :id")
-                with db.engine.begin() as connection:
-                    connection.execute(sql_to_execute, {"ml_red": barrel.quantity * barrel.ml_per_barrel, "cost_of_barrel": barrel.quantity* barrel.price, "id": self.id})
-        return "OK"
+        try:
+            for barrel in barrels_delivered:
+                if(barrel.sku == GlobalInventory.red_potion_barrel_sku):
+                    #update the specific row in the table self.id
+                    #also decrease gold by the cost of the barrel
+                    sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_ml = num_red_ml + :ml_red, gold = gold - :cost_of_barrel WHERE id = :id")
+                    with db.engine.begin() as connection:
+                        connection.execute(sql_to_execute, {"ml_red": barrel.quantity * barrel.ml_per_barrel, "cost_of_barrel": barrel.quantity* barrel.price, "id": self.id})
+            return "OK"
+        except Exception as error:
+            print("unable to accept barrel delivery: ", error)
+            return "ERROR"
+            
 
     def items_available(self, items: dict[str, int]):
         for item_sku, quantity in items.items():
