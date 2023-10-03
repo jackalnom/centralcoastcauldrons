@@ -15,6 +15,8 @@ class PotionInventory(BaseModel):
   potion_type: list[int]
   quantity: int
 
+colors = ["red", "green", "blue"]
+
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
   """ """
@@ -45,11 +47,11 @@ def get_bottle_plan():
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
-    if first_row.num_red_ml >= 100:
-      return [
-        {
+    for color in colors:
+      current_ml = getattr(first_row, f"num_{color}_ml")
+      if current_ml >= 100:
+        return [{
           "potion_type": [100, 0, 0, 0],
-          "quantity": first_row.num_red_ml//100,
-        }
-      ]
+          "quantity": current_ml//100,
+        }]
   return []
