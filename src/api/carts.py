@@ -23,7 +23,7 @@ def create_cart(new_cart: NewCart):
   global cart_id
   cart_id += 1
   carts[cart_id] = {"customer": new_cart.customer, "sku": "", "quantity": 0}
-  return {cart_id: carts[cart_id]}
+  return {"cart_id": cart_id}
 
 
 @router.get("/{cart_id}")
