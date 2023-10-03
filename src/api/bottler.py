@@ -16,6 +16,12 @@ class PotionInventory(BaseModel):
   quantity: int
 
 colors = ["red", "green", "blue"]
+color_to_potion = {
+    "red": [100, 0, 0, 0],
+    "green": [0, 100, 0, 0],
+    "blue": [0, 0, 100, 0],
+}
+potion_to_color = {tuple(y): x for x, y in color_to_potion.items()}
 
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
@@ -24,13 +30,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
-    current_num_red_potions = first_row.num_red_potions
-    current_num_red_ml = first_row.num_red_ml
     for potion in potions_delivered:
-      if potion.potion_type == [100, 0, 0, 0]:
-        current_num_red_potions += potion.quantity
-        current_num_red_ml -= 100 * potion.quantity
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions={current_num_red_potions}, num_red_ml={current_num_red_ml}"))
+      color = potion_to_color[tuple(potion.potion_type)]
+      current_potions = getattr(first_row, f"num_{color}_potions") + potion.quantity
+      current_ml = getattr(first_row, f"num_{color}_ml") - 100 * potion.quantity
+      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_potions={current_potions}, num_{color}_ml={current_ml}"))
   return "OK"
 
 # Gets called 4 times a day
@@ -44,14 +48,15 @@ def get_bottle_plan():
   # Expressed in integers from 1 to 100 that must sum up to 100.
 
   # Initial logic: bottle all barrels into red potions.
+  bottling_list = []
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
     for color in colors:
       current_ml = getattr(first_row, f"num_{color}_ml")
       if current_ml >= 100:
-        return [{
-          "potion_type": [100, 0, 0, 0],
+        bottling_list.append({
+          "potion_type": color_to_potion[color],
           "quantity": current_ml//100,
-        }]
-  return []
+        })
+  return bottling_list
