@@ -51,6 +51,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
   print(cart_checkout.payment) # check to see cartcheckout
+  print(carts) # check to see all carts
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
