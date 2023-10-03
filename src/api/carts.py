@@ -17,6 +17,7 @@ class NewCart(BaseModel):
 @router.post("/")
 def create_cart(new_cart: NewCart):
     """ """
+    print("Attempting to generate cart...")
     last_cartid = 0
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM carts"))
