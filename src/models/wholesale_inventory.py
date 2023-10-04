@@ -1,7 +1,12 @@
 class WholesaleInventory:
   #TODO: update this template code
-  def __init__(self, inventory_id, product_id, quantity, price):
-    self.inventory_id = inventory_id
-    self.product_id = product_id
-    self.quantity = quantity
-    self.price = price
+  def __init__(self, id, sku, name, type, num_ml):
+    self.id = id
+    self.sku = sku
+    self.type = type
+    self.name = name
+    self.num_ml = num_ml
+
+    
+   
+  
