@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from src.api import auth
 from ..models.global_inventory import GlobalInventory
 from ..models.global_inventory import Barrel
+from ..models.wholesale_inventory import WholesaleInventory
 
 router = APIRouter(
     prefix="/barrels",
@@ -24,6 +25,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print("barrels/plan: wholesale_catalog -> ", wholesale_catalog)
 
-    wholesale_plan = GlobalInventory.get_singleton().get_wholesale_plan(wholesale_catalog)
+    wholesale_plan = WholesaleInventory.get_wholesale_plan(wholesale_catalog)
 
     return wholesale_plan
