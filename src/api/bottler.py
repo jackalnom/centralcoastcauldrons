@@ -18,22 +18,29 @@ class PotionInventory(BaseModel):
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
+    delivery_dict = {
+        0: "red",
+        1: "green",
+        2: "blue"
+    }
     print("Delivering Potions:")
     for order in potions_delivered:
-        if order.potion_type == [100, 0, 0, 0]: # full red
-            count = order.quantity
-    
-            with db.engine.begin() as connection:
-                result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-                for row in result:
-                    current_red = row[1]
-                    current_ml = row[2]
-                updated_red = current_red + count
-                updated_ml = current_ml - count*100
-                print(f"{count} red potions delivered, new red mL stock is {updated_ml}, new red potion stock is {updated_red}")
-                result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {updated_red}"))
-                result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml = {updated_ml}"))
+        color = delivery_dict[order.potion_type.index(100)] # still assuming pure potions
+        count = order.quantity
 
+        # oull and update potion delivery
+        with db.engine.begin() as connection:
+            result_ml = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
+            result_potion = connection.execute(sqlalchemy.text(f"SELECT num_{color}_potions FROM global_inventory"))
+        for row in result_potion:
+            current_potion = row[0]
+        for row in result_ml:
+            current_ml = row[0]
+        updated_potion = current_potion + count
+        updated_ml = current_ml - count*100
+        print(f"{count} {color} potions delivered, new {color} mL stock is {updated_ml}, new {color} potion stock is {updated_potion}")
+        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_potions = {updated_ml}"))
+        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_ml = {updated_ml}"))
     print(potions_delivered)
 
     return "OK"
@@ -48,20 +55,27 @@ def get_bottle_plan():
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
-
+    response = []
+    colors_list = ["red", "green", "blue"]
+    potion_type_dict = {
+        "red":[100,0,0,0],
+        "green":[0,100,0,0],
+        "blue":[0,0,100,0]
+    }
     # Initial logic: bottle all barrels into red potions.
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+    for color in colors_list:
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
         for row in result:
-            current_ml = row[2]
+            current_ml = row[0]
         max_bottles = current_ml // 100
         result_ml = current_ml - max_bottles*100
         # result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml = {result_ml}"))
         # result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = {max_bottles}"))
-    print(f"Plan produces {max_bottles} red potions...")
-    return [
-            {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": max_bottles,
-            }
-        ]
+        print(f"Plan produces {max_bottles} {color} potions...")
+        response += [
+                {
+                    "potion_type": potion_type_dict[color],
+                    "quantity": max_bottles,
+                }
+            ]
