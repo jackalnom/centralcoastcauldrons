@@ -52,34 +52,47 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-
+   
     # Start new implimentation
-
+    purchase_plan = []
+    # add entries as more barrels are desired
+    purchasing_dict = {
+        "SMALL_RED_BARREL": "red",
+        "SMALL_GREEN_BARREL": "green",
+        "SMALL_BLUE_BARREL": "blue"
+    }
+    SKIP_COLOR_KEY = "SKIP"
     for for_sale in wholesale_catalog:  # go through catalog
         print("Going through catalog...")
-        if for_sale.sku == "SMALL_RED_BARREL":
-            print("Checking Small Red Barrels...")
-            # only buy small red for now
+        color = purchasing_dict.get(for_sale.sku, SKIP_COLOR_KEY)
+        if color == SKIP_COLOR_KEY:
+            # skip if not small barrel
+            break
+        print(f"Checking {for_sale.sku}...")
 
-            # check current inventory
-            with db.engine.begin() as connection:
-                result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-            
-            for row in result:
-                current_gold = row[3]
-                current_red_potion = row[1]
-            
-            # just buy maximum number of barrels
-            max_barrel = min(current_gold // for_sale.price, for_sale.quantity)
-            
-            # only buy if stock is below 10
-            if current_red_potion < 10:
-                print(f"Purchacing {max_barrel} small red barrels...")
-                return [
-                    {
-                        "sku": "SMALL_RED_BARREL",
-                        "quantity": max_barrel,
-                    }
-                ]
+        # check current inventory
+        with db.engine.begin() as connection:
+            result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+            result_potion = connection.execute(sqlalchemy.text(f"SELECT num_{color}_potions FROM global_inventory"))
+        
+        for row in result_gold:
+            current_gold = row[0]
+        for row in result_potion:
+            current_potion = row[0]
+        
+        # buy 1/3 of possible barrels
+        max_barrel = min((current_gold // for_sale.price) // 3, for_sale.quantity)
+        
+        # only buy if stock is below 10
+        if current_potion < 10:
+            print(f"Purchacing {max_barrel} small {color} barrels...")
+            purchase_plan += [
+                {
+                    "sku": f"{for_sale.sku}",
+                    "quantity": max_barrel,
+                }
+            ]
+        else:
+            continue
     
-    return []
+    return purchase_plan
