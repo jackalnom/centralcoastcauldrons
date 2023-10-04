@@ -47,13 +47,14 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 class CartCheckout(BaseModel):
   payment: str
 
+#TODO fix concurrency, add different prices
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
   print(cart_checkout.payment) # check to see cartcheckout
   print(carts) # check to see all carts
   with db.engine.begin() as connection:
-    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory FOR UPDATE"))
     first_row = result.first()
     current_gold = first_row.gold
     sku = carts[cart_id]["sku"]
