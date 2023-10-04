@@ -44,6 +44,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
   return "OK"
 
 # Gets called once a day
+#TODO add priority, multi quantity
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
   """ """
@@ -53,14 +54,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
     current_gold = first_row.gold
+    split_gold = current_gold / len(colors)
     for color in colors:
-      if getattr(first_row, f"num_{color}_potions") < 10:
-        for barrel in wholesale_catalog:
-          if barrel.potion_type == color_to_potion[color] and current_gold >= barrel.price:
-            buying_barrels.append({
-              "sku": barrel.sku,
-              "quantity": 1,
-            })
-            current_gold -= barrel.price
-            break
+      for barrel in wholesale_catalog:
+        if barrel.potion_type == color_to_potion[color] and split_gold >= barrel.price:
+          buying_barrels.append({
+            "sku": barrel.sku,
+            "quantity": split_gold // barrel.price,
+          })
+          break
   return buying_barrels
