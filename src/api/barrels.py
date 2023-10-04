@@ -63,7 +63,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         print("not buying, can't afford any barrels")
         return
 
-    print(f"purchasing {barrels_available} barrels at {small_barrels.price}")
+    print(f"purchasing {barrels_to_buy} barrels at {small_barrels.price}")
 
     return [
         {
