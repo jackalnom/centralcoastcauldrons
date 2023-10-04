@@ -28,23 +28,49 @@ def get_catalog():
         "green":55,
         "blue":60
     }
+    return_list = []
     # Get count of Red Potions
     print("Delivering Catalog...")
-    for color in colors_list:
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
-        for row in result:
-            quantity_potions = row[0]
-        return_list = []
-        if quantity_potions > 0:
-            print(f"Catalog contains {quantity_potions} {color} potions...")
-            return_list += [
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"SELECT sku,type_red,type_blue,type_green,cost,quantity FROM potion_inventory WHERE quantity > 0"))
+    for row in result:
+        sku = row[0]
+        red = row[1]
+        green = row[2]
+        blue = row[3]
+        cost = row[4]
+        quantity = row[5]
+        print(f"Catalog contains {quantity} {sku}...")
+        return_list += [
                 {
-                    "sku": f"{caps_dict[color]}_POTION_0",
-                    "name": f"{color} potion",
-                    "quantity": quantity_potions,
-                    "price": cost_dict[color],
-                    "potion_type": colors_dict[color],
+                    "sku": sku,
+                    "name": f"{sku} potion",
+                    "quantity": quantity,
+                    "price": cost,
+                    "potion_type": [red,green,blue,0],
                 }
             ]
+
+        if len(return_list) >= 20:
+            break
+
+    # Depreciated, single color support
+    # for color in colors_list:
+    #     with db.engine.begin() as connection:
+    #         result = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
+    #     for row in result:
+    #         quantity_potions = row[0]
+    #     return_list = []
+    #     if quantity_potions > 0:
+    #         print(f"Catalog contains {quantity_potions} {color} potions...")
+    #         return_list += [
+    #             {
+    #                 "sku": f"{caps_dict[color]}_POTION_0",
+    #                 "name": f"{color} potion",
+    #                 "quantity": quantity_potions,
+    #                 "price": cost_dict[color],
+    #                 "potion_type": colors_dict[],
+    #             }
+    #         ]
     return return_list

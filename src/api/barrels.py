@@ -26,7 +26,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     delivery_dict = {
         0: "red",
         1: "green",
-        2: "blue"
+        2: "blue",
+        3: "dark"
     }
     SKIP_COLOR_KEY = "SKIP"
     for indiv_barrel in barrels_delivered:
@@ -69,7 +70,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     purchasing_dict = {
         "SMALL_RED_BARREL": "red",
         "SMALL_GREEN_BARREL": "green",
-        "SMALL_BLUE_BARREL": "blue"
+        "SMALL_BLUE_BARREL": "blue",
+        "SMALL_DARK_BARREL": "dark"
     }
     SKIP_COLOR_KEY = "SKIP"
     for for_sale in wholesale_catalog:  # go through catalog
@@ -82,27 +84,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # check current inventory
         with db.engine.begin() as connection:
-            result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
-            result_potion = connection.execute(sqlalchemy.text(f"SELECT num_{color}_potions FROM global_inventory"))
-        
+            result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))        
         for row in result_gold:
             current_gold = row[0]
-        for row in result_potion:
-            current_potion = row[0]
         
-        # buy 1/3 of possible barrels
-        max_barrel = min((current_gold // for_sale.price) // 3, for_sale.quantity)
+        # buy 1/4 of possible barrels
+        max_barrel = min((current_gold // for_sale.price) // 4, for_sale.quantity)
         
-        # only buy if stock is below 10
-        if current_potion < 10:
-            print(f"Purchacing {max_barrel} small {color} barrels...")
-            purchase_plan += [
-                {
-                    "sku": f"{for_sale.sku}",
-                    "quantity": max_barrel,
-                }
-            ]
-        else:
-            continue
-    
+        print(f"Purchacing {max_barrel} small {color} barrels...")
+        purchase_plan += [
+            {
+                "sku": f"{for_sale.sku}",
+                "quantity": max_barrel,
+            }
+        ]
     return purchase_plan
