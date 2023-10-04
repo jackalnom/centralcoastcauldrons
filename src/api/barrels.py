@@ -22,25 +22,35 @@ class Barrel(BaseModel):
 @router.post("/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
-    ## Start new implimentation
+    # add entries as more barrels are desired
+    delivery_dict = {
+        0: "red",
+        1: "green",
+        2: "blue"
+    }
+    SKIP_COLOR_KEY = "SKIP"
     for indiv_barrel in barrels_delivered:
         ml_total_delivered=0
         cost_total=0
         current_gold=0
-        current_red_ml=0
-        if(indiv_barrel.potion_type == [1,0,0,0]):
+        current_ml=0
+        color = delivery_dict.get(indiv_barrel.potion_type.index(1), SKIP_COLOR_KEY)
+        if(color != "SKIP"):
             ml_total_delivered = indiv_barrel.quantity*indiv_barrel.ml_per_barrel
             cost_total = indiv_barrel.quantity*indiv_barrel.price
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-            for row in result:
-                current_red_ml = row[2] + ml_total_delivered
-                current_gold = row[3] - cost_total
-            print(f"Delivery taken of {ml_total_delivered}mL of red potion, at cost of {cost_total}.")
-            print(f"Current red potion stock is {current_red_ml}mL, current gold is {current_gold}")
+            with db.engine.begin() as connection:
+                result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+                result_ml = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
+            for row in result_gold:
+                current_gold = row[0] - cost_total
+            for row in result_ml:
+                current_ml = row[0] + ml_total_delivered
             
-            result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml = {current_red_ml}"))
-            result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = {current_gold}"))
+            print(f"Delivery taken of {ml_total_delivered}mL of {color} potion, at cost of {cost_total}.")
+            print(f"Current {color} potion stock is {current_ml}mL, current gold is {current_gold}")
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_ml = {current_ml}"))
+                result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold = {current_gold}"))
 
     ## end new implimentation 
     print(barrels_delivered)
