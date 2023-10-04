@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 import sqlalchemy
 from src import database as db
-from ..models.global_inventory import GlobalInventory
 from ..models.retail_inventory import RetailInventory
 
 
