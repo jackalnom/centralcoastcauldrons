@@ -20,11 +20,11 @@ def create_cart(new_cart: NewCart):
     print("Attempting to generate cart...")
     last_cartid = 0
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM carts"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM carts_old"))
         for row in result:
             last_cartid = max(row[0]+1, last_cartid)
         result = connection.execute(sqlalchemy.text(
-            f"INSERT INTO carts(cartid, customer_name) VALUES ({last_cartid}, '{new_cart.customer}')"
+            f"INSERT INTO carts_old(cartid, customer_name) VALUES ({last_cartid}, '{new_cart.customer}')"
             ))
     print(f"Cart Generated with ID: {last_cartid}")
     return {"cart_id": last_cartid}
@@ -44,7 +44,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(
-            f"UPDATE carts SET sku_item0='{item_sku}', quantity_item0={cart_item.quantity}, cost_item0=50 WHERE cartid={cart_id}"
+            f"UPDATE carts_old SET sku_item0='{item_sku}', quantity_item0={cart_item.quantity}, cost_item0=50 WHERE cartid={cart_id}"
              ))
     print(f"Added {cart_item.quantity} of {item_sku} to cart {cart_item}...")
     return "OK"
@@ -60,7 +60,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     unitcost = 0
     # get cart to checkout, assume all red potions
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT * FROM carts WHERE cartid={cart_id}"))
+        result = connection.execute(sqlalchemy.text(f"SELECT * FROM carts_old WHERE cartid={cart_id}"))
         for row in result:
             quantity = row[3]
             unitcost = row[4]
