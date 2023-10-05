@@ -51,9 +51,9 @@ def get_bottle_plan():
     num_bottles = {color: (total_num_bottles // len(colors)) - getattr(first_row, f"num_{color}_potions") for color in colors}
     current_colors = colors
     # loops until 300 in bottling_list or not enough ml for more
-    while total_num_bottles > len(current_colors) and len(current_colors) != 0:
+    while total_num_bottles > len(current_colors):
       # loops each color that still has ml
-      for color in current_colors:
+      for color in current_colors.copy():
         # gets possible bottles
         current_ml = getattr(first_row, f"num_{color}_ml")
         current_bottling = 0
@@ -75,11 +75,12 @@ def get_bottle_plan():
             updated = True
             break
         if updated:
-          break
-        bottling_list.append({
-              "potion_type": color_to_potion_ml[color],
-              "quantity": num_bottles[color],
-        })
+          continue
+        if num_bottles[color] != 0:
+          bottling_list.append({
+                "potion_type": color_to_potion_ml[color],
+                "quantity": num_bottles[color],
+          })
       # update split of bottles to fill whatever still possibly has ml
       num_bottles = {color: (total_num_bottles // len(colors)) for color in current_colors}
   return bottling_list
