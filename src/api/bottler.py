@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from ..colors import colors, color_to_potion_ml, potion_to_color
 
 router = APIRouter(
   prefix="/bottler",
@@ -15,13 +16,6 @@ class PotionInventory(BaseModel):
   potion_type: list[int]
   quantity: int
 
-colors = ["red", "green", "blue"]
-color_to_potion = {
-    "red": [100, 0, 0, 0],
-    "green": [0, 100, 0, 0],
-    "blue": [0, 0, 100, 0],
-}
-potion_to_color = {tuple(y): x for x, y in color_to_potion.items()}
 
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
@@ -56,7 +50,7 @@ def get_bottle_plan():
       current_ml = getattr(first_row, f"num_{color}_ml")
       if current_ml >= 100:
         bottling_list.append({
-          "potion_type": color_to_potion[color],
+          "potion_type": color_to_potion_ml[color],
           "quantity": current_ml // 100,
         })
   return bottling_list

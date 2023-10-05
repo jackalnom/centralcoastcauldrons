@@ -1,20 +1,9 @@
 from fastapi import APIRouter
 import sqlalchemy
 from src import database as db
+from ..colors import colors, color_to_potion_ml, color_to_price
 
 router = APIRouter()
-
-colors = ["red", "green", "blue"]
-color_to_potion = {
-    "red": [100, 0, 0, 0],
-    "green": [0, 100, 0, 0],
-    "blue": [0, 0, 100, 0],
-}
-color_to_price = {
-    "red": 75,
-    "green": 75,
-    "blue": 100,
-}
 
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
@@ -35,6 +24,6 @@ def get_catalog():
           "name": f"{color} potion",
           "quantity": current_potions if current_potions <= 10000 else 10000,
           "price": color_to_price[color],
-          "potion_type": color_to_potion[color],
+          "potion_type": color_to_potion_ml[color],
         })
   return catalog

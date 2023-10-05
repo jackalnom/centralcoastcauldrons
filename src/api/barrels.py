@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from ..colors import colors, color_to_potion, potion_to_color
 
 router = APIRouter(
   prefix="/barrels",
@@ -18,14 +19,6 @@ class Barrel(BaseModel):
   price: int
 
   quantity: int
-
-colors = ["red", "green", "blue"]
-color_to_potion = {
-    "red": [1, 0, 0, 0],
-    "green": [0, 1, 0, 0],
-    "blue": [0, 0, 1, 0],
-}
-potion_to_color = {tuple(y): x for x, y in color_to_potion.items()}
 
 @router.post("/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
@@ -67,14 +60,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
           break
     for barrel in wholesale_catalog:
       if current_gold >= barrel.price:
+        num_buying = current_gold // barrel.price
         for buying_barrel in buying_barrels:
           if buying_barrel["sku"] == barrel.sku:
-            if buying_barrel["quantity"] < barrel.quantity:
-              buying_barrel["quantity"] += 1
+            if buying_barrel["quantity"] + num_buying < barrel.quantity:
+              buying_barrel["quantity"] += num_buying
             return buying_barrels
         buying_barrels.append({
           "sku": barrel.sku,
-          "quantity": 1,
+          "quantity": num_buying if num_buying <= barrel.quantity else barrel.quantity,
         })
         break
   return buying_barrels
