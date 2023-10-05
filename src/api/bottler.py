@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-from ..colors import colors, color_to_potion_ml, potion_to_color
+from ..colors import colors, color_to_potion_ml, potion_ml_to_color
 
 router = APIRouter(
   prefix="/bottler",
@@ -25,7 +25,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
     for potion in potions_delivered:
-      color = potion_to_color[tuple(potion.potion_type)]
+      color = potion_ml_to_color[tuple(potion.potion_type)]
       current_potions = getattr(first_row, f"num_{color}_potions") + potion.quantity
       current_ml = getattr(first_row, f"num_{color}_ml") - 100 * potion.quantity
       connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_potions={current_potions}, num_{color}_ml={current_ml}"))

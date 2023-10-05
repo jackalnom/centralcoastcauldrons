@@ -13,6 +13,11 @@ color_to_potion = {
 }
 
 potion_to_color = {
+  (1, 0, 0, 0): "red",
+  (0, 1, 0, 0): "green",
+  (0, 0, 1, 0): "blue"}
+
+potion_ml_to_color = {
   (100, 0, 0, 0): "red",
   (0, 100, 0, 0): "green",
   (0, 0, 100, 0): "blue"}

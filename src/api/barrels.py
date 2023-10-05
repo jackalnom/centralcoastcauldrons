@@ -28,12 +28,13 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
     current_gold = first_row.gold
+    add_ml = {color: getattr(first_row, f"num_{color}_ml") for color in colors}
     for barrel in barrels_delivered:
       color = potion_to_color[tuple(barrel.potion_type)]
       current_gold -= barrel.price * barrel.quantity
-      current_ml = getattr(first_row, f"num_{color}_ml")
-      current_ml += barrel.ml_per_barrel * barrel.quantity
-      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold}, num_{color}_ml={current_ml}"))
+      add_ml[color] += barrel.ml_per_barrel * barrel.quantity
+    for color in colors:
+      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold}, num_{color}_ml={add_ml[color]}"))
   return "OK"
 
 # Gets called once a day
@@ -47,20 +48,24 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
     current_gold = first_row.gold
-    split_gold = current_gold / len(colors)
-    for color in colors:
-      for barrel in wholesale_catalog:
-        if barrel.potion_type == color_to_potion[color] and split_gold >= barrel.price:
-          num_buying = split_gold // barrel.price
-          buying_barrels.append({
-            "sku": barrel.sku,
-            "quantity": num_buying if num_buying <= barrel.quantity else barrel.quantity,
-          })
-          current_gold -= num_buying * barrel.price
-          break
+    while current_gold > 1000 and len(buying_barrels) != len(wholesale_catalog):
+      split_gold = current_gold / len(colors)
+      for color in colors:
+        for barrel in wholesale_catalog:
+          if barrel.potion_type == color_to_potion[color] and split_gold >= barrel.price and \
+              not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
+            num_buying = split_gold // barrel.price
+            num_buying = num_buying if num_buying <= barrel.quantity else barrel.quantity
+            buying_barrels.append({
+              "sku": barrel.sku,
+              "quantity": num_buying,
+            })
+            current_gold -= num_buying * barrel.price
+            break
     for barrel in wholesale_catalog:
       if current_gold >= barrel.price:
         num_buying = current_gold // barrel.price
+        num_buying = num_buying if num_buying <= barrel.quantity else barrel.quantity
         for buying_barrel in buying_barrels:
           if buying_barrel["sku"] == barrel.sku:
             if buying_barrel["quantity"] + num_buying < barrel.quantity:
@@ -68,7 +73,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             return buying_barrels
         buying_barrels.append({
           "sku": barrel.sku,
-          "quantity": num_buying if num_buying <= barrel.quantity else barrel.quantity,
+          "quantity": num_buying
         })
         break
   return buying_barrels
