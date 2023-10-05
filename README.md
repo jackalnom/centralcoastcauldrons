@@ -84,3 +84,8 @@ Once you've finished making your changes, go back to [Consortium of Concotions a
 
 With the release of this version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
 
+## Version 2 - Selling more than red potions
+
+In this second version of your shop, you need to also make and sell blue and green potions. You will need to come up with your own logic for when to buy red, green, or blue barrels. Your logic does not have to be particularly clever, you just have to make sure at some point your shop is successfully selling red, green, and blue potions. The implementation details from there are completely up to you.
+
+
