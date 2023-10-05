@@ -68,9 +68,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     purchase_plan = []
     # add entries as more barrels are desired
     purchasing_dict = {
-        "SMALL_RED_BARREL": "red",
-        "SMALL_GREEN_BARREL": "green",
-        "SMALL_BLUE_BARREL": "blue",
+        #"SMALL_RED_BARREL": "red",
+        #"SMALL_GREEN_BARREL": "green",
+        #"SMALL_BLUE_BARREL": "blue",
         "SMALL_DARK_BARREL": "dark"
     }
     SKIP_COLOR_KEY = "SKIP"
@@ -89,7 +89,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             current_gold = row[0]
         
         # buy 1/4 of possible barrels
-        max_barrel = min((current_gold // for_sale.price) // 4, for_sale.quantity)
+        max_barrel = min((current_gold // for_sale.price) // len(purchasing_dict), for_sale.quantity)
         
         print(f"Purchacing {max_barrel} small {color} barrels...")
         purchase_plan += [
