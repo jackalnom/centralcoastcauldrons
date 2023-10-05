@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
 from src.api import database as db
+from src.api import colors
 
 router = APIRouter(
     prefix="/bottler",
@@ -20,14 +21,15 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     for potion in potions_delivered:
+        color = colors.get_color_from_potion_type(potion.potion_type)
         # will be only red potions for now
         inventory = db.get_global_inventory()
-        cur_red_ml = inventory["num_red_ml"]
-        cur_red_potions = inventory["num_red_potions"]
-        new_red_ml = cur_red_ml - potion.quantity * 100
-        new_red_potions = cur_red_potions + potion.quantity
+        cur_ml = inventory[f"num_{color}_ml"]
+        cur_potions = inventory[f"num_f{color}_potions"]
+        new_ml = cur_ml - potion.quantity * 100
+        new_potions = cur_potions + potion.quantity
 
-        update_command = f"UPDATE global_inventory SET num_red_ml = {new_red_ml}, num_red_potions = {new_red_potions} WHERE id = 1"
+        update_command = f"UPDATE global_inventory SET num_{color}_ml = {new_ml}, num_{color}_potions = {new_potions} WHERE id = 1"
         db.execute(update_command)
     print(potions_delivered)
 
@@ -47,15 +49,18 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
     inventory = db.get_global_inventory()
-    red_ml = inventory["num_red_ml"]
-    potions_to_brew = red_ml // 100
-    if potions_to_brew <= 0:
-        print("can't brew any potions")
-        return
+    ans = []
+    for color in colors.colors:
+        ml = inventory[f"num_{color}_ml"]
+        potions_to_brew = ml // 100
+        if potions_to_brew <= 0:
+            print(f"can't brew any {color} potions")
+            continue
+        ans.append(
+            {
+                "potion_type": colors.get_base_potion_type(color),
+                "quantity": potions_to_brew,
+            }
+        )
 
-    return [
-        {
-            "potion_type": [100, 0, 0, 0],
-            "quantity": potions_to_brew,
-        }
-    ]
+    return ans

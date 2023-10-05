@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
 from src.api import database as db
+from src.api import colors as colorUtils
 
 router = APIRouter(
     prefix="/admin",
@@ -16,7 +17,11 @@ def reset():
     Reset the game state. Gold goes to 100, all potions are removed from
     inventory, and all barrels are removed from inventory. Carts are all reset.
     """
-    update_command = "UPDATE global_inventory SET num_red_potions = 0, num_red_ml = 0, gold = 100 WHERE id = 1"
+    colors = colorUtils.colors
+    update_command = "UPDATE global_inventory SET"
+    for color in colors:
+        update_command += f" SET num_{color}_potions = 0, num_{color}_ml = 0"
+    update_command += "SET gold = 100"
     db.execute(update_command)
     return "OK"
 

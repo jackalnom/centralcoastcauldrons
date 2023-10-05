@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src.api import database as db
+from src.api import colors
 
 router = APIRouter(
     prefix="/audit",
@@ -16,9 +17,15 @@ def get_inventory():
     """ """
 
     inventory = db.get_global_inventory()
+    number_of_potions = 0
+    ml_in_barrels = 0
+    for color in colors.colors:
+        number_of_potions += inventory[f"num_{color}_potions"]
+        ml_in_barrels += inventory[f"num_{color}_ml"]
+
     return {
-        "number_of_potions": inventory["num_red_potions"],
-        "ml_in_barrels": inventory["num_red_ml"],
+        "number_of_potions": number_of_potions,
+        "ml_in_barrels": ml_in_barrels,
         "gold": inventory["gold"],
     }
 

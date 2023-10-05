@@ -58,32 +58,43 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     logger.info("checkout")
-    cart = carts[cart_id]
-    # only one thing will be in the cart for now
-    RED_SKU = "RED_POTION_0"
-    red_quantity = cart[RED_SKU]
+
     POTION_PRICE = 50
     TABLE_NAME = "global_inventory"
+    cart = carts[cart_id]
+    inventory = db.get_global_inventory()
 
-    current_inventory = db.get_global_inventory()
-    red_potions_count = current_inventory["num_red_potions"]
-    gold_count = current_inventory["gold"]
+    gold_count = inventory["gold"]
+    potions_bought = 0
+    gold_paid = 0
+    for sku, quantity in cart.items():
+        color = sku.split("_")[0].lower()
 
-    if red_quantity > red_potions_count:
-        print(
-            f"ordered {red_quantity} red potions but we only have {red_potions_count} in stock"
+        potion_count = inventory[f"num_f{color}_potions"]
+
+        if quantity > potion_count:
+            print(
+                f"ordered {quantity} {color} potions but we only have {potion_count} in stock"
+            )
+            continue
+
+        revenue = POTION_PRICE * quantity
+        gold_count += revenue
+        potion_count -= quantity
+
+        # logic to update database
+        update_command = (
+            f"UPDATE {TABLE_NAME} SET num_{color}_potions = {potion_count} WHERE id = 1"
         )
-        return {"success": False}
+        db.execute(update_command)
 
-    gold_count += POTION_PRICE * red_quantity
-    red_potions_count -= red_quantity
+        gold_paid += revenue
+        potions_bought += quantity
 
-    # logic to update database
-    update_command = f"UPDATE {TABLE_NAME} SET num_red_potions = {red_potions_count}, gold = {gold_count} WHERE id = 1"
-    db.execute(update_command)
+    update_command = f"UPDATE {TABLE_NAME} SET gold = {gold_count} WHERE id = 1"
     del carts[cart_id]
 
     return {
-        "total_potions_bought": red_quantity,
-        "total_gold_paid": POTION_PRICE * red_quantity,
+        "total_potions_bought": potions_bought,
+        "total_gold_paid": POTION_PRICE * gold_paid,
     }
