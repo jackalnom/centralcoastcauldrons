@@ -49,6 +49,9 @@ def get_bottle_plan():
     inventory = db.get_global_inventory()
     red_ml = inventory["num_red_ml"]
     potions_to_brew = red_ml // 100
+    if potions_to_brew <= 0:
+        print("can't brew any potions")
+        return
 
     return [
         {

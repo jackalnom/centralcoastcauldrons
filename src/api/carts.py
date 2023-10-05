@@ -41,10 +41,13 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    logger.info("pot cart_id/items/itemSKU")
-    cart = carts[cart_id]
-    cart[item_sku] = cart.get(item_sku, 0) + cart_item.quantity
-    return "OK"
+    try:
+        cart = carts[cart_id]
+        cart[item_sku] = cart_item.quantity
+        return {"success": True}
+    except Exception as error:
+        print(error)
+        return {"success": False}
 
 
 class CartCheckout(BaseModel):
@@ -67,18 +70,19 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     gold_count = current_inventory["gold"]
 
     if red_quantity > red_potions_count:
-        return {
-            "error": f"ordered {red_quantity} red potions but we only have {red_potions_count} in stock"
-        }
+        print(
+            f"ordered {red_quantity} red potions but we only have {red_potions_count} in stock"
+        )
+        return {"success": False}
 
     gold_count += POTION_PRICE * red_quantity
     red_potions_count -= red_quantity
 
+    # logic to update database
     update_command = f"UPDATE {TABLE_NAME} SET num_red_potions = {red_potions_count}, gold = {gold_count} WHERE id = 1"
     db.execute(update_command)
-
-    # logic to update database
     del carts[cart_id]
+
     return {
         "total_potions_bought": red_quantity,
         "total_gold_paid": POTION_PRICE * red_quantity,
