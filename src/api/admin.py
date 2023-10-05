@@ -18,7 +18,7 @@ def reset():
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"DELETE FROM global_inventory"))
-        result = connection.execute(sqlalchemy.text(f"INSERT INTO global_inventory"))
+        result = connection.execute(sqlalchemy.text(f"INSERT INTO global_inventory DEFAULT VALUES"))
         result = connection.execute(sqlalchemy.text(f"DELETE FROM potion_inventory"))
     return "OK"
 
