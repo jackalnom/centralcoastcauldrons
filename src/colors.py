@@ -1,9 +1,15 @@
 colors = ["red", "green", "blue"]
 
-color_to_potion = {
+color_to_potion_ml = {
   "red": [100, 0, 0, 0],
   "green": [0, 100, 0, 0],
   "blue": [0, 0, 100, 0],
+}
+
+color_to_potion = {
+  "red": [1, 0, 0, 0],
+  "green": [0, 1, 0, 0],
+  "blue": [0, 0, 1, 0],
 }
 
 potion_to_color = {
