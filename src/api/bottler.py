@@ -46,11 +46,40 @@ def get_bottle_plan():
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
-    for color in colors:
-      current_ml = getattr(first_row, f"num_{color}_ml")
-      if current_ml >= 100:
+    total_num_bottles = 300
+    # splits total_num_bottles to even amounts, tries to even out each color
+    num_bottles = {color: (total_num_bottles // len(colors)) - getattr(first_row, f"num_{color}_potions") for color in colors}
+    current_colors = colors
+    # loops until 300 in bottling_list or not enough ml for more
+    while total_num_bottles > len(current_colors) and len(current_colors) != 0:
+      # loops each color that still has ml
+      for color in current_colors:
+        # gets possible bottles
+        current_ml = getattr(first_row, f"num_{color}_ml")
+        current_bottling = 0
+        for bottling in bottling_list:
+          if bottling["potion_type"] == color_to_potion_ml[color]:
+            current_bottling = bottling["quantity"]
+        possible_num_bottle = current_ml // 100 - current_bottling
+        # if less possible than split, set num_bottles to max possible
+        if possible_num_bottle < num_bottles[color]:
+          num_bottles[color] = possible_num_bottle
+          current_colors.remove(color)
+        total_num_bottles -= num_bottles[color]
+      # update bottling_list
+      for color in num_bottles.keys():
+        updated = False
+        for bottling in bottling_list:
+          if bottling["potion_type"] == color_to_potion_ml[color]:
+            bottling["quantity"] += num_bottles[color]
+            updated = True
+            break
+        if updated:
+          break
         bottling_list.append({
-          "potion_type": color_to_potion_ml[color],
-          "quantity": current_ml // 100,
+              "potion_type": color_to_potion_ml[color],
+              "quantity": num_bottles[color],
         })
+      # update split of bottles to fill whatever still possibly has ml
+      num_bottles = {color: (total_num_bottles // len(colors)) for color in current_colors}
   return bottling_list

@@ -33,8 +33,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
       color = potion_to_color[tuple(barrel.potion_type)]
       current_gold -= barrel.price * barrel.quantity
       add_ml[color] += barrel.ml_per_barrel * barrel.quantity
+    connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold}"))
     for color in colors:
-      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold}, num_{color}_ml={add_ml[color]}"))
+      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_ml={add_ml[color]}"))
   return "OK"
 
 # Gets called once a day
