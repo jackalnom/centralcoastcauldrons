@@ -43,7 +43,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             else:
                 # sku alrd exists
                 result_current_count = connection.execute(sqlalchemy.text(f"SELECT quantity FROM potion_inventory WHERE sku = '{sku}'"))
-                current_count = result_current_count[0][0] 
+                for row in result_current_count:
+                    current_count = row[0] 
                 result = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity = {count + current_count} WHERE sku = '{sku}'"))
             
         print(f"Sucessfully delivered {count} of SKU:{sku}. New total is {current_count + count}")
@@ -79,7 +80,7 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
     response = []
-    colors_list = ["red", "green", "blue"]
+    colors_list = ["red", "green", "blue", "dark"]
     potion_type_dict = {
         "red":[100,0,0,0],
         "green":[0,100,0,0],
@@ -94,9 +95,11 @@ def get_bottle_plan():
             current_ml = row[0]
         max_bottles = current_ml // 100
         print(f"Plan produces {max_bottles} {color} potions...")
-        response += [
-                {
-                    "potion_type": potion_type_dict[color],
-                    "quantity": max_bottles,
-                }
-            ]
+        if (max_bottles > 0):
+            response += [
+                    {
+                        "potion_type": potion_type_dict[color],
+                        "quantity": max_bottles,
+                    }
+                ]
+    return response
