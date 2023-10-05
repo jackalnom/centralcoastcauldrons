@@ -86,4 +86,8 @@ def get_bottle_plan():
           })
       # update split of bottles to fill whatever still possibly has ml
       num_bottles = {color: (total_num_bottles // len(colors)) for color in current_colors}
+  # remove any quantity = 0
+  for bottling in bottling_list:
+    if bottling["quantity"] == 0:
+      bottling_list.remove(bottling)
   return bottling_list
