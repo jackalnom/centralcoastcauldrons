@@ -54,7 +54,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for barrel in wholesale_catalog:
           if barrel.potion_type == color_to_potion[color] and split_gold >= barrel.price and \
               not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
-            num_buying = split_gold // barrel.price
+            num_buying = int(split_gold // barrel.price)
             num_buying = num_buying if num_buying <= barrel.quantity else barrel.quantity
             buying_barrels.append({
               "sku": barrel.sku,
