@@ -46,12 +46,15 @@ def get_bottle_plan():
   with db.engine.begin() as connection:
     result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     first_row = result.first()
+    # 300 max total bottles
     total_num_bottles = 300
+    for color in colors:
+      total_num_bottles -= getattr(first_row, f"num_{color}_potions")
     # splits total_num_bottles to even amounts, tries to even out each color
     num_bottles = {color: (total_num_bottles // len(colors)) - getattr(first_row, f"num_{color}_potions") for color in colors}
-    current_colors = colors
+    current_colors = colors.copy()
     # loops until 300 in bottling_list or not enough ml for more
-    while total_num_bottles > len(current_colors):
+    while total_num_bottles > len(current_colors) and len(current_colors) != 0:
       # loops each color that still has ml
       for color in current_colors.copy():
         # gets possible bottles
