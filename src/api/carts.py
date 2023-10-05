@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from ..colors import color_to_price
 
 router = APIRouter(
   prefix="/carts",
@@ -47,6 +48,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 class CartCheckout(BaseModel):
   payment: str
 
+
 #TODO fix concurrency, add different prices
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
@@ -62,7 +64,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     current_potions = getattr(first_row, f"num_{color}_potions")
     if current_potions != 0:
       num_bought = carts[cart_id]["quantity"] if carts[cart_id]["quantity"] <= current_potions else current_potions
-      gold_received = num_bought * 50
+      gold_received = num_bought * color_to_price[color]
       current_potions -= num_bought
       current_gold += gold_received
       connection.execute(sqlalchemy.text(f"UPDATE global_inventory \

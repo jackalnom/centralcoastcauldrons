@@ -57,6 +57,6 @@ def get_bottle_plan():
       if current_ml >= 100:
         bottling_list.append({
           "potion_type": color_to_potion[color],
-          "quantity": current_ml//100,
+          "quantity": current_ml // 100,
         })
   return bottling_list

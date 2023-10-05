@@ -10,6 +10,11 @@ color_to_potion = {
     "green": [0, 100, 0, 0],
     "blue": [0, 0, 100, 0],
 }
+color_to_price = {
+    "red": 75,
+    "green": 75,
+    "blue": 100,
+}
 
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
@@ -29,7 +34,7 @@ def get_catalog():
           "sku": f"{color.upper()}_POTION_0",
           "name": f"{color} potion",
           "quantity": current_potions if current_potions <= 10000 else 10000,
-          "price": 50,
+          "price": color_to_price[color],
           "potion_type": color_to_potion[color],
         })
   return catalog
