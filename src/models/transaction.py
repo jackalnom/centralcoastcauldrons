@@ -26,4 +26,23 @@ class Transaction:
       else:
         current_balance = row[1]
     return current_balance
+
+
+  @staticmethod
+  def create(transaction_entity_id: int | None, adjustment: int, description: str ):
+    try:
+      current_balance = Transaction.get_current_balance()
+      new_balance = current_balance + adjustment
+      sql_to_execute = text(f"INSERT INTO {Transaction.table_name} (starting_balance, ending_balance, transaction_entity_id, description) VALUES (:starting_balance, :ending_balance, :transaction_entity_id, :description)")
+      with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {"starting_balance": current_balance, "ending_balance": new_balance, "transaction_entity_id": transaction_entity_id, "description": description})
+      return "OK"
+    except Exception as error:
+      print("unable to create transaction: ", error)
+      return "ERROR"
     
+
+
+
+      
+

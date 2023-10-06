@@ -30,6 +30,18 @@ class RetailInventory:
     return inventory
 
 
+  @staticmethod
+  def get_total_potions():
+    try:
+      inventory = RetailInventory.get_inventory()
+      total_potions = 0
+      for item in inventory:
+        total_potions += item.quantity
+      return total_potions
+    except Exception as error:
+      print("unable to get total potions: ", error)
+      return "ERROR"
+
   def convert_to_catalog_item(self):
     return {
       "sku": self.sku,

@@ -16,7 +16,7 @@ router = APIRouter(
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print("barrels/deliver: barrels_delivered -> ", barrels_delivered)
-    return GlobalInventory.get_singleton().accept_barrels_delivery(barrels_delivered)
+    return WholesaleInventory.accept_barrels_delivery(barrels_delivered)
 
 
 # Gets called once a day

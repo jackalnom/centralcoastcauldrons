@@ -9,11 +9,9 @@ from sqlalchemy.sql import text
 
 class Barrel(BaseModel):
     sku: str
-
     ml_per_barrel: int
     potion_type: list[int]
     price: int
-
     quantity: int
 
 class PotionInventory(BaseModel):

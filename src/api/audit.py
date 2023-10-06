@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from src.api import auth
+from ..models.wholesale_inventory import WholesaleInventory
 import math
 from ..models.global_inventory import GlobalInventory, PotionInventory
 
@@ -14,7 +15,7 @@ router = APIRouter(
 def get_inventory():
     #TODO: implement get_inventory
     """ """
-    inventory = GlobalInventory.get_singleton().get_inventory()
+    inventory = WholesaleInventory.get_inventory()
     return inventory 
 
 class Result(BaseModel):
