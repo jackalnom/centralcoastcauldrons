@@ -23,7 +23,7 @@ potion_ml_to_color = {
   (0, 0, 100, 0): "blue"}
 
 color_to_price = {
-  "red": 100,
-  "green": 100,
-  "blue": 125,
+  "red": 150,
+  "green": 150,
+  "blue": 200,
 }
