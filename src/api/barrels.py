@@ -24,14 +24,18 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     print(barrels_delivered)
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
+            num_red_potions, num_red_ml, gold = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
+
             if barrel.sku == "SMALL_RED_BARREL":
+
                 num_red_potions += barrel.quantity
                 num_red_ml += barrel.quantity * barrel.ml_per_barrel
                 gold -= barrel.quantity * barrel.price
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = :num_red_potions, num_red_ml = :num_red_ml, gold = :gold"), num_red_potions=num_red_potions, num_red_ml=num_red_ml, gold=gold)
+
             else:
                 return "INVALID SKU"
             
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = :num_red_potions, num_red_ml = :num_red_ml, gold = :gold"), num_red_potions=num_red_potions, num_red_ml=num_red_ml, gold=gold)
 
     return "OK"
 
