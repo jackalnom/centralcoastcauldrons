@@ -79,24 +79,25 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         color = purchasing_dict.get(for_sale.sku, SKIP_COLOR_KEY)
         if color == SKIP_COLOR_KEY:
             # skip if not small barrel
-            break
-        print(f"Checking {for_sale.sku}...")
+            print(f"Not interested in {for_sale.sku}")
+        else:
+            print(f"Checking {for_sale.sku}...")
 
-        # check current inventory
-        with db.engine.begin() as connection:
-            result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))        
-        for row in result_gold:
-            current_gold = row[0]
-        
-        # buy 1/4 of possible barrels
-        max_barrel = min((current_gold // for_sale.price) // len(purchasing_dict), for_sale.quantity)
-        
-        print(f"Purchacing {max_barrel} small {color} barrels...")
-        if max_barrel != 0:
-            purchase_plan += [
-                {
-                    "sku": f"{for_sale.sku}",
-                    "quantity": max_barrel,
-                }
-            ]
+            # check current inventory
+            with db.engine.begin() as connection:
+                result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))        
+            for row in result_gold:
+                current_gold = row[0]
+            
+            # buy 1/4 of possible barrels
+            max_barrel = min((current_gold // for_sale.price) // len(purchasing_dict), for_sale.quantity)
+            
+            print(f"Purchacing {max_barrel} small {color} barrels...")
+            if max_barrel != 0:
+                purchase_plan += [
+                    {
+                        "sku": f"{for_sale.sku}",
+                        "quantity": max_barrel,
+                    }
+                ]
     return purchase_plan
