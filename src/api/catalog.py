@@ -16,7 +16,8 @@ def get_catalog():
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         red_potion_no, num_red_ml, gold= result.fetchone()
-
+        if red_potion_no == 0:
+            return []
         return [
                 {
                     "sku": "RED_POTION_0",
