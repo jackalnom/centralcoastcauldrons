@@ -92,10 +92,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         max_barrel = min((current_gold // for_sale.price) // len(purchasing_dict), for_sale.quantity)
         
         print(f"Purchacing {max_barrel} small {color} barrels...")
-        purchase_plan += [
-            {
-                "sku": f"{for_sale.sku}",
-                "quantity": max_barrel,
-            }
-        ]
+        if max_barrel != 0:
+            purchase_plan += [
+                {
+                    "sku": f"{for_sale.sku}",
+                    "quantity": max_barrel,
+                }
+            ]
     return purchase_plan
