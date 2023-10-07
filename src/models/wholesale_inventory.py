@@ -77,15 +77,15 @@ class WholesaleInventory:
   @staticmethod
   def accept_barrels_delivery (barrels_delivered: list[Barrel]):
     try:
-      for barrel in barrels_delivered:
-        if (barrel.price * barrel.quantity > Transaction.get_current_balance()):
-          print("not enough gold to pay for delivery")
-          return "ERROR"
-        response = WholesaleInventory.add_to_inventory(barrel)
-        if (response == "ERROR"):
-          return "ERROR"
-        delta = barrel.quantity * barrel.price * -1
-        with lock:
+      with lock:
+        for barrel in barrels_delivered:
+          if (barrel.price * barrel.quantity > Transaction.get_current_balance()):
+              print("not enough gold to pay for delivery")
+              return "ERROR"
+          response = WholesaleInventory.add_to_inventory(barrel)
+          if (response == "ERROR"):
+            return "ERROR"
+          delta = barrel.quantity * barrel.price * -1
           Transaction.create(None, delta, f'payment of {delta} for delivery of {barrel.quantity} {barrel.sku} barrels of type {barrel.potion_type}') #flush this out
 
       return "OK"
@@ -95,6 +95,7 @@ class WholesaleInventory:
     
   def add_to_inventory(barrel: Barrel):
     #FIXME: figure out how the fuck to do error handling in python, this thing swallows hella errors
+    #FIXME: sku means nothing here, its really most recent sku, should prob be generating sku from type
     try:
       sql_to_execute = text(f"SELECT * FROM {WholesaleInventory.table_name} WHERE sku = :sku")
       with db.engine.begin() as connection:

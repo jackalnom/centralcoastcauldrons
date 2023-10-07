@@ -2,10 +2,12 @@ from src import database as db
 from sqlalchemy.sql import text
 from typing import List
 from .global_inventory import PotionInventory
+import json
 
 
 class RetailInventory:
   table_name = "retail_inventory"
+  potion_price = 60 
   def __init__(self, id, sku, name, type, quantity, price):
     self.id = id
     self.sku = sku
@@ -18,14 +20,15 @@ class RetailInventory:
   @staticmethod
   def get_inventory():
     #get all the rows from the catalog table and return them as an array of objects
-    sql_to_execute = text(f"SELECT id, sku, name, type, quantity, price FROM retail_inventory limit 1")
+    sql_to_execute = text(f"SELECT id, sku, name, type, quantity, price FROM retail_inventory")
 
     inventory: List[RetailInventory]= []
     with db.engine.begin() as connection:
       result = connection.execute(sql_to_execute)
       rows = result.fetchall()
       for row in rows:
-        inventory.append(RetailInventory(row[0], row[2], row[3], row[4], row[5], row[6]))
+        inventory.append(RetailInventory(row[0], row[1], row[2], row[3], row[4], row[5]))
+    print("inventory: ", inventory)
     return inventory
 
 
@@ -68,16 +71,17 @@ class RetailInventory:
       for potion in potions_delivered:
         sql_to_execute = text(f"SELECT id, sku, name, type, quantity, price FROM {RetailInventory.table_name} WHERE type = :type")
         with db.engine.begin() as connection:
-          result = connection.execute(sql_to_execute, {"type": potion.potion_type})
+          result = connection.execute(sql_to_execute, {"type": json.dumps(potion.potion_type)})
           row = result.fetchone()
           if row is None:
+            potion_sku = ",".join(str(x) for x in potion.potion_type)
             sql_to_execute = text(f"INSERT INTO {RetailInventory.table_name} (sku, name, type, quantity, price) VALUES (:sku, :name, :type, :quantity, :price)")
             with db.engine.begin() as connection:
-              connection.execute(sql_to_execute, {"sku": potion.sku, "name": potion.name, "type": potion.potion_type, "quantity": potion.quantity, "price": potion.price})
+              connection.execute(sql_to_execute, {"sku": potion_sku, "name": potion_sku, "type": json.dumps(potion.potion_type), "quantity": potion.quantity, "price": RetailInventory.potion_price})
           else:
             sql_to_execute = text(f"UPDATE {RetailInventory.table_name} SET quantity = quantity + :quantity WHERE type = :type")
             with db.engine.begin() as connection:
-              connection.execute(sql_to_execute, {"quantity": potion.quantity, "type": potion.potion_type})
+              connection.execute(sql_to_execute, {"quantity": potion.quantity, "type": json.dumps(potion.potion_type)})
       return "OK"
     except Exception as error:
         print("unable to accept potion delivery things may be out of sync due to no roleback: ", error)

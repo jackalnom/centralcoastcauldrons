@@ -15,7 +15,7 @@ class Transaction:
   def get_current_balance():
     current_balance = 0
     #get the most recent transaction and extract the ending balance, if there are no transactions then create the first transaction that is zeroed out
-    sql_to_execute = text(f"SELECT id, starting_balance, ending_balance FROM {Transaction.table_name} ORDER BY created_at ASC LIMIT 1")
+    sql_to_execute = text(f"SELECT id, ending_balance FROM {Transaction.table_name} ORDER BY created_at LIMIT 1")
     with db.engine.begin() as connection:
       result = connection.execute(sql_to_execute)
       row = result.fetchone()
@@ -25,6 +25,7 @@ class Transaction:
         current_balance = 200
       else:
         current_balance = row[1]
+        print("id", row[0])
     return current_balance
 
 
