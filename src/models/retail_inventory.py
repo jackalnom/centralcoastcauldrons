@@ -1,32 +1,31 @@
 from src import database as db
 from sqlalchemy.sql import text
 from typing import List
+from .global_inventory import PotionInventory
 
 
 class RetailInventory:
   table_name = "retail_inventory"
-  def __init__(self, id, sku, name, type, quantity, recipe, price):
+  def __init__(self, id, sku, name, type, quantity, price):
     self.id = id
     self.sku = sku
     self.type = type
     self.quantity = quantity
-    self.recipe = recipe
     self.price = price
     self.name = name
 
 
   @staticmethod
   def get_inventory():
-    # (id, sku, name, type, quantity, recipe, price)
     #get all the rows from the catalog table and return them as an array of objects
-    sql_to_execute = text(f"SELECT id, sku, name, type, quantity, recipe, price FROM retail_inventory limit 1")
+    sql_to_execute = text(f"SELECT id, sku, name, type, quantity, price FROM retail_inventory limit 1")
 
     inventory: List[RetailInventory]= []
     with db.engine.begin() as connection:
       result = connection.execute(sql_to_execute)
       rows = result.fetchall()
       for row in rows:
-        inventory.append(RetailInventory(row[0], row[2], row[3], row[3], row[4], row[5], row[6]))
+        inventory.append(RetailInventory(row[0], row[2], row[3], row[4], row[5], row[6]))
     return inventory
 
 
@@ -60,6 +59,35 @@ class RetailInventory:
     except Exception as error:
         print("unable to reset retail inventory: ", error)
         return "ERROR"
+  
+  
+  @staticmethod
+  def accept_potions_delivery(potions_delivered: list[PotionInventory]):
+    try:
+      #check to see if there already exists an entry in the retailinventory with the same type as the potion delivered, if so then update the quantity, if not then create a new entry
+      for potion in potions_delivered:
+        sql_to_execute = text(f"SELECT id, sku, name, type, quantity, price FROM {RetailInventory.table_name} WHERE type = :type")
+        with db.engine.begin() as connection:
+          result = connection.execute(sql_to_execute, {"type": potion.potion_type})
+          row = result.fetchone()
+          if row is None:
+            sql_to_execute = text(f"INSERT INTO {RetailInventory.table_name} (sku, name, type, quantity, price) VALUES (:sku, :name, :type, :quantity, :price)")
+            with db.engine.begin() as connection:
+              connection.execute(sql_to_execute, {"sku": potion.sku, "name": potion.name, "type": potion.potion_type, "quantity": potion.quantity, "price": potion.price})
+          else:
+            sql_to_execute = text(f"UPDATE {RetailInventory.table_name} SET quantity = quantity + :quantity WHERE type = :type")
+            with db.engine.begin() as connection:
+              connection.execute(sql_to_execute, {"quantity": potion.quantity, "type": potion.potion_type})
+      return "OK"
+    except Exception as error:
+        print("unable to accept potion delivery things may be out of sync due to no roleback: ", error)
+        return "ERROR"
+
+
+
+
+    
+
   
 
   

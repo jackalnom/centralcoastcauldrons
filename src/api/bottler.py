@@ -3,6 +3,8 @@ from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
 from ..models.global_inventory import GlobalInventory, PotionInventory
+from ..models.retail_inventory import RetailInventory
+from ..models.wholesale_inventory import WholesaleInventory
 # from ..models.global_inventory import PotionInventory
 
 router = APIRouter(
@@ -17,7 +19,7 @@ router = APIRouter(
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print("deliver/potions: potions delivered -> ", potions_delivered)
-    return GlobalInventory.get_singleton().accept_potions_delivery(potions_delivered)
+    return RetailInventory.accept_potions_delivery(potions_delivered)
 
 # Gets called 4 times a day
 @router.post("/plan")
@@ -31,6 +33,6 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     # Initial logic: bottle all barrels into red potions.
-    bottlerPlan = GlobalInventory.get_singleton().get_bottler_plan()
+    bottlerPlan = WholesaleInventory.get_bottler_plan()
 
     return bottlerPlan

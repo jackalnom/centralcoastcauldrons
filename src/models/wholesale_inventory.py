@@ -3,6 +3,7 @@ from .transaction import Transaction
 from .retail_inventory import RetailInventory
 from sqlalchemy.sql import text
 from src import database as db
+import math
 
 
 class WholesaleInventory:
@@ -14,30 +15,61 @@ class WholesaleInventory:
     self.type = type
     self.num_ml = num_ml
 
-  
-    
+
+  @staticmethod
+  def get_bottler_plan():
+    try:
+      sql_to_execute = text(f"SELECT id, sku, type, num_ml FROM {WholesaleInventory.table_name}")
+      with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute)
+        rows = result.fetchall()
+        bottler_plan = []
+        for row in rows:
+          if(row[3] >= 100):
+            max_potions = math.floor(row[3] / 100)
+            adjusted_potion_type = [x*100 for x in row[2]]
+            bottler_plan.append({
+             "potion_type": adjusted_potion_type,
+             "quantity": max_potions 
+            }) 
+        return bottler_plan
+    except Exception as error:
+        print("unable to get bottler plan: ", error)
+        return "ERROR"
+
   @staticmethod
   def get_wholesale_plan(wholesale_catalog: list[Barrel]):
     #TODO: update this to the following strategy:
     # 1. If there is a barel type that i don't have at least 50ml, and i have enough gold to buy it, then buy it.
-    
-    if(len(wholesale_catalog) == 0):
-        return []
-        
-    buy_one_barrel = False
-    
+    wholesale_plan = []
+    available_balance = Transaction.get_current_balance()
     for catalog_item in wholesale_catalog:
-        if (catalog_item.sku == GlobalInventory.red_potion_barrel_sku and catalog_item.quantity > 0 and Transaction.get_current_balance() >= catalog_item.price):
-            buy_one_barrel = True
-            break
+      potion_stock = WholesaleInventory.get_stock(catalog_item.potion_type)
+      if (potion_stock < 100 and catalog_item.price < available_balance):
+        available_balance -= catalog_item.price
+        wholesale_plan.append({
+          "sku": catalog_item.sku,
+          "quantity": 1
+        })
+    return wholesale_plan
 
-    if(buy_one_barrel):
-          return [{
-            "sku": GlobalInventory.red_potion_barrel_sku,
-            "quantity": 1,
-          }]
-    else:
-        return []
+    
+    
+  @staticmethod
+  def get_stock(potion_type: list[int]):
+    try:
+      sql_to_execute = text(f"SELECT num_ml FROM {WholesaleInventory.table_name} WHERE type = :type")
+      with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {"type": potion_type})
+        rows = result.fetchall()
+        total_ml = 0
+        for row in rows:
+          total_ml += row[0]
+        return total_ml
+    except Exception as error:
+        print("unable to get potion stock: ", error)
+        return "ERROR"
+    
 
 
   @staticmethod
