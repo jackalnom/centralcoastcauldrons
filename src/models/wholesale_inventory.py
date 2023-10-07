@@ -4,7 +4,10 @@ from .retail_inventory import RetailInventory
 from sqlalchemy.sql import text
 from src import database as db
 import math
+from threading import Lock
+from timeout_decorator import timeout
 
+lock = Lock()
 
 class WholesaleInventory:
   #TODO: update this template code
@@ -14,7 +17,6 @@ class WholesaleInventory:
     self.sku = sku
     self.type = type
     self.num_ml = num_ml
-
 
   @staticmethod
   def get_bottler_plan():
@@ -43,18 +45,20 @@ class WholesaleInventory:
     # 1. If there is a barel type that i don't have at least 50ml, and i have enough gold to buy it, then buy it.
     wholesale_plan = []
     available_balance = Transaction.get_current_balance()
+    current_wholesale_materials = {}
     for catalog_item in wholesale_catalog:
+      hashable_potion_type = ",".join(map(str, catalog_item.potion_type))
       potion_stock = WholesaleInventory.get_stock(catalog_item.potion_type)
-      if (potion_stock < 100 and catalog_item.price < available_balance):
+      current_wholesale_materials[hashable_potion_type] = potion_stock
+      if (current_wholesale_materials[hashable_potion_type] < 100 and catalog_item.price <= available_balance ):
         available_balance -= catalog_item.price
+        current_wholesale_materials[hashable_potion_type] = catalog_item.ml_per_barrel
         wholesale_plan.append({
           "sku": catalog_item.sku,
           "quantity": 1
         })
     return wholesale_plan
 
-    
-    
   @staticmethod
   def get_stock(potion_type: list[int]):
     try:
@@ -70,21 +74,20 @@ class WholesaleInventory:
         print("unable to get potion stock: ", error)
         return "ERROR"
     
-
-
   @staticmethod
   def accept_barrels_delivery (barrels_delivered: list[Barrel]):
     try:
       for barrel in barrels_delivered:
-        #TODO: Implement rollback so it cant just do one of the following 
         if (barrel.price * barrel.quantity > Transaction.get_current_balance()):
           print("not enough gold to pay for delivery")
           return "ERROR"
         response = WholesaleInventory.add_to_inventory(barrel)
         if (response == "ERROR"):
           return "ERROR"
-        Transaction.create(None, barrel.price * barrel.quantity * -1, f'payment for delivery of {barrel.quantity} {barrel.sku} barrels of type {barrel.potion_type}') #flush this out
-  
+        delta = barrel.quantity * barrel.price * -1
+        with lock:
+          Transaction.create(None, delta, f'payment of {delta} for delivery of {barrel.quantity} {barrel.sku} barrels of type {barrel.potion_type}') #flush this out
+
       return "OK"
     except Exception as error:
         print("unable to accept barrel delivery things may be out of sync due to no roleback: ", error)
