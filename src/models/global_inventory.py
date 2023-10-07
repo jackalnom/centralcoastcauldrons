@@ -4,6 +4,9 @@ from src import database as db
 import math
 from pydantic import BaseModel
 from sqlalchemy.sql import text
+from .transaction import Transaction
+from .retail_inventory import RetailInventory
+from .wholesale_inventory import WholesaleInventory
 
 
 
@@ -73,12 +76,28 @@ class GlobalInventory:
             "gold": self.gold,
         }
 
-    def reset(self):
-        sql_to_execute = text(f"UPDATE {GlobalInventory.table_name} SET num_red_potions = 0, num_red_ml = 0, gold = 100")
-        with db.engine.begin() as connection:
-            connection.execute(sql_to_execute)
-        return "OK"
-
+    @staticmethod
+    def get_inventory():
+        try:
+            total_ml = 0
+            sql_to_execute = text(f"SELECT num_ml FROM {WholesaleInventory.table_name}")
+            with db.engine.begin() as connection:
+                result = connection.execute(sql_to_execute)
+                rows = result.fetchall()
+                #itterat through the rows and add up all their millileters
+                for row in rows:
+                    total_ml += row[0]
+            gold = Transaction.get_current_balance()
+            total_potions = RetailInventory.get_total_potions()
+            return {
+                "number_of_potions": total_potions,
+                "ml_in_barrels": total_ml,
+                "gold": gold,
+            }
+        except Exception as error:
+            print("unable to get inventory: ", error)
+            return "ERROR"
+  
 
 
     

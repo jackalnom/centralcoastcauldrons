@@ -1,13 +1,19 @@
-from .global_inventory import Barrel, GlobalInventory
 from .transaction import Transaction
-from .retail_inventory import RetailInventory
 from sqlalchemy.sql import text
 from src import database as db
 import math
 from threading import Lock
-from timeout_decorator import timeout
+import json
+from pydantic import BaseModel
 
 lock = Lock()
+
+class Barrel(BaseModel):
+    sku: str
+    ml_per_barrel: int
+    potion_type: list[int]
+    price: int
+    quantity: int
 
 class WholesaleInventory:
   #TODO: update this template code
@@ -111,27 +117,6 @@ class WholesaleInventory:
         print("unable to add to inventory: ", error)
         return "ERROR"
     
-  @staticmethod
-  def get_inventory():
-    try:
-      total_ml = 0
-      sql_to_execute = text(f"SELECT num_ml FROM {WholesaleInventory.table_name}")
-      with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute)
-        rows = result.fetchall()
-        #itterat through the rows and add up all their millileters
-        for row in rows:
-          total_ml += row[0]
-      gold = Transaction.get_current_balance()
-      total_potions = RetailInventory.get_total_potions()
-      return {
-            "number_of_potions": total_potions,
-            "ml_in_barrels": total_ml,
-            "gold": gold,
-      }
-    except Exception as error:
-        print("unable to get inventory: ", error)
-        return "ERROR"
   
   @staticmethod
   def reset():
@@ -143,7 +128,35 @@ class WholesaleInventory:
     except Exception as error:
         print("unable to reset wholesale inventory: ", error)
         return "ERROR"
+
+  @staticmethod
+  def use_potion_inventory(potion_type: list[int], quantity: int):
+    try:
+        for i, ml in enumerate(potion_type):
+            if ml > 0:
+                # Find the record with the corresponding potion type
+                #construct a 
+                barrel_type_to_subtract_from = [0, 0, 0, 0]
+                barrel_type_to_subtract_from[i] = 1 if ml != 0 else 0
+                sql_to_execute = text(f"SELECT id, num_ml FROM {WholesaleInventory.table_name} WHERE type = :type")
+                with db.engine.begin() as connection:
+                    result = connection.execute(sql_to_execute, {"type": barrel_type_to_subtract_from}).fetchone()
+                    if result is None:
+                        raise Exception(f"No potion found with type {barrel_type_to_subtract_from}")
+                    # Subtract the quantity * the number of ml from the num_ml column
+                    num_ml = result[1]
+                    if num_ml < quantity * ml:
+                        raise Exception(f"Not enough {potion_type[i]} ml potion in inventory")
+                    sql_to_execute = text(f"UPDATE {WholesaleInventory.table_name} SET num_ml = num_ml - :num_ml WHERE id = :id")
+                    connection.execute(sql_to_execute, {"num_ml": quantity * ml, "id": result[0]})
+        return "OK"
+    except Exception as error:
+        print("unable to use potion inventory: ", error)
+        return "ERROR"
+
+ 
   
+
 
 
     

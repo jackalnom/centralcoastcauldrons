@@ -15,7 +15,7 @@ router = APIRouter(
 def get_inventory():
     #TODO: implement get_inventory
     """ """
-    inventory = WholesaleInventory.get_inventory()
+    inventory = GlobalInventory.get_inventory()
     return inventory 
 
 class Result(BaseModel):

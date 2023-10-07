@@ -1,8 +1,13 @@
 from src import database as db
 from sqlalchemy.sql import text
 from typing import List
-from .global_inventory import PotionInventory
+from .wholesale_inventory import WholesaleInventory
 import json
+from pydantic import BaseModel
+
+class PotionInventory(BaseModel):
+    potion_type: list[int]
+    quantity: int
 
 
 class RetailInventory:
@@ -82,6 +87,7 @@ class RetailInventory:
             sql_to_execute = text(f"UPDATE {RetailInventory.table_name} SET quantity = quantity + :quantity WHERE type = :type")
             with db.engine.begin() as connection:
               connection.execute(sql_to_execute, {"quantity": potion.quantity, "type": json.dumps(potion.potion_type)})
+        WholesaleInventory.use_potion_inventory(potion.potion_type, potion.quantity)
       return "OK"
     except Exception as error:
         print("unable to accept potion delivery things may be out of sync due to no roleback: ", error)
