@@ -20,9 +20,9 @@ class Transaction:
       result = connection.execute(sql_to_execute)
       row = result.fetchone()
       if row is None:
-        sql_to_execute = text(f"INSERT INTO {Transaction.table_name} (starting_balance, ending_balance) VALUES (0, 0)")
+        sql_to_execute = text(f"INSERT INTO {Transaction.table_name} (starting_balance, ending_balance) VALUES (0, 100)")
         result = connection.execute(sql_to_execute)
-        current_balance = 0
+        current_balance = 100
       else:
         current_balance = row[1]
     return current_balance
@@ -42,7 +42,16 @@ class Transaction:
       return "ERROR"
     
 
-
+  @staticmethod
+  def reset():
+    try:
+      sql_to_execute = text(f"DELETE FROM {Transaction.table_name}")
+      with db.engine.begin() as connection:
+        connection.execute(sql_to_execute)
+      return "OK"
+    except Exception as error:
+        print("unable to reset retail inventory: ", error)
+        return "ERROR"
 
       
 

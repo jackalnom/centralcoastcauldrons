@@ -44,8 +44,13 @@ class WholesaleInventory:
   def accept_barrels_delivery (barrels_delivered: list[Barrel]):
     try:
       for barrel in barrels_delivered:
-        #TODO: Implement rollback so it cant just do one of the following
-        WholesaleInventory.add_to_inventory(barrel)
+        #TODO: Implement rollback so it cant just do one of the following 
+        if (barrel.price * barrel.quantity > Transaction.get_current_balance()):
+          print("not enough gold to pay for delivery")
+          return "ERROR"
+        response = WholesaleInventory.add_to_inventory(barrel)
+        if (response == "ERROR"):
+          return "ERROR"
         Transaction.create(None, barrel.price * barrel.quantity * -1, f'payment for delivery of {barrel.quantity} {barrel.sku} barrels of type {barrel.potion_type}') #flush this out
   
       return "OK"
@@ -54,13 +59,13 @@ class WholesaleInventory:
         return "ERROR"
     
   def add_to_inventory(barrel: Barrel):
+    #FIXME: figure out how the fuck to do error handling in python, this thing swallows hella errors
     try:
-      barrel = None
       sql_to_execute = text(f"SELECT * FROM {WholesaleInventory.table_name} WHERE sku = :sku")
       with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"sku": barrel.sku}).fetchone()
         if(result == None):
-          sql_to_execute = text(f"INSERT INTO {WholesaleInventory.table_name} SET sku = :sku, type = :type, num_ml = :num_ml")
+          sql_to_execute = text(f"INSERT INTO {WholesaleInventory.table_name} (sku, type, num_ml) VALUES (:sku, :type, :num_ml)")
           connection.execute(sql_to_execute, {"sku": barrel.sku, "type": barrel.potion_type, "num_ml": barrel.quantity * barrel.ml_per_barrel})
         else:
           sql_to_execute = text(f"UPDATE {WholesaleInventory.table_name} SET num_ml = num_ml + :num_ml WHERE sku = :sku")
@@ -90,6 +95,17 @@ class WholesaleInventory:
       }
     except Exception as error:
         print("unable to get inventory: ", error)
+        return "ERROR"
+  
+  @staticmethod
+  def reset():
+    try:
+      sql_to_execute = text(f"DELETE FROM {WholesaleInventory.table_name}")
+      with db.engine.begin() as connection:
+        connection.execute(sql_to_execute)
+      return "OK"
+    except Exception as error:
+        print("unable to reset wholesale inventory: ", error)
         return "ERROR"
   
 

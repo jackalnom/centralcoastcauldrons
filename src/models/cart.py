@@ -1,6 +1,9 @@
 
 from pydantic import BaseModel
 from .global_inventory import GlobalInventory
+from sqlalchemy.sql import text
+from src import database as db
+
 
 class NewCart(BaseModel):
   customer: str
@@ -17,43 +20,19 @@ class InventoryItem(BaseModel):
   quantity: int
 
 
+#TODO: update this class to have some functionality
 class Cart:
-  id_counter = 0
-  virtual_carts_table = {}
-  def __init__(self, new_cart: NewCart):
-    self.id = Cart.id_counter
-    Cart.id_counter += 1
-    self.items = {}
-    self.customer_id = new_cart.customer
-    Cart.virtual_carts_table[self.id] = self
-
-
-  def get_cart(cart_id: int):
-    if cart_id not in Cart.virtual_carts_table:
-      raise Exception("Cart not found")
-    return Cart.virtual_carts_table[cart_id]
-
-  def set_item_quantity(self, item_sku: str, quantity: int):
-    self.items[item_sku] = quantity
-
-
-
-
-class Cart:
-  id_counter = 0
-  virtual_carts_table = {}
-  def __init__(self, new_cart: NewCart):
-    self.id = Cart.id_counter
-    Cart.id_counter += 1
-    self.items = {}
-    self.customer_id = new_cart.customer
-    Cart.virtual_carts_table[self.id] = self
-
-
+  
+  table_name = "cart"
+  def __init__(self, id, customer_id):
+    self.id = id 
+    self.customer_id = customer_id
+    
   def get_cart(cart_id: int) -> 'Cart':
-    if cart_id not in Cart.virtual_carts_table:
-      raise Exception("Cart not found")
-    return Cart.virtual_carts_table[cart_id]
+    #try to find the cart in the cart table and return it
+    raise Exception("Not Implemented")
+
+
 
   def set_item_quantity(self, item_sku: str, cart_item: CartItem): 
     self.items[item_sku] = cart_item.quantity
@@ -81,7 +60,21 @@ class Cart:
   @staticmethod
   def delete_all_carts():
     Cart.virtual_carts_table = {}
+
+
+  @staticmethod
+  def reset():
+    try:
+      sql_to_execute = text(f"DELETE FROM {Cart.table_name}")
+      with db.engine.begin() as connection:
+        connection.execute(sql_to_execute)
+      return "OK"
+    except Exception as error:
+        print("unable to reset retail inventory: ", error)
+        return "ERROR"
   
+
+
 
 
 

@@ -1,0 +1,44 @@
+[
+  {
+    "sku": "SMALL_RED_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [1, 0, 0, 0],
+    "price": 100,
+    "quantity": 10
+  },
+  {
+    "sku": "SMALL_GREEN_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [0, 1, 0, 0],
+    "price": 100,
+    "quantity": 10
+  },
+  {
+    "sku": "SMALL_BLUE_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [0, 0, 1, 0],
+    "price": 120,
+    "quantity": 10
+  },
+  {
+    "sku": "MINI_RED_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [1, 0, 0, 0],
+    "price": 60,
+    "quantity": 1
+  },
+  {
+    "sku": "MINI_GREEN_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [0, 1, 0, 0],
+    "price": 60,
+    "quantity": 1
+  },
+  {
+    "sku": "MINI_BLUE_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [0, 0, 1, 0],
+    "price": 60,
+    "quantity": 1
+  }
+]

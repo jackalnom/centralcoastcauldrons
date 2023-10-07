@@ -50,6 +50,17 @@ class RetailInventory:
       "price": self.price,
       "potion_type": self.type
     }
+  @staticmethod
+  def reset():
+    try:
+      sql_to_execute = text(f"DELETE FROM {RetailInventory.table_name}")
+      with db.engine.begin() as connection:
+        connection.execute(sql_to_execute)
+      return "OK"
+    except Exception as error:
+        print("unable to reset retail inventory: ", error)
+        return "ERROR"
+  
 
   
 

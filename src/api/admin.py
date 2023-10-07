@@ -3,6 +3,11 @@ from pydantic import BaseModel
 from src.api import auth
 from ..models.global_inventory import GlobalInventory, PotionInventory
 from ..models.cart import Cart
+from ..models.retail_inventory import RetailInventory
+from ..models.transaction import Transaction
+from ..models.cart import Cart
+from ..models.wholesale_inventory import WholesaleInventory
+
 
 router = APIRouter(
     prefix="/admin",
@@ -17,8 +22,11 @@ def reset():
     inventory, and all barrels are removed from inventory. Carts are all reset.
     """
 
-    GlobalInventory.get_singleton().reset()
-    Cart.delete_all_carts()
+    WholesaleInventory.reset()
+    RetailInventory.reset() 
+    Transaction.reset()
+    Cart.reset()
+
     return "OK"
 
 

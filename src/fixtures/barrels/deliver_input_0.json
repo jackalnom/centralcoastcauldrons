@@ -1,0 +1,9 @@
+[
+  {
+    "sku": "SMALL_RED_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [1, 0, 0, 0],
+    "price": 100,
+    "quantity": 1
+  }
+]
