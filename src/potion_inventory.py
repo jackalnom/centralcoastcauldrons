@@ -1,5 +1,5 @@
 import sqlalchemy
-import database as db
+from src import database as db
 import itertools
 
 
@@ -26,22 +26,23 @@ def update_prices():
 def create_potion_inventory():
   """"""
   with db.engine.begin() as connection:
-    connection.execute(sqlalchemy.text("""CREATE TABLE potion_inventory (
-        id bigint generated always as identity,
-        potion_type int[],
-        num_potion int,
-        price int
-        );"""))
+    connection.execute(sqlalchemy.text("""
+        CREATE TABLE potion_inventory (
+          id bigint generated always as identity,
+          potion_type int[],
+          num_potion int,
+          price int);
+        """))
     potion_types = gen_potion_types(25)
     for potion_type in potion_types:
       price = calc_price(potion_type)
-      connection.execute(sqlalchemy.text("""INSERT INTO potion_inventory (potion_type, num_potion, price)
-                                            VALUES (:potion_type, 0, :price)"""), {"potion_type": potion_type, "price": price})
+      connection.execute(sqlalchemy.text("""
+          INSERT INTO potion_inventory (potion_type, num_potion, price)
+          VALUES (:potion_type, 0, :price)
+          """), {"potion_type": potion_type, "price": price})
 
 def delete_potion_inventory():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("DROP TABLE potion_inventory"))
-    
-delete_potion_inventory()
-create_potion_inventory()
+
 
