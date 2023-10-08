@@ -15,14 +15,15 @@ class Transaction:
   def get_current_balance():
     current_balance = 0
     #get the most recent transaction and extract the ending balance, if there are no transactions then create the first transaction that is zeroed out
-    sql_to_execute = text(f"SELECT id, ending_balance FROM {Transaction.table_name} ORDER BY created_at LIMIT 1")
+    sql_to_execute = text(f"SELECT id, ending_balance FROM {Transaction.table_name} ORDER BY created_at DESC LIMIT 1")
     with db.engine.begin() as connection:
       result = connection.execute(sql_to_execute)
       row = result.fetchone()
       if row is None:
+        #FIXME: add a description to the OG transaction
         sql_to_execute = text(f"INSERT INTO {Transaction.table_name} (starting_balance, ending_balance) VALUES (0, 100)")
         result = connection.execute(sql_to_execute)
-        current_balance = 200
+        current_balance = 100
       else:
         current_balance = row[1]
         print("id", row[0])

@@ -8,6 +8,11 @@ from .transaction import Transaction
 from .retail_inventory import RetailInventory
 from .wholesale_inventory import WholesaleInventory
 
+#CURRENT INVENTORY
+# num_red_potions: 30
+# num_red_ml: 0
+# gold: 2800
+
 
 
 class Barrel(BaseModel):

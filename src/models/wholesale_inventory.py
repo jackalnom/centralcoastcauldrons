@@ -85,8 +85,9 @@ class WholesaleInventory:
     try:
       with lock:
         for barrel in barrels_delivered:
+          #FIXME: issue with 
           if (barrel.price * barrel.quantity > Transaction.get_current_balance()):
-              print("not enough gold to pay for delivery")
+              print("not enough gold to pay for delivery, may have processed a partial delivery")
               return "ERROR"
           response = WholesaleInventory.add_to_inventory(barrel)
           if (response == "ERROR"):
@@ -146,13 +147,13 @@ class WholesaleInventory:
                     # Subtract the quantity * the number of ml from the num_ml column
                     num_ml = result[1]
                     if num_ml < quantity * ml:
-                        raise Exception(f"Not enough {potion_type} ml potion in inventory")
+                        raise Exception(f"Not enough {barrel_type_to_subtract_from} ml potion in inventory for {quantity} potions of type {potion_type}")
                     sql_to_execute = text(f"UPDATE {WholesaleInventory.table_name} SET num_ml = num_ml - :num_ml WHERE id = :id")
                     connection.execute(sql_to_execute, {"num_ml": quantity * ml, "id": result[0]})
         return "OK"
     except Exception as error:
         print("unable to use potion inventory: ", error)
-        return "ERROR"
+        raise
 
  
   

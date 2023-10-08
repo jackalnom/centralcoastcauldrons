@@ -91,8 +91,8 @@ class RetailInventory:
         WholesaleInventory.use_potion_inventory(potion.potion_type, potion.quantity)
       return "OK"
     except Exception as error:
-        print("unable to accept potion delivery things may be out of sync due to no roleback: ", error)
-        return "ERROR"
+        print("unable to accept potion delivery things may be out of sync due to no roleback, check logs ", error)
+        raise Exception("ERROR: unable to accept potion delivery things may be out of sync due to no roleback, check logs", error)
   
 
   @staticmethod

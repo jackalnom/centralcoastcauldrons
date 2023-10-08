@@ -57,24 +57,28 @@ class Cart:
     self.items[item_sku] = cart_item.quantity
 
   def checkout(self, cart_checkout: CartCheckout):
-    #TODO: check if the payment string is valid
-    checkout_result = {}
-    if self.items.items() == {}:
-      raise Exception("Transation Failed: Cart is empty")
-    try:
-      RetailInventory.items_available(self.items)
-    except Exception as error:
-      raise Exception("Transaction Failed: Not enough items available", error)
     try: 
-      checkout_result = RetailInventory.adjust_inventory(self.items)
+      #TODO: check if the payment string is valid
+      checkout_result = {}
+      if self.items.items() == {}:
+        raise Exception("Transation Failed: Cart is empty")
+      try:
+        RetailInventory.items_available(self.items)
+      except Exception as error:
+        raise Exception("Transaction Failed: Not enough items available", error)
+      try: 
+        checkout_result = RetailInventory.adjust_inventory(self.items)
+      except Exception as error:
+        raise Exception("Transaction Failed: Could not adjust inventory", error)
+
+      #get rid of cart
+      self.items = {}
+      Cart.virtual_carts_table.pop(self.id)
+
+      return checkout_result
     except Exception as error:
-      raise Exception("Transaction Failed: Could not adjust inventory", error)
+      return f'ERROR: {error}'
 
-    #get rid of cart
-    self.items = {}
-    Cart.virtual_carts_table.pop(self.id)
-
-    return checkout_result
 
   @staticmethod
   def delete_all_carts():

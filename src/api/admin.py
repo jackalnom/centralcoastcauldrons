@@ -25,7 +25,7 @@ def reset():
     WholesaleInventory.reset()
     RetailInventory.reset() 
     Transaction.reset()
-    Cart.reset()
+    Cart.delete_all_carts()
 
     return "OK"
 
