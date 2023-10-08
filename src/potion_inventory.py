@@ -28,7 +28,7 @@ def create_potion_inventory():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("""
         CREATE TABLE potion_inventory (
-          id bigint generated always as identity,
+          id SERIAL PRIMARY KEY,
           potion_type int[],
           num_potion int,
           price int);
@@ -44,5 +44,3 @@ def create_potion_inventory():
 def delete_potion_inventory():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("DROP TABLE potion_inventory"))
-
-
