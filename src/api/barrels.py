@@ -3,13 +3,23 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-from ..colors import colors, color_to_potion, potion_to_color
+from ..colors import colors, color_to_potion
+
 
 router = APIRouter(
   prefix="/barrels",
   tags=["barrels"],
   dependencies=[Depends(auth.get_api_key)],
 )
+
+
+potion_to_color = {
+  (1, 0, 0, 0): "red",
+  (0, 1, 0, 0): "green",
+  (0, 0, 1, 0): "blue",
+  (0, 0, 0, 1): "dark"
+}
+
 
 class Barrel(BaseModel):
   sku: str
@@ -20,23 +30,23 @@ class Barrel(BaseModel):
 
   quantity: int
 
+
 @router.post("/deliver")
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
   """ """
   print(barrels_delivered)
   with db.engine.begin() as connection:
-    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-    first_row = result.first()
-    current_gold = first_row.gold
-    add_ml = {color: getattr(first_row, f"num_{color}_ml") for color in colors}
+    global_inventory = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).first()
     for barrel in barrels_delivered:
       color = potion_to_color[tuple(barrel.potion_type)]
-      current_gold -= barrel.price * barrel.quantity
-      add_ml[color] += barrel.ml_per_barrel * barrel.quantity
-    connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold}"))
-    for color in colors:
-      connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_ml={add_ml[color]}"))
+      # update gold and number of ml in global_inventory
+      connection.execute(sqlalchemy.text(f"""
+          UPDATE global_inventory
+          SET gold = gold - :barrels_cost,
+            num_{color}_ml = num_{color}_ml + :barrels_ml
+          """), {"barrels_cost": barrel.price * barrel.quantity, "barrels_ml": barrel.ml_per_barrel * barrel.quantity})
   return "OK"
+
 
 # Gets called once a day
 #TODO add priority, multi quantity
