@@ -5,11 +5,13 @@ import math
 import sqlalchemy
 from src import database as db
 
+
 router = APIRouter(
     prefix="/audit",
     tags=["audit"],
     dependencies=[Depends(auth.get_api_key)],
 )
+
 
 @router.get("/inventory")
 def get_inventory():
@@ -28,10 +30,12 @@ def get_inventory():
           """)).first()
     return {"number_of_potions": potion_inventory.number_of_potions, "ml_in_barrels": global_inventory.ml_in_barrels, "gold": global_inventory.gold}
 
+
 class Result(BaseModel):
     gold_match: bool
     barrels_match: bool
     potions_match: bool
+
 
 # Gets called once a day
 @router.post("/results")

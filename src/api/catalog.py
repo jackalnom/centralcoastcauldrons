@@ -3,7 +3,9 @@ import sqlalchemy
 from src import database as db
 from ..colors import colors, color_to_potion_ml, color_to_price
 
+
 router = APIRouter()
+
 
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():
@@ -13,17 +15,15 @@ def get_catalog():
 
   # Can return a max of 20 items.
   with db.engine.begin() as connection:
-    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-    first_row = result.first()
+    potion_inventory = connection.execute(sqlalchemy.text("SELECT * FROM potion_inventory")).fetchall()
     catalog = []
-    for color in colors:
-      current_potions = getattr(first_row, f"num_{color}_potions")
-      if current_potions != 0:
+    for potion in potion_inventory:
+      if potion.num_potion != 0:
         catalog.append({
-          "sku": f"{color.upper()}_POTION_0",
-          "name": f"{color} potion",
-          "quantity": current_potions if current_potions <= 10000 else 10000,
-          "price": color_to_price[color],
-          "potion_type": color_to_potion_ml[color],
+          "sku": potion.sku,
+          "name": potion.sku,
+          "quantity": potion.num_potion if potion.num_potion <= 10000 else 10000,
+          "price": potion.price,
+          "potion_type": potion.potion_type,
         })
   return catalog

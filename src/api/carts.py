@@ -5,11 +5,13 @@ import sqlalchemy
 from src import database as db
 from ..colors import color_to_price
 
+
 router = APIRouter(
   prefix="/carts",
   tags=["cart"],
   dependencies=[Depends(auth.get_api_key)],
 )
+
 
 class NewCart(BaseModel):
   customer: str
@@ -25,6 +27,7 @@ def create_cart(new_cart: NewCart):
         RETURNING cart_id
         """), {"customer": new_cart.customer}).first().cart_id
   return {"cart_id": cart_id}
+
 
 @router.get("/{cart_id}")
 def get_cart(cart_id: int):
@@ -96,7 +99,6 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
-  
   with db.engine.begin() as connection:
     items_id = connection.execute(sqlalchemy.text("""
         SELECT items_id
@@ -133,4 +135,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     connection.commit()
     print(get_cart(cart_id))
     return {"total_potions_bought": cart_items.quantity, "total_gold_paid": cart_items.quantity * potion_inventory.price}
-  return {}
+  

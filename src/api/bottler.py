@@ -5,6 +5,7 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
+
 router = APIRouter(
   prefix="/bottler",
   tags=["bottler"],
@@ -13,9 +14,11 @@ router = APIRouter(
 
 colors = ["red", "green", "blue", "dark"]
 
+
 class PotionInventory(BaseModel):
   potion_type: list[int]
   quantity: int
+
 
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
@@ -36,6 +39,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
           SET num_{colors[i]}_ml = num_{colors[i]}_ml - :add_ml
           """), {"add_ml": potion.potion_type[i] * potion.quantity})
   return "OK"
+
 
 # Gets called 4 times a day
 @router.post("/plan")
@@ -65,11 +69,11 @@ def get_bottle_plan():
     # splits total_num_bottles to even amounts, tries to even out each color
     current_types = []
     num_bottles = {}
-    for row in potion_inventory:
-      num_each = total_num_bottles // len(potion_inventory) - row[1]
+    for potion in potion_inventory:
+      num_each = total_num_bottles // len(potion_inventory) - potion[1]
       if num_each > 0:
-        current_types.append(row[0])
-        num_bottles[tuple(row[0])] = num_each
+        current_types.append(potion[0])
+        num_bottles[tuple(potion[0])] = num_each
     # loops until 300 in bottling_list or not enough ml for more
     while total_num_bottles > len(current_types) and len(current_types) != 0:
       # loops each type that can still be bottled

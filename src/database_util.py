@@ -68,6 +68,6 @@ def create_cart_items():
     connection.execute(sqlalchemy.text("""
         CREATE TABLE cart_items (
           items_id SERIAL PRIMARY KEY,
-          sku text REFERENCES ,
+          sku text REFERENCES potion_inventory(sku),
           quantity int
         )"""))

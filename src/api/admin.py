@@ -12,6 +12,7 @@ router = APIRouter(
   dependencies=[Depends(auth.get_api_key)],
 )
 
+
 @router.post("/reset")
 def reset():
   """
@@ -27,8 +28,8 @@ def reset():
   delete_table("carts")
   delete_table("cart_items")
   create_potion_inventory()
-  create_carts()
   create_cart_items()
+  create_carts()
   return "OK"
 
 
@@ -41,4 +42,3 @@ def get_shop_info():
       "shop_name": "phun potions",
       "shop_owner": "Dennis Phun",
   }
-
