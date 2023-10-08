@@ -19,19 +19,22 @@ def gen_potion_types(x: int):
 def calc_price(potion_type: tuple):
   return 50
 
+
 #TODO update prices on table without resetting other values
 def update_prices():
   return
+
 
 def create_potion_inventory():
   """"""
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("""
+        CREATE SEQUENCE id START 1;
         CREATE TABLE potion_inventory (
-          id SERIAL PRIMARY KEY,
+          sku text DEFAULT 'potion_' || nextval('id')::text PRIMARY KEY,
           potion_type int[],
           num_potion int,
-          price int);
+          price int)
         """))
     potion_types = gen_potion_types(25)
     for potion_type in potion_types:
@@ -41,6 +44,30 @@ def create_potion_inventory():
           VALUES (:potion_type, 0, :price)
           """), {"potion_type": potion_type, "price": price})
 
-def delete_potion_inventory():
+
+def delete_table(table: str):
   with db.engine.begin() as connection:
-    connection.execute(sqlalchemy.text("DROP TABLE potion_inventory"))
+    connection.execute(sqlalchemy.text(f"DROP TABLE {table}"))
+
+
+def create_carts():
+  """"""
+  with db.engine.begin() as connection:
+    connection.execute(sqlalchemy.text("""
+        CREATE TABLE carts (
+          cart_id SERIAL PRIMARY KEY,
+          customer text,
+          items_id int REFERENCES cart_items(items_id),
+          payment text
+        )"""))
+
+
+def create_cart_items():
+  """"""
+  with db.engine.begin() as connection:
+    connection.execute(sqlalchemy.text("""
+        CREATE TABLE cart_items (
+          items_id SERIAL PRIMARY KEY,
+          sku text REFERENCES ,
+          quantity int
+        )"""))
