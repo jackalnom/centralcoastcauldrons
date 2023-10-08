@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from ..potion_inventory import create_potion_inventory, delete_potion_inventory
 
 router = APIRouter(
   prefix="/admin",
@@ -19,6 +20,8 @@ def reset():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold=100, num_red_potions=0, num_red_ml=0, \
                                        num_green_potions=0, num_green_ml=0, num_blue_potions=0, num_blue_ml=0"))
+  delete_potion_inventory()
+  create_potion_inventory()
   return "OK"
 
 
