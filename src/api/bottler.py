@@ -52,14 +52,11 @@ def get_bottle_plan():
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).first()
     number_of_potions = connection.execute(sqlalchemy.text("""
-        SELECT
-          SUM(num_potion) AS number_of_potions
+        SELECT SUM(num_potion) AS number_of_potions
         FROM potion_inventory
         """)).first().number_of_potions
     potion_inventory = connection.execute(sqlalchemy.text("""
-        SELECT
-          potion_type,
-          num_potion
+        SELECT potion_type, num_potion
         FROM potion_inventory
         """)).fetchall()
     # 300 max total bottles
