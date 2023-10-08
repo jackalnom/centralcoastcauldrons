@@ -47,6 +47,25 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                     current_count = row[0] 
                 result = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity = {count + current_count} WHERE sku = '{sku}'"))
             
+            # remove ml amount from stock
+            red = order.potion_type[0]
+            green = order.potion_type[1]
+            blue = order.potion_type[2]
+            dark = order.potion_type[3]
+
+            stock_result = connection.execute(sqlalchemy.text(f"SELECT num_red_ml,num_green_ml,num_blue_ml,num_dark_ml \
+                                                                FROM global_inventory"))
+            new_red = stock_result.first[0] - red
+            new_green = stock_result.first[1] - green
+            new_blue = stock_result.first[2] - blue
+            new_dark = stock_result.first[3] - dark
+
+            stock_update = connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
+                                                                SET num_red_ml = {new_red} \
+                                                                    num_green_ml = {new_green} \
+                                                                    num_blue_ml = {new_blue} \
+                                                                    num_dark_ml = {new_dark}"))
+
         print(f"Sucessfully delivered {count} of SKU:{sku}. New total is {current_count + count}")
 
         # Depreciated, only supports monolithic potions
