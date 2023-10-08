@@ -25,6 +25,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
   """ """
   print(potions_delivered)
   with db.engine.begin() as connection:
+    # for logging
+    used_ml = [0, 0, 0, 0]
     for potion in potions_delivered:
       # update number of potions in potion_inventory
       connection.execute(sqlalchemy.text("""
@@ -34,10 +36,16 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
           """), {"add_potions": potion.quantity, "potion_type": potion.potion_type})
       # update number of ml in global_inventory
       for i in range(len(colors)):
+        potion_ml = potion.potion_type[i] * potion.quantity
+        used_ml[i] += potion_ml
         connection.execute(sqlalchemy.text(f"""
-          UPDATE global_inventory
-          SET num_{colors[i]}_ml = num_{colors[i]}_ml - :add_ml
-          """), {"add_ml": potion.potion_type[i] * potion.quantity})
+            UPDATE global_inventory
+            SET num_{colors[i]}_ml = num_{colors[i]}_ml - :potion_ml
+            """), {"potion_ml": potion_ml})    
+    global_inventory = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).first()
+    print(f"Bottling used (ml): {used_ml}\n"
+          f"Current inventory (ml): [{global_inventory.num_red_ml}, {global_inventory.num_green_ml}, " \
+          f"{global_inventory.num_blue_ml}, {global_inventory.num_dark_ml}]")
   return "OK"
 
 

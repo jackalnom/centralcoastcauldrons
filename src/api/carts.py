@@ -56,13 +56,13 @@ def get_cart(cart_id: int):
         if cart.payment:
           return f"Cart #{cart.cart_id}: {cart.customer} used {cart.payment} to buy "\
                  f"{cart_item.quantity} {cart_item.sku} ({potion_inventory.potion_type}) "\
-                 f"for {cart_item.quantity * potion_inventory.price} "\
+                 f"for {cart_item.quantity * potion_inventory.price} gold "\
                  f"({potion_inventory.num_potion} remaining)."
         # cart has not been checked out
         else:
           return f"Cart #{cart.cart_id}: {cart.customer} is seeking to buy "\
                  f"{cart_item.quantity} {cart_item.sku} ({potion_inventory.potion_type}) "\
-                 f"for {cart_item.quantity * potion_inventory.price} "\
+                 f"for {cart_item.quantity * potion_inventory.price} gold "\
                  f"({potion_inventory.num_potion} in stock)."
       else:
         return f"Cart #{cart.cart_id}: {cart.customer} is browsing the shop."
