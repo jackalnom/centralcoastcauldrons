@@ -146,7 +146,7 @@ class WholesaleInventory:
                     # Subtract the quantity * the number of ml from the num_ml column
                     num_ml = result[1]
                     if num_ml < quantity * ml:
-                        raise Exception(f"Not enough {potion_type[i]} ml potion in inventory")
+                        raise Exception(f"Not enough {potion_type} ml potion in inventory")
                     sql_to_execute = text(f"UPDATE {WholesaleInventory.table_name} SET num_ml = num_ml - :num_ml WHERE id = :id")
                     connection.execute(sql_to_execute, {"num_ml": quantity * ml, "id": result[0]})
         return "OK"
