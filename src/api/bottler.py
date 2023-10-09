@@ -16,7 +16,7 @@ class PotionInventory(BaseModel):
     quantity: int
 
 def generate_sku(potion: PotionInventory):
-    return f"RED_{potion.potion_type[0]}_GREEN_{potion.potion_type[1]}_BLUE_{potion.potion_type[2]}_DARK_{potion.potion_type[3]}"
+    return f"R{potion.potion_type[0]}G{potion.potion_type[1]}B{potion.potion_type[2]}D{potion.potion_type[3]}"
 
 @router.post("/deliver")
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
