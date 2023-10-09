@@ -45,7 +45,7 @@ def get_catalog():
         return_list += [
                 {
                     "sku": sku,
-                    "name": f"{sku} potion",
+                    "name": f"Green Potion",
                     "quantity": quantity,
                     "price": cost,
                     "potion_type": [red,green,blue,0],
