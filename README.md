@@ -14,7 +14,7 @@ There are three primary actions that may unfold during these ticks:
 
 2. **Potion Creation**: Every alternate tick presents an opportunity to brew new potions. Each potion requires 100 ml of either red, green, blue, or dark liquid. You must have sufficient volume of the chosen color in your barrelled inventory to brew a potion.
 
-3. **Barrel Purchasing**: On every 12th tick, you have an opportunity to purchase additional barrels of various colors. Your API receives a catalog of barrels available for sale and should respond with your purchase decisions. The gold cost of each barrel is deducted from your balance upon purchase.
+3. **Barrel Purchasing**: On every alternate tick, you have an opportunity to purchase additional barrels of various colors. Your API receives a catalog of barrels available for sale and should respond with your purchase decisions. The gold cost of each barrel is deducted from your balance upon purchase.
 
 Part of the challenge in these interactions is you are responsible for keeping track of your gold and your various inventory levels. The [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) separately keeps an authoritiative record (which can be viewed under Shop stats).
 
