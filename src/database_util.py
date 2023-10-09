@@ -67,7 +67,12 @@ def create_cart_items():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("""
         CREATE TABLE cart_items (
-          items_id SERIAL PRIMARY KEY,
+          items_id int PRIMARY KEY,
           sku text REFERENCES potion_inventory(sku),
           quantity int
         )"""))
+
+# delete_table('carts')
+# delete_table('cart_items')
+# create_cart_items()
+# create_carts()

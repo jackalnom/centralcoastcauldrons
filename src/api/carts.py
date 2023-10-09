@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-from ..colors import color_to_price
 
 
 router = APIRouter(
@@ -81,9 +80,9 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
   """ """
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("""
-        INSERT INTO cart_items (sku, quantity)
-        VALUES (:sku, :quantity)
-        """), {"sku": item_sku, "quantity": cart_item.quantity})
+        INSERT INTO cart_items (items_id, sku, quantity)
+        VALUES (:items_id, :sku, :quantity)
+        """), {"items_id": cart_id, "sku": item_sku, "quantity": cart_item.quantity})
     connection.execute(sqlalchemy.text("""
         UPDATE carts
         SET items_id = :items_id
