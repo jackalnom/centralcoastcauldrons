@@ -56,10 +56,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             stock_result = connection.execute(sqlalchemy.text(f"SELECT num_red_ml,num_green_ml,num_blue_ml,num_dark_ml \
                                                                 FROM global_inventory"))
             stock_list = stock_result.first()
-            new_red = stock_list[0]- red
-            new_green = stock_list[1] - green
-            new_blue = stock_list[2] - blue
-            new_dark = stock_list[3] - dark
+            new_red = stock_list[0]*count- red
+            new_green = stock_list[1]*count - green
+            new_blue = stock_list[2]*count - blue
+            new_dark = stock_list[3]*count - dark
 
             stock_update = connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
                                                                 SET num_red_ml = {new_red}, \
