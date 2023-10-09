@@ -30,7 +30,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 
                 num_red_potions += barrel.quantity
                 num_red_ml += barrel.quantity * barrel.ml_per_barrel
-                gold -= barrel.quantity * barrel.price;
+                gold -= barrel.quantity * barrel.price
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions=:num_red_potions, num_red_ml=:num_red_ml, gold=:gold"),{"num_red_potions": num_red_potions, "num_red_ml":num_red_ml,"gold": gold})
 
             else:
