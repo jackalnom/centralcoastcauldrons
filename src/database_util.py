@@ -29,7 +29,7 @@ def create_potion_inventory():
   """"""
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("""
-        CREATE SEQUENCE id START 1;
+        ALTER SEQUENCE id RESTART WITH 1;
         CREATE TABLE potion_inventory (
           sku text DEFAULT 'potion_' || nextval('id')::text PRIMARY KEY,
           potion_type int[],

@@ -24,9 +24,9 @@ def reset():
         UPDATE global_inventory
         SET gold=100, num_red_ml=0, num_green_ml=0, num_blue_ml=0, num_dark_ml=0
         """))
-  delete_table("potion_inventory")
   delete_table("carts")
   delete_table("cart_items")
+  delete_table("potion_inventory")
   create_potion_inventory()
   create_cart_items()
   create_carts()
