@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 import sqlalchemy
 from src import database as db
-from ..colors import colors, color_to_potion_ml, color_to_price
 
 
 router = APIRouter()
