@@ -38,7 +38,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                 # insert row
                 result = connection.execute(sqlalchemy.text(
                     f"INSERT INTO potion_inventory(sku, type_red, type_green, type_blue, type_dark, cost, quantity)\
-                     VALUES ('{sku}', {order.potion_type[0]},{order.potion_type[1]},{order.potion_type[2]},{order.potion_type[3]},{50}, {count})"))
+                     VALUES ('{sku}', {order.potion_type[0]},{order.potion_type[1]},{order.potion_type[2]},{order.potion_type[3]},{40}, {count})"))
                 print(f"Creating new entry for SKU:{sku}...")
             else:
                 # sku alrd exists
