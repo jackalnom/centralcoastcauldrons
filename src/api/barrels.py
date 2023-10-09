@@ -74,8 +74,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
   buying_barrels = []
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).first()
+    potion_inventory = connection.execute(sqlalchemy.text("""
+        SELECT potion_type, num_potion
+        FROM potion_inventory
+        """)).fetchall()
     current_gold = global_inventory.gold
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
+    for potion in potion_inventory:
+      for i in range(4):
+        current_ml[i] += potion.potion_type[i] * potion.num_potion
     min_price = min(barrel.price for barrel in wholesale_catalog)
     while current_gold >= min_price and len(buying_barrels) < len(wholesale_catalog):
       bought = False
