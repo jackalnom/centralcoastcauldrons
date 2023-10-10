@@ -54,7 +54,14 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     cart = carts[cart_id]
     total_potions = sum([item.quantity for item in cart.get("items",[])])
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        num_red_potions, num_red_ml, gold= result.fetchone()
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions=:num_red_potions, gold=:gold"),{"num_red_potions": num_red_potions-total_potions,"gold": gold+cart_checkout.payment})
+        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
+        for item in cart.get("items",[]):
+            match cart["item_sku"]:
+                case "SMALL_RED_BARREL":
+                    num_red_potions -= item.quantity
+                case "SMALL_BLUE_BARREL":
+                    num_blue_potions -= item.quantity
+                case "SMALL_GREEN_BARREL":
+                    num_green_potions -= item.quantity
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions=:num_red_potions,num_green_potions:=num_green_potions,num_blue_potions:=num_blue_potions,gold=:gold"),{"num_red_potions": num_red_potions,"num_blue_potions": num_blue_potions,"num_green_potions":num_green_potions,"gold": gold+cart_checkout.payment})
     return {"total_potions_bought": total_potions, "total_gold_paid": cart_checkout.payment}
