@@ -64,20 +64,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if num_red_potions < 10:
             for barre_catalog in wholesale_catalog:
                 if barre_catalog.sku == "SMALL_RED_BARREL" and barre_catalog.price * barre_catalog.quantity < gold_left:
+                    print("test")
                     orders += [
                         {
                             "sku": "SMALL_RED_BARREL",
-                            "quantity": barre_catalog.quantity // 3,
+                            "quantity": barre_catalog.quantity // 3 + 1,
                         }
                     ]
-                    gold_left -=  (barre_catalog.quantity // 3) * barre_catalog.price
+                    gold_left -=  (barre_catalog.quantity // 3 + 1) * barre_catalog.price
         if num_blue_potions < 10:
             for barre_catalog in wholesale_catalog:
                 if barre_catalog.sku == "SMALL_BLUE_BARREL" and barre_catalog.price * barre_catalog.quantity < gold_left:
                     orders+= [
                         {
                             "sku": "SMALL_BLUE_BARREL",
-                            "quantity": barre_catalog.quantity // 3,
+                            "quantity": barre_catalog.quantity // 3 + 1,
                         }
                     ]
                     gold_left -=  (barre_catalog.quantity // 3) * barre_catalog.price
@@ -88,9 +89,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     orders+= [
                         {
                             "sku": "SMALL_GREEN_BARREL",
-                            "quantity": barre_catalog.quantity // 3,
+                            "quantity": barre_catalog.quantity // 3 + 1,
                         }
                     ]
-                    gold_left -=  (barre_catalog.quantity // 3) * barre_catalog.price
+                    gold_left -=  (barre_catalog.quantity // 3 + 1) * barre_catalog.price
 
     return orders
