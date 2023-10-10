@@ -20,8 +20,8 @@ def create_cart(new_cart: NewCart):
     print("Attempting to generate cart...")
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"INSERT INTO carts(customer_name) \
-                                                      VALUES ('{new_cart.customer}' \
-                                                      RETURNING cart_id)"))
+                                                      VALUES ('{new_cart.customer}') \
+                                                      RETURNING cart_id"))
         cart_id = result.first()[0]
     print(f"Cart Generated with ID: {cart_id}")
     return {"cart_id": cart_id}
