@@ -22,7 +22,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     with db.engine.begin() as connection:
         num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()      
     for potion in potions_delivered:
-        match potion:
+        match potion.potion_type:
             case [100,0,0,0]:
                 num_red_ml -= potion.quantity
                 num_red_potions += potion.quantity
@@ -33,6 +33,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                 num_blue_ml -= potion.quantity
                 num_blue_potions += potion.quantity
             case _:
+
                 raise Exception("Invalid sku")
     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml=:num_red_ml,num_green_ml=:num_green_ml,num_blue_ml=:num_blue_ml,num_red_ml=:num_red_ml,num_red_potions=:num_red_potions,num_green_potions=:num_green_potions, num_blue_potions=:num_blue_potions ,gold=:gold"),{"num_red_potions":num_red_potions,"num_red_ml":num_red_ml,"gold":gold,"num_blue_potions":num_blue_potions,"num_blue_ml":num_blue_ml,"num_green_potions":num_green_potions,"num_green_ml":num_green_ml,"gold":gold})
     return "OK"
