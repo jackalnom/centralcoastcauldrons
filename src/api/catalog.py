@@ -33,7 +33,7 @@ def get_catalog():
     print("Delivering Catalog...")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT sku,type_red,type_blue,type_green,cost,quantity FROM potion_inventory WHERE quantity > 0"))
+        result = connection.execute(sqlalchemy.text(f"SELECT sku,type_red,type_green,type_blue,cost,quantity FROM potion_inventory WHERE quantity > 0"))
     for row in result:
         sku = row[0]
         red = row[1]
