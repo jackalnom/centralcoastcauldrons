@@ -69,8 +69,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     # add entries as more barrels are desired
     purchasing_dict = {
         # "SMALL_RED_BARREL": "red",
-        "SMALL_GREEN_BARREL": "green",
-        # "SMALL_BLUE_BARREL": "blue",
+        # "SMALL_GREEN_BARREL": "green",
+        "SMALL_BLUE_BARREL": "blue",
         # "SMALL_DARK_BARREL": "dark"
     }
     SKIP_COLOR_KEY = "SKIP"

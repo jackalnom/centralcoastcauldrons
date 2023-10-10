@@ -73,4 +73,6 @@ def get_catalog():
     #                 "potion_type": colors_dict[],
     #             }
     #         ]
+    print("Current Catalog:")
+    print(return_list)
     return return_list
