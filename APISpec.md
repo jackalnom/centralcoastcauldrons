@@ -75,7 +75,6 @@ Handles the checkout process for a specific cart.
 ```json
 {
   "payment": "string",
-  "gold_paid": "integer"
 }
 ```
 
@@ -83,7 +82,8 @@ Handles the checkout process for a specific cart.
 
 ```json
 {
-    "success": "boolean"
+    "total_potions_bought": "integer"
+    "total_gold_paid": "integer"
 }
 ```
 
