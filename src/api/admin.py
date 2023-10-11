@@ -28,8 +28,8 @@ def reset():
   delete_table("cart_items")
   delete_table("potion_inventory")
   create_potion_inventory()
-  create_cart_items()
   create_carts()
+  create_cart_items()
   return "OK"
 
 
