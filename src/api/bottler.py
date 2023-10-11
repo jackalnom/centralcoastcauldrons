@@ -78,10 +78,10 @@ def get_bottle_plan():
     current_types = []
     num_bottles = {}
     for potion in potion_inventory:
-      num_each = total_num_bottles // len(potion_inventory) - potion[1]
+      num_each = total_num_bottles // len(potion_inventory) - potion.num_potion
       if num_each > 0:
-        current_types.append(potion[0])
-        num_bottles[tuple(potion[0])] = num_each
+        current_types.append(potion.potion_type)
+        num_bottles[tuple(potion.potion_type)] = num_each
     # loops until 300 in bottling_list or not enough ml for more
     while total_num_bottles > len(current_types) and len(current_types) != 0:
       # loops each type that can still be bottled
