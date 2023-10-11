@@ -101,9 +101,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
           # if already in, increment quantity
           else:
             for buying_barrel in buying_barrels:
-              if buying_barrel["sku"] == barrel.sku:
-                if buying_barrel["quantity"] + 1 < barrel.quantity:
-                  buying_barrel["quantity"] += 1
+              if buying_barrel["sku"] == barrel.sku and buying_barrel["quantity"] < barrel.quantity:
+                buying_barrel["quantity"] += 1
           bought = True
           current_gold -= barrel.price
           current_ml[color_index] += barrel.ml_per_barrel
