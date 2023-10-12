@@ -100,26 +100,57 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
     response = []
-    colors_list = ["red", "green", "blue", "dark"]
+
+    # These are all the potions we want to make currently
+    # This order matters, defacto priortity for potion making
+    colors_list = ["red", "green", "blue", "dark", "yellow", "purple", "teal", "dred", "dgreen", "dblue"]
     potion_type_dict = {
         "red":[100,0,0,0],
         "green":[0,100,0,0],
         "blue":[0,0,100,0],
-        "dark":[0,0,0,100]
+        "dark":[0,0,0,100],
+        "yellow":[50,50,0,0],
+        "purple":[50,0,50,0],
+        "teal":[0,50,50,0],
+        "dred":[50,0,0,50],
+        "dgreen":[0,50,0,50],
+        "dblue":[0,0,50,50]
     }
-    # Initial logic: bottle all barrels into pure potions
+    # Determine potion needs
+    target_stock = 5
+    request_list = []
+    total_need = [0,0,0,0]
     for color in colors_list:
+        potion_type = potion_type_dict[color]
+        sku = f"R{potion_type[0]}G{potion_type[1]}B{potion_type[2]}D{potion_type[3]}"
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
-        for row in result:
-            current_ml = row[0]
-        max_bottles = current_ml // 100
-        print(f"Plan produces {max_bottles} {color} potions...")
-        if (max_bottles > 0):
+            result_count = connection.execute(sqlalchemy.text(f"SELECT quantity \
+                                                           FROM potion_inventory \
+                                                           WHERE sku = '{sku}'"))
+        current_stock = result_count.first()[0]
+        bottles_needed = target_stock - current_stock
+        request_list += [bottles_needed]
+        total_need = [x + r*bottles_needed for x,r in zip(total_need, potion_type)]
+    # Determine current barrel stock
+    with db.engine.begin() as connection:
+        result_ml = connection.execute(sqlalchemy.text(f"SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml \
+                                                         FROM global_inventory"))
+    current_ml = result_ml.first()
+    for color, num_req in zip(colors_list, request_list):
+        potion_type = potion_type_dict[color]
+        ml_rq = [ml*num_req for ml in potion_type]
+        max_potion = target_stock
+        for i in range(len(ml_rq)):
+            if ml_rq[i] != 0:
+                max_potion = min(current_ml[i] // potion_type[i], max_potion)
+        if (max_potion > 0):
+            current_ml = [c - r for c,r in zip(current_ml, ml_rq)]
+            print(f"Plan produces {max_potion} {color} potions...")
             response += [
-                    {
-                        "potion_type": potion_type_dict[color],
-                        "quantity": max_bottles,
-                    }
-                ]
+                {
+                    "potion_type": potion_type,
+                    "quantity": max_potion,
+                }
+            ]
+            
     return response
