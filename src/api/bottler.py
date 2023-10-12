@@ -136,13 +136,17 @@ def get_bottle_plan():
         result_ml = connection.execute(sqlalchemy.text(f"SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml \
                                                          FROM global_inventory"))
     current_ml = result_ml.first()
+    
     for color, num_req in zip(colors_list, request_list):
         potion_type = potion_type_dict[color]
+        # Figure out how much stock it would require
         ml_rq = [ml*num_req for ml in potion_type]
         max_potion = target_stock
+        # Determine limiting factor, target stock is default cap
         for i in range(len(ml_rq)):
             if ml_rq[i] != 0:
                 max_potion = min(current_ml[i] // potion_type[i], max_potion)
+        # generate plan, keep ledger of what is possible with current stock
         if (max_potion > 0):
             current_ml = [c - r for c,r in zip(current_ml, ml_rq)]
             print(f"Plan produces {max_potion} {color} potions...")
