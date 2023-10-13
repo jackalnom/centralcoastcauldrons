@@ -148,18 +148,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         color = potion_type['name']
         # get barrels of given color
         for barrel in wholesale_catalog:
-            
             if color in barrel.sku:
+                # barrel is now being checked, remove from catalog
                 barrels_of_color += [barrel]
-        # sort by largest since those are best value
+                wholesale_catalog.remove(barrel)
+        
+        # sort by largest since those are best value for money
         # generally 
-        max_spend = min(gold_left, max(NUM_GOLD//5*2, 100))
-        barrels_of_color.sort(key=lambda x:x.ml_per_barrel)
+        max_spend = min(gold_left, max((NUM_GOLD*2)//5, 100))
+        barrels_of_color.sort(key=lambda x:x.ml_per_barrel, reverse=True)
         for barrel in barrels_of_color:
             max_num = min(max_spend // barrel.price, barrel.quantity)
-            if max_num == 0:
-                break
-            else:
+            if max_num > 0:
                 # add to plan
                 max_spend -= (max_num*barrel.price)
                 gold_left -= (max_num*barrel.price)
