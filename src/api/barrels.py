@@ -69,12 +69,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #----------------------------------
     # -- Log Barrels -- 
     #----------------------------------
-    
+    print("Logging current barrels for sale...")
     # Create new session ID
     with db.engine.begin() as connection:
-        catalog_id_result = connection.execute(sqlalchemy.text(f"INSERT INTO barrels_catalog \
-                                                                DEFAULT VALUES  \
-                                                                RETURNS catalog_id"))
+        catalog_id_result = connection.execute(sqlalchemy.text(f"INSERT INTO barrels_sessions \
+                                                                 DEFAULT VALUES  \
+                                                                 RETURNING catalog_id"))
         catalog_id =catalog_id_result.first()[0]
 
     # Go through and log all barrels for sale
@@ -88,10 +88,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             # if not create entry
             sql_getid = f"INSERT INTO barrels_catalog \
                           (sku, quantity) \
-                          VALUES ('{barrel.sku}, {barrel.quantity}') \
-                          RETURNS id"
+                          VALUES ('{barrel.sku}', {barrel.quantity}) \
+                          RETURNING barrel_id"
         else:
-            sql_getid = f"SELECT id \
+            sql_getid = f"SELECT barrel_id \
                           FROM barrels_catalog \
                           WHERE sku = '{barrel.sku}'"
 
@@ -106,52 +106,66 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                                                                     (catalog_id, barrel_id, cost) \
                                                                     VALUES ({catalog_id}, {barrel_id}, {barrel.price})"))
     #----------------------------------
-    # -- Build Purchase Plan -- 
+    # -- Build Purchasing Strategy -- 
     #----------------------------------
-
+    print("Building purchase strategy...")
     # get current potion stock levels
     with db.engine.begin() as connection:
-        check_stock_result = connection.execute(sqlalchemy.text(f"SELECT FROM potion_inventory \
-                                                                  type_red, type_green, type_blue, type_dark, quantity \
+        check_stock_result = connection.execute(sqlalchemy.text(f"SELECT type_red, type_green, type_blue, type_dark, quantity \
+                                                                  FROM potion_inventory \
                                                                   WHERE quantity != 0"))
+        check_ml_result = connection.execute(sqlalchemy.text(f"SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold \
+                                                               FROM global_inventory"))
     total_stock = [0,0,0,0]
     for potion in check_stock_result:
-        quantity = potion.pop()
-        
-    purchase_plan = []
-    # add entries as more barrels are desired
-    purchasing_dict = {
-        "SMALL_RED_BARREL": "red",
-        # "SMALL_GREEN_BARREL": "green",
-        # "MINI_BLUE_BARREL": "blue",
-        # "SMALL_DARK_BARREL": "dark"
-    }
-    SKIP_COLOR_KEY = "SKIP"
+        quantity = potion[-1]
+        total_stock = [x + c*quantity for x, c in zip(total_stock, potion[:-1])]
+    current_ml = check_ml_result.first()
+    NUM_GOLD = current_ml[-1]
+    gold_left = NUM_GOLD
+    total_stock = [x + cml for x, cml in zip(total_stock, current_ml[:-1])]
+    # create list of priority to purchase
+    potion_stock = [
+        {'name': 'RED', 'amount': total_stock[0]},
+        {'name': 'GREEN', 'amount': total_stock[1]},
+        {'name': 'BLUE', 'amount': total_stock[2]},
+        {'name': 'DARK', 'amount': total_stock[3]}
+    ]
+    # sort based on lowest stock level (will evenly purchase potions)
+    # this stragetgy, combined with bottling stragegy should evenly purchase colors, prioritizing solid potions before making mixed potions
+    potion_stock.sort(key=lambda x:x['amount'])
     
-    for for_sale in wholesale_catalog:  # go through catalog
-        #print("Going through catalog...")
-        color = purchasing_dict.get(for_sale.sku, SKIP_COLOR_KEY)
-        if color == SKIP_COLOR_KEY:
-            # skip if not small barrel
-            print(f"Not interested in {for_sale.sku}")
-        else:
-            print(f"Checking {for_sale.sku}...")
+    TARGET_STOCK = 3000 # make this dynamic later, maybe 120% of previous day potions idk, this is currently enough for full potion inventory with some margin
+    
+    #----------------------------------
+    # -- Build Purchase Plan -- 
+    #----------------------------------
+    print("Constructing plan...")
+    purchase_plan = []
+    # go down colors by priority
+    for potion_type in potion_stock:
+        barrels_of_color = []
+        color = potion_type['name']
+        # get barrels of given color
+        for barrel in wholesale_catalog:
+            
+            if color in barrel.sku:
+                barrels_of_color += [barrel]
+        # sort by largest since those are best value
+        # generally 
+        max_spend = min(gold_left, max(NUM_GOLD//5*2, 100))
+        barrels_of_color.sort(key=lambda x:x.ml_per_barrel)
+        for barrel in barrels_of_color:
+            max_num = min(max_spend // barrel.price, barrel.quantity)
+            if max_num == 0:
+                break
+            else:
+                # add to plan
+                max_spend -= (max_num*barrel.price)
+                gold_left -= (max_num*barrel.price)
+                purchase_plan += [{
+                        "sku": f"{barrel.sku}",
+                        "quantity": max_num,
+                    }]
 
-            # check current inventory
-            with db.engine.begin() as connection:
-                result_gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))        
-            for row in result_gold:
-                current_gold = row[0]
-            
-            # buy 1/4 of possible barrels
-            max_barrel = min((current_gold // for_sale.price) // len(purchasing_dict), for_sale.quantity)
-            
-            if max_barrel != 0:
-                print(f"Purchacing {max_barrel} small {color} barrels...")
-                purchase_plan += [
-                    {
-                        "sku": f"{for_sale.sku}",
-                        "quantity": max_barrel,
-                    }
-                ]
     return purchase_plan
