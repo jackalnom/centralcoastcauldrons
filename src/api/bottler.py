@@ -103,7 +103,7 @@ def get_bottle_plan():
 
     # These are all the potions we want to make currently
     # This order matters, defacto priortity for potion making
-    colors_list = ["red", "green", "blue", "dark", "yellow", "purple", "teal", "dred", "dgreen", "dblue"]
+    colors_list = ["yellow", "red", "green", "blue", "dark", "purple", "teal", "dred", "dgreen", "dblue"]
     potion_type_dict = {
         "red":[100,0,0,0],
         "green":[0,100,0,0],
