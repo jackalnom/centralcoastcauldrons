@@ -74,6 +74,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             result = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity={updated_stock} WHERE sku='{sku}'"))
 
     with db.engine.begin() as connection:
+        result_gold = connection.execute(sqlalchemy.text(f"SELECT gold FROM global_inventory"))
+        for row in result_gold:
+            current_gold = row[0]
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold + total_cost}"))
         # result = connection.execute(sqlalchemy.text(f"DELETE FROM carts WHERE cart_id = {cart_id}"))
 

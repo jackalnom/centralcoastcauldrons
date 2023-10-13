@@ -87,8 +87,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if not sku_exist_result.first()[0]:
             # if not create entry
             sql_getid = f"INSERT INTO barrels_catalog \
-                          (sku, quantity) \
-                          VALUES ('{barrel.sku}', {barrel.quantity}) \
+                          (sku, ml_per_barrel) \
+                          VALUES ('{barrel.sku}', {barrel.ml_per_barrel}) \
                           RETURNING barrel_id"
         else:
             sql_getid = f"SELECT barrel_id \
@@ -103,8 +103,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         with db.engine.begin() as connection:
             # check if sku exists in table already
             sku_exist_result = connection.execute(sqlalchemy.text(f"INSERT INTO barrels_history \
-                                                                    (catalog_id, barrel_id, cost) \
-                                                                    VALUES ({catalog_id}, {barrel_id}, {barrel.price})"))
+                                                                    (catalog_id, barrel_id, cost, quantity) \
+                                                                    VALUES ({catalog_id}, {barrel_id}, {barrel.price}, {barrel.quantity})"))
     #----------------------------------
     # -- Build Purchasing Strategy -- 
     #----------------------------------
