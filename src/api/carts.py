@@ -52,17 +52,18 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
-    """ """
+    # this sucks, need to redo eventually
     total_quantity = 0
     total_cost = 0
     with db.engine.begin() as connection:
-        result_ts = connection.execute(sqlalchemy.text(f"SELECT * FROM carts_transactions WHERE cart_id={cart_id}"))
+        result_ts = connection.execute(sqlalchemy.text(f"SELECT sku,quantity FROM carts_transactions WHERE cart_id={cart_id}"))
         result_gold = connection.execute(sqlalchemy.text(f"SELECT gold FROM global_inventory"))
     for row in result_gold:
         current_gold = row[0]
     for row in result_ts:
-        sku = row[2]
-        quantity = row[3]
+        # for each potion in cart
+        sku = row[0]
+        quantity = row[1]
         with db.engine.begin() as connection:
             result_potion_inv = connection.execute(sqlalchemy.text(f"SELECT quantity,cost FROM potion_inventory WHERE sku='{sku}'"))
         for row_pi in result_potion_inv:
