@@ -52,7 +52,7 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
-    """ """
+    # this sucks, need to redo eventually
     total_quantity = 0
     total_cost = 0
     
