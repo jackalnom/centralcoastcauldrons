@@ -23,23 +23,22 @@ def deliver_barrels(barrels_delivered: list[Barrel],gold,num_red_potions, num_re
 
     for barrel in barrels_delivered:
         match barrel.potion_type:
-            case [100,0,0,0]:
+            case [1,0,0,0]:
                 num_red_potions += barrel.quantity
                 num_red_ml += barrel.quantity * barrel.ml_per_barrel
-                gold -= barrel.quantity * barrel.price
-            case [0,100,0,0]:
+                gold -=  barrel.price
+            case [0,1,0,0]:
                 num_green_potions += barrel.quantity
                 num_green_ml += barrel.quantity * barrel.ml_per_barrel
-                gold_left -= barrel.quantity * barrel.price
-            case [0,0,100,0]:
+                gold_left -= barrel.price
+            case [0,0,1,0]:
                 num_blue_potions += barrel.quantity
                 num_blue_ml += barrel.quantity * barrel.ml_per_barrel
-                gold_left -= barrel.quantity * barrel.price
-            case [0,0,0,100]:
+                gold_left -= barrel.price
+            case [0,0,0,1]:
                 pass
             case _:
                 raise Exception("Invalid potion type")
-        print("Barrel qty bought: ", barrel.quantity, "gold left: ", gold_left, "gold spent: ", barrel.quantity * barrel.price,"Barrel Type :", barrel.potion_type)
     return gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml
     
 
@@ -61,26 +60,25 @@ def get_orders(wholesale_catalog: list[Barrel],gold,num_red_potions, num_red_ml,
     gold_left = gold
     for barrel in wholesale_catalog:
         match barrel.potion_type:
-            case [1,0,0,0]:
-                num_red_potions += barrel.quantity
-                num_red_ml += barrel.quantity * barrel.ml_per_barrel
-                gold_left -= barrel.quantity * barrel.price
+            case [1,0,0,0] if gold_left >=  barrel.price:
+                num_red_ml += 1 * barrel.ml_per_barrel
+                gold_left -= barrel.price
+                barrel.quantity = 1
                 orders.append(barrel)
-            case [0,1,0,0]:
-                num_green_potions += barrel.quantity
-                num_green_ml += barrel.quantity * barrel.ml_per_barrel
-                gold_left -= barrel.quantity * barrel.price
+            case [0,1,0,0] if gold_left >=barrel.price:
+                num_green_ml += 1 * barrel.ml_per_barrel
+                gold_left -= barrel.price
+                barrel.quantity = 1
                 orders.append(barrel)
-            case [0,0,1,0]:
-                num_blue_potions += barrel.quantity
-                num_blue_ml += barrel.quantity * barrel.ml_per_barrel
-                gold_left -= barrel.quantity * barrel.price
+            case [0,0,1,0] if gold_left >= barrel.price:
+                num_blue_ml += 1 * barrel.ml_per_barrel
+                gold_left -=  barrel.price
+                barrel.quantity = 1
                 orders.append(barrel)
             case [0,0,0,1]:
                 pass
             case _:
-                raise Exception("Invalid potion type")
-        print("Barrel qty bought: ", barrel.quantity, "gold left: ", gold_left, "gold spent: ", barrel.quantity * barrel.price,"Barrel Type :", barrel.potion_type)
+                print(barrel)
     return orders
 
 
