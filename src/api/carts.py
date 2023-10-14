@@ -55,27 +55,30 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     total_quantity = 0
     total_cost = 0
+    
+    # update gold
     with db.engine.begin() as connection:
-        result_ts = connection.execute(sqlalchemy.text(f"SELECT * FROM carts_transactions WHERE cart_id={cart_id}"))
-        result_gold = connection.execute(sqlalchemy.text(f"SELECT gold FROM global_inventory"))
-    for row in result_gold:
-        current_gold = row[0]
-    for row in result_ts:
-        sku = row[2]
-        quantity = row[3]
-        with db.engine.begin() as connection:
-            result_potion_inv = connection.execute(sqlalchemy.text(f"SELECT quantity,cost FROM potion_inventory WHERE sku='{sku}'"))
-        for row_pi in result_potion_inv:
-            updated_stock = row_pi[0] - quantity
-            sku_cost = row_pi[1] * quantity
-        total_cost += sku_cost
-        total_quantity += quantity
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity={updated_stock} WHERE sku='{sku}'"))
-
+        result= connection.execute(sqlalchemy.text(
+            "UPDATE global_inventory\
+            SET gold = global_inventory.gold + carts_transactions.quantity * potion_inventory.cost \
+            FROM potion_inventory, carts_transactions \
+            WHERE potion_inventory.sku = carts_transactions.sku and carts_transactions.cart_id = :cart_id\
+            RETURNING carts_transactions.quantity * potion_inventory.cost"),
+            [{"cart_id":cart_id}]
+            )
+    total_cost = result.first()[0]
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold={current_gold + total_cost}"))
-        # result = connection.execute(sqlalchemy.text(f"DELETE FROM carts WHERE cart_id = {cart_id}"))
+        result= connection.execute(sqlalchemy.text(
+            "UPDATE potion_inventory \
+             SET quantity = potion_inventory.quantity - carts_transactions.quantity \
+             FROM carts_transactions \
+             WHERE potion_inventory.sku = carts_transactions.sku and carts_transactions.cart_id = :cart_id \
+             RETURNING carts_transactions.quantity"),
+             [{"cart_id":cart_id}]
+             )
+    for row in result:
+        total_quantity += row[0]
 
     print(f"Cart ID {cart_id} purchased {total_quantity} potions and paid {total_cost} gold")
 
