@@ -47,7 +47,6 @@ def bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,n
     Go from barrel to bottle.
     """
 
-
     plan = []
     if num_red_ml > 100:
         plan.append({
@@ -57,12 +56,12 @@ def bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,n
     if num_green_ml > 100:
         plan.append({
             "potion_type": [0, 100, 0, 0],
-            "quantity": num_green_ml/100,
+            "quantity": num_green_ml//100,
         })
     if num_blue_ml > 100:
         plan.append({
             "potion_type": [0, 0, 100, 0],
-            "quantity": num_blue_ml/100,
+            "quantity": num_blue_ml//100,
         })
     
     return plan
