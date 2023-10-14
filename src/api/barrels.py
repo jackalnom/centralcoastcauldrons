@@ -156,6 +156,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         # sort by largest since those are best value for money
         # want to spend 40% of current gold, or 100, whichever is more
         max_spend = min(gold_left, max((NUM_GOLD*2)//5, 100))
+        if max_spend < 100:
+            # dont buy smaller than small
+            break
         barrels_of_color.sort(key=lambda x:x.ml_per_barrel, reverse=True)
         for barrel in barrels_of_color:
             max_num = min(max_spend // barrel.price, barrel.quantity)
