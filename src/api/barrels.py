@@ -24,15 +24,12 @@ def deliver_barrels(barrels_delivered: list[Barrel],gold,num_red_potions, num_re
     for barrel in barrels_delivered:
         match barrel.potion_type:
             case [1,0,0,0]:
-                num_red_potions += barrel.quantity
                 num_red_ml += barrel.quantity * barrel.ml_per_barrel
                 gold -=  barrel.price
             case [0,1,0,0]:
-                num_green_potions += barrel.quantity
                 num_green_ml += barrel.quantity * barrel.ml_per_barrel
                 gold_left -= barrel.price
             case [0,0,1,0]:
-                num_blue_potions += barrel.quantity
                 num_blue_ml += barrel.quantity * barrel.ml_per_barrel
                 gold_left -= barrel.price
             case [0,0,0,1]:
