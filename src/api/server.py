@@ -21,18 +21,18 @@ app = FastAPI(
     },
 )
 
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
 
-    body = await request.body()
-    logging.info(f"Request: {request.method} {body}")
+#     body = await request.body()
+#     logging.info(f"Request: {request.method} {body}")
 
-    response : Response= await call_next(request)
+#     response : Response= await call_next(request)
 
-    body =  str(response.body)
+#     body =  str(response.body)
 
-    logging.info(f"Response: {response.status_code} {body}")
-    return response
+#     logging.info(f"Response: {response.status_code} {body}")
+#     return response
 
 app.include_router(audit.router)
 app.include_router(carts.router)
