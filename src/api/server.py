@@ -29,7 +29,9 @@ async def add_process_time_header(request: Request, call_next):
 
     response = await call_next(request)
 
-    logging.info(f"Response: {response.status_code} {response.body}")
+    body = await response.body()
+
+    logging.info(f"Response: {response.status_code} {body}")
     return response
 
 app.include_router(audit.router)
