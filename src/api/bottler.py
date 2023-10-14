@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src.api.database import engine as db
+from src.api.models import Inventory
 
 router = APIRouter(
     prefix="/bottler",
@@ -21,6 +22,7 @@ def deliver_bottles(potions_delivered,gold, num_red_potions, num_red_ml, num_blu
             case [100,0,0,0]:
                 num_red_ml -= potion.quantity * 100
                 num_red_potions += potion.quantity
+                print(num_red_ml,num_red_potions)
             case [0,100,0,0]:
                 num_green_ml -= potion.quantity * 100
                 num_green_potions += potion.quantity
@@ -35,10 +37,11 @@ def deliver_bottles(potions_delivered,gold, num_red_potions, num_red_ml, num_blu
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
-    with db.engine.begin() as connection:
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()      
-        gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml = deliver_bottles(potions_delivered,num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml)
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml=:num_red_ml,num_green_ml=:num_green_ml,num_blue_ml=:num_blue_ml,num_red_potions=:num_red_potions,num_green_potions=:num_green_potions, num_blue_potions=:num_blue_potions ,gold=:gold"),{"num_red_potions":num_red_potions,"num_red_ml":num_red_ml,"gold":gold,"num_blue_potions":num_blue_potions,"num_blue_ml":num_blue_ml,"num_green_potions":num_green_potions,"num_green_ml":num_green_ml,"gold":gold})
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
+    print(deliver_bottles(potions_delivered,*inventory.get_inventory()))
+    inventory.set_inventory(*deliver_bottles(potions_delivered,*inventory.get_inventory()))
+    inventory.sync()
     return "OK"
 
 
@@ -63,7 +66,7 @@ def bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,n
             "potion_type": [0, 0, 100, 0],
             "quantity": num_blue_ml//100,
         })
-    
+    print(plan)
     return plan
 
 # Gets called 4 times a day
@@ -79,6 +82,9 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
 
-    with db.engine.begin() as connection:
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
-    return bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml)
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
+    print(inventory.get_inventory())
+
+
+    return bottle_plan(*inventory.get_inventory())

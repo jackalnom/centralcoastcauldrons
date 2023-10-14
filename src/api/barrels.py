@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src.api.database import engine as db
+from src.api.models import Inventory
 router = APIRouter(
     prefix="/barrels",
     tags=["barrels"],
@@ -19,8 +20,7 @@ class Barrel(BaseModel):
     quantity: int
 
 
-def deliver_barrels(barrels_delivered: list[Barrel],gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml):
-
+def deliver_barrels(barrels_delivered: list[Barrel],gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml):
     for barrel in barrels_delivered:
         match barrel.potion_type:
             case [1,0,0,0]:
@@ -44,11 +44,10 @@ def deliver_barrels(barrels_delivered: list[Barrel],gold,num_red_potions, num_re
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml= result.fetchone()
-        gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml = deliver_barrels(barrels_delivered,gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml)
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml=:num_red_ml,num_green_ml=:num_green_ml,num_blue_ml=:num_blue_ml,num_red_potions=:num_red_potions,num_green_potions=:num_green_potions, num_blue_potions=:num_blue_potions ,gold=:gold"),{"num_red_potions":num_red_potions,"num_red_ml":num_red_ml,"gold":gold,"num_blue_potions":num_blue_potions,"num_blue_ml":num_blue_ml,"num_green_potions":num_green_potions,"num_green_ml":num_green_ml,"gold":gold})
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
+    inventory.set_inventory(*deliver_barrels(barrels_delivered,*inventory.get_inventory()))
+    inventory.sync()
     return "OK"
 
     
@@ -84,10 +83,10 @@ def get_orders(wholesale_catalog: list[Barrel],gold,num_red_potions, num_red_ml,
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml= result.fetchone()
-        return get_orders(wholesale_catalog, gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml)
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
+
+    return get_orders(wholesale_catalog,*inventory.get_inventory())
 
         
 

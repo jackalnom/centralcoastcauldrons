@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import sqlalchemy
 from src.api import auth
 from src.api.database import engine as db
+from src.api.models import Inventory
 
 router = APIRouter(
     prefix="/carts",
@@ -52,6 +53,27 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 class CartCheckout(BaseModel):
     payment: str
 
+def process_checkout(cart_id: int, cart_checkout: CartCheckout):
+    """ """
+    cart = carts[cart_id]
+    red_potions_bought = 0
+    blue_potions_bought = 0
+    green_potions_bought = 0
+    gold_paid = int(cart_checkout.payment)
+    print(cart)
+
+    for _,item in cart.get("items",{}).items():
+        if item["sku"] == "RED_POTION_0":
+            red_potions_bought += item["quantity"]
+        elif item["sku"] == "BLUE_POTION_0":
+            blue_potions_bought += item["quantity"]
+        elif item["sku"] == "GREEN_POTION_0":
+            green_potions_bought += item["quantity"]
+        else:
+            raise Exception("Invalid sku")
+    return red_potions_bought, blue_potions_bought, green_potions_bought, gold_paid
+
+
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
@@ -59,18 +81,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     cart = carts[cart_id]
     # total_potions = sum([item["quantity"] for _,item in enumerate(cart.get("items",{}))])
     total_potions = 0
-    with db.engine.begin() as connection:
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
-        print(cart["items"])
-        for _,item in cart.get("items",{}).items():
-            print(item)
-            match item["sku"]:
-                case "RED_POTION_0":
-                    num_red_potions -= item["quantity"]
-                case "BLUE_POTION_0":
-                    num_blue_potions -= item["quantity"]
-                case "GREEN_POTION_0":
-                    num_green_potions -= item["quantity"]
-            total_potions += item["quantity"]
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions=:num_red_potions,num_green_potions=:num_green_potions,num_blue_potions=:num_blue_potions,gold=:gold"),{"num_red_potions": num_red_potions,"num_blue_potions": num_blue_potions,"num_green_potions":num_green_potions,"gold": gold+int(cart_checkout.payment)})
+    red_potions_bought, blue_potions_bought, green_potions_bought, gold_paid = process_checkout(cart_id, cart_checkout)
+    total_potions += red_potions_bought + blue_potions_bought + green_potions_bought
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
+    inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_potions - red_potions_bought, inventory.num_red_ml, inventory.num_blue_potions - blue_potions_bought, inventory.num_blue_ml, inventory.num_green_potions - green_potions_bought, inventory.num_green_ml)
+    inventory.sync()
     return {"total_potions_bought": total_potions, "total_gold_paid": cart_checkout.payment}
