@@ -24,7 +24,7 @@ def get_catalog():
             "sku": "RED_POTION_0",
             "name": "red potion",
             "quantity": inventory.num_red_potions,
-            "price": 10,
+            "price": 20,
             "potion_type": [100, 0, 0, 0],
         })
     if inventory.num_green_potions > 0:
