@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, exceptions
+from fastapi import FastAPI, Request, Response, exceptions
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from src.api import audit, carts, catalog, bottler, barrels, admin
@@ -27,9 +27,9 @@ async def add_process_time_header(request: Request, call_next):
     body = await request.body()
     logging.info(f"Request: {request.method} {body}")
 
-    response = await call_next(request)
+    response : Response= await call_next(request)
 
-    body = await response.body()
+    body =  str(response.body)
 
     logging.info(f"Response: {response.status_code} {body}")
     return response
