@@ -5,6 +5,8 @@ import math
 from src.api.database import engine as db
 import sqlalchemy
 
+from src.api.models import Inventory
+
 router = APIRouter(
     prefix="/audit",
     tags=["audit"],
@@ -14,11 +16,10 @@ router = APIRouter(
 @router.get("/inventory")
 def get_inventory():
     """ """
+    inventory = Inventory(db.engine)
+    inventory.fetch_inventory()
 
-    with db.engine.begin() as connection:
-        num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
-    
-    return {"number_of_potions": num_red_potions, "ml_in_barrels": num_red_ml, "gold": gold, "number_of_blue_potions": num_blue_potions, "ml_in_blue_barrels": num_blue_ml, "number_of_green_potions": num_green_potions, "ml_in_green_barrels": num_green_ml}
+    return {"number_of_potions": inventory.num_blue_potions + inventory.num_green_potions + inventory.num_red_potions, "ml_in_barrels": inventory.num_blue_ml + inventory.num_green_ml + inventory.num_red_ml,"gold": inventory.gold}
 
 class Result(BaseModel):
     gold_match: bool
