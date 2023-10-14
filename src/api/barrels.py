@@ -61,22 +61,22 @@ def get_orders(wholesale_catalog: list[Barrel],gold,num_red_potions, num_red_ml,
     gold_left = gold
     for barrel in wholesale_catalog:
         match barrel.potion_type:
-            case [100,0,0,0]:
+            case [1,0,0,0]:
                 num_red_potions += barrel.quantity
                 num_red_ml += barrel.quantity * barrel.ml_per_barrel
                 gold_left -= barrel.quantity * barrel.price
                 orders.append(barrel)
-            case [0,100,0,0]:
+            case [0,1,0,0]:
                 num_green_potions += barrel.quantity
                 num_green_ml += barrel.quantity * barrel.ml_per_barrel
                 gold_left -= barrel.quantity * barrel.price
                 orders.append(barrel)
-            case [0,0,100,0]:
+            case [0,0,1,0]:
                 num_blue_potions += barrel.quantity
                 num_blue_ml += barrel.quantity * barrel.ml_per_barrel
                 gold_left -= barrel.quantity * barrel.price
                 orders.append(barrel)
-            case [0,0,0,100]:
+            case [0,0,0,1]:
                 pass
             case _:
                 raise Exception("Invalid potion type")
