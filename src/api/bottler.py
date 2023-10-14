@@ -33,10 +33,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                     num_blue_ml -= potion.quantity
                     num_blue_potions += potion.quantity
                 case _:
-
                     raise Exception("Invalid sku")
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml=:num_red_ml,num_green_ml=:num_green_ml,num_blue_ml=:num_blue_ml,num_red_potions=:num_red_potions,num_green_potions=:num_green_potions, num_blue_potions=:num_blue_potions ,gold=:gold"),{"num_red_potions":num_red_potions,"num_red_ml":num_red_ml,"gold":gold,"num_blue_potions":num_blue_potions,"num_blue_ml":num_blue_ml,"num_green_potions":num_green_potions,"num_green_ml":num_green_ml,"gold":gold})
     return "OK"
+
+
 
 # Gets called 4 times a day
 @router.post("/plan")
