@@ -1,4 +1,4 @@
-from fastapi import FastAPI, exceptions
+from fastapi import FastAPI, Request, exceptions
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from src.api import audit, carts, catalog, bottler, barrels, admin
@@ -20,6 +20,17 @@ app = FastAPI(
         "email": "lupierce@calpoly.edu",
     },
 )
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+
+    body = await request.body()
+    logging.info(f"Request: {request.method} {body}")
+
+    response = await call_next(request)
+
+    logging.info(f"Response: {response.status_code} {response.body}")
+    return response
 
 app.include_router(audit.router)
 app.include_router(carts.router)

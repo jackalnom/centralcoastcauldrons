@@ -42,6 +42,7 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+
     item = {"sku": item_sku, "quantity": cart_item.quantity}
     cart = carts[cart_id]
     if "items" not in cart:
