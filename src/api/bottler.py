@@ -81,4 +81,4 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         num_red_potions, num_red_ml, gold, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).fetchone()
-    return get_bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml)
+    return bottle_plan(gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,id,num_green_potions,num_green_ml)
