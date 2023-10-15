@@ -153,7 +153,7 @@ Gets the plan for purchasing wholesale barrels.
 [
     {
         "sku": "string", /* Must match a sku from the catalog just passed in this call */
-        "quantity": "integer" /* A number less than or equal to the quantity available for sale */
+        "quantity": "integer" /* A number between 0 and the quantity available for sale */
     }
 ]
 ```
