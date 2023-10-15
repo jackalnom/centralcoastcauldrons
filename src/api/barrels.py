@@ -154,7 +154,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     continue
                 else:
                     barrels_of_color += [barrel]
-                    wholesale_catalog.remove(barrel)
+                    #wholesale_catalog.remove(barrel)
         
         # sort by largest since those are best value for money
         # want to spend 40% of current gold, or 100, whichever is more
