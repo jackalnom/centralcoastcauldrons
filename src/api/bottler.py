@@ -95,41 +95,30 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
-
-    # Each bottle has a quantity of what proportion of red, blue, and
-    # green potion to add.
-    # Expressed in integers from 1 to 100 that must sum up to 100.
     response = []
-
     # These are all the potions we want to make currently
-    # This order matters, defacto priortity for potion making
-    colors_list = ["yellow", "red", "green", "blue", "dark", "purple", "teal", "dred", "dgreen", "dblue"]
 
-    # need to pull this dict from database
-    potion_type_dict = {
-        "red":[100,0,0,0],
-        "green":[0,100,0,0],
-        "blue":[0,0,100,0],
-        "dark":[0,0,0,100],
-        "yellow":[50,50,0,0],
-        "purple":[50,0,50,0],
-        "teal":[0,50,50,0],
-        "dred":[50,0,0,50],
-        "dgreen":[0,50,0,50],
-        "dblue":[0,0,50,50]
-    }
+    with db.engine.begin() as connection:
+        result_potions = connection.execute(sqlalchemy.text(
+            "SELECT name, sku, type_red, type_green, type_blue, type_dark, quantity \
+             FROM potion_inventory"))
+    inventory = result_potions.all()
+    stock_dict = []
+    for potion in inventory:
+        stock_dict += [{
+            "color": potion[0],
+            "sku": potion[1],
+            "type": potion[2:6],
+            "quantity": potion[5]
+        }]
+    stock_dict.sort(key=lambda x:x["quantity"]) # sort by least barrels
     # Determine potion needs
     target_stock = 5
     request_list = []
     total_need = [0,0,0,0]
-    for color in colors_list:
-        potion_type = potion_type_dict[color]
-        sku = f"R{potion_type[0]}G{potion_type[1]}B{potion_type[2]}D{potion_type[3]}"
-        with db.engine.begin() as connection:
-            result_count = connection.execute(sqlalchemy.text(f"SELECT quantity \
-                                                           FROM potion_inventory \
-                                                           WHERE sku = '{sku}'"))
-        current_stock = result_count.first()[0]
+    for potion in stock_dict:
+        potion_type = potion["type"]
+        current_stock = potion["quantity"]
         bottles_needed = target_stock - current_stock
         request_list += [bottles_needed]
         total_need = [x + r*bottles_needed for x,r in zip(total_need, potion_type)]
@@ -139,11 +128,11 @@ def get_bottle_plan():
                                                          FROM global_inventory"))
     current_ml = result_ml.first()
     
-    for color, num_req in zip(colors_list, request_list):
+    for potion, num_req in zip(stock_dict, request_list):
         if num_req == 0:
             continue
         else:
-            potion_type = potion_type_dict[color]
+            potion_type = potion["type"]
             # Figure out how much stock it would require
             ml_rq = [ml*num_req for ml in potion_type]
             max_potion = target_stock
@@ -154,7 +143,7 @@ def get_bottle_plan():
             # generate plan, keep ledger of what is possible with current stock
             if (max_potion > 0):
                 current_ml = [c - r for c,r in zip(current_ml, ml_rq)]
-                print(f"Plan produces {max_potion} {color} potions...")
+                print(f"Plan produces {max_potion} {potion['color']} potions...")
                 response += [
                     {
                         "potion_type": potion_type,
