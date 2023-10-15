@@ -160,7 +160,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         # want to spend 40% of current gold, or 100, whichever is more
         max_spend = min(gold_left, max((NUM_GOLD*2)//5, 100))
         print(f"Max Spend is {max_spend}")
-        if max_spend < 100:
+        if max_spend < 101:
            
             # dont buy smaller than small
             break
