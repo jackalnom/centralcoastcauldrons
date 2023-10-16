@@ -20,7 +20,7 @@ def get_inventory():
       global_inventory = connection.execute(sqlalchemy.text("""
           SELECT
             gold AS gold,
-            num_red_ml + num_green_ml + num_blue_ml AS ml_in_barrels
+            num_red_ml + num_green_ml + num_blue_ml + num_dark_ml AS ml_in_barrels
           FROM global_inventory
           """)).first()
       potion_inventory = connection.execute(sqlalchemy.text("""
