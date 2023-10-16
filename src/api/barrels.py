@@ -150,7 +150,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for barrel in wholesale_catalog:
             if color in barrel.sku:
                 # barrel is now being checked, remove from catalog
-                if "MINI" in barrel.sku and color != "DARK":
+                if ("MINI" in barrel.sku or "SMALL" in barrel.sku) and color != "DARK":
                     continue
                 else:
                     barrels_of_color += [barrel]
