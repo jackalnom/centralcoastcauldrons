@@ -90,4 +90,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     inventory.fetch_inventory()
     inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_potions - red_potions_bought, inventory.num_red_ml, inventory.num_blue_potions - blue_potions_bought, inventory.num_blue_ml, inventory.num_green_potions - green_potions_bought, inventory.num_green_ml)
     inventory.sync()
-    return {"total_potions_bought": total_potions, "total_gold_paid": cart_checkout.payment}
+    return {"total_potions_bought": total_potions, "total_gold_paid": gold_paid}
