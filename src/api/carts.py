@@ -59,14 +59,20 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     # update gold
     with db.engine.begin() as connection:
         result= connection.execute(sqlalchemy.text(
-            "UPDATE global_inventory\
-            SET gold = global_inventory.gold + carts_transactions.quantity * potion_inventory.cost \
+            "INSERT INTO stock_ledger(d_gold, description)\
+            VALUES ((carts_transactions.quantity * potion_inventory.cost), ':msg') \
             FROM potion_inventory, carts_transactions \
             WHERE potion_inventory.sku = carts_transactions.sku and carts_transactions.cart_id = :cart_id\
             RETURNING carts_transactions.quantity * potion_inventory.cost"),
-            [{"cart_id":cart_id}]
+            [
+                {"cart_id":cart_id},
+                {"msg":f"Checking out Cart {cart_id}"}
+            ]
             )
-    total_cost = result.first()[0]
+        result = connection.execute(sqlalchemy.text(
+            "SELECT \
+                                                    "))
+    # total_cost = result.first()[0]
     
     with db.engine.begin() as connection:
         result= connection.execute(sqlalchemy.text(
