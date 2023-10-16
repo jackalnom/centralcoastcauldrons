@@ -28,25 +28,12 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
         sku = generate_sku(order)
         with db.engine.begin() as connection:
             # check if sku exists in table already
-            sku_exist_result= connection.execute(sqlalchemy.text(f"SELECT COUNT(sku) FROM potion_inventory WHERE sku = '{sku}'"))
-            for row in sku_exist_result:
-                sku_exist = row[0]
-            if not sku_exist:
-                # sku_exist = 1 if already in system
-                # sku_exist = 0 if not in system
-                # in this case, sku doesn't exist yet
-                # insert row
-                result = connection.execute(sqlalchemy.text(
-                    f"INSERT INTO potion_inventory(sku, type_red, type_green, type_blue, type_dark, cost, quantity)\
-                     VALUES ('{sku}', {order.potion_type[0]},{order.potion_type[1]},{order.potion_type[2]},{order.potion_type[3]},{50}, {count})"))
-                print(f"Creating new entry for SKU:{sku}...")
-            else:
                 # sku alrd exists
-                result_current_count = connection.execute(sqlalchemy.text(f"SELECT quantity FROM potion_inventory WHERE sku = '{sku}'"))
-                for row in result_current_count:
-                    current_count = row[0] 
-                result = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity = {count + current_count} WHERE sku = '{sku}'"))
-            
+            result_current_count = connection.execute(sqlalchemy.text(f"SELECT quantity FROM potion_inventory WHERE sku = '{sku}'"))
+            for row in result_current_count:
+                current_count = row[0] 
+            result_potion = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity = {count + current_count} WHERE sku = '{sku}' RETURNING name"))
+        
             # remove ml amount from stock
             red = order.potion_type[0]
             green = order.potion_type[1]
@@ -66,8 +53,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                                                                     num_green_ml = {new_green}, \
                                                                     num_blue_ml = {new_blue}, \
                                                                     num_dark_ml = {new_dark}"))
+            name = result_potion.first()[0]
 
-        print(f"Sucessfully delivered {count} of SKU:{sku}. New total is {current_count + count}")
+        print(f"Sucessfully delivered {count} {name} potions. New total is {current_count + count}")
 
         # Depreciated, only supports monolithic potions
         # # pull and update potion delivery
