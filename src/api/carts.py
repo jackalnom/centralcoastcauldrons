@@ -73,7 +73,7 @@ def process_checkout(cart_id: int, cart_checkout: CartCheckout):
             green_potions_bought += item["quantity"]
         else:
             raise Exception("Invalid sku")
-    gold_paid = red_potions_bought * 20 + blue_potions_bought * 1 + green_potions_bought * 1
+    gold_paid = red_potions_bought * 30 + blue_potions_bought * 1 + green_potions_bought * 1
     return red_potions_bought, blue_potions_bought, green_potions_bought, gold_paid
 
 
