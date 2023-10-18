@@ -44,6 +44,7 @@ def deliver_barrels(barrels_delivered: list[Barrel],gold, num_red_potions, num_r
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
+
     inventory = Inventory(db.engine)
     inventory.fetch_inventory()
     inventory.set_inventory(*deliver_barrels(barrels_delivered,*inventory.get_inventory()))
@@ -85,7 +86,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
     inventory = Inventory(db.engine)
     inventory.fetch_inventory()
-
     return get_orders(wholesale_catalog,*inventory.get_inventory())
 
         

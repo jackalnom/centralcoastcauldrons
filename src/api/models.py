@@ -41,3 +41,33 @@ class Inventory():
         self.num_blue_ml = num_blue_ml
         self.num_green_potions = num_green_potions
         self.num_green_ml = num_green_ml
+
+class PotionInventory():
+    def __init__(self, engine):
+        self.engine = engine
+        self.potion_type = [0,0,0,0]
+        self.quantity = 0
+        self.sku = ""
+        self.price = 0
+
+    def __repr__(self):
+        return f"<PotionInventory {self.sku}>"
+
+    def fetch_inventory(self):
+        with self.engine.begin() as connection:
+            _,self.potion_type,self.quantity,self.sku,self.price = connection.execute(sqlalchemy.text("SELECT * FROM potion_inventory")).fetchone()
+        
+    def add_potion_type(self,potion_type,quantity,sku,price):
+        with self.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("INSERT INTO potion_inventory (potion_type,quantity,sku,price) VALUES (:potion_type,:quantity,:sku,:price)"),{"potion_type":potion_type,"quantity":quantity,"sku":sku,"price":price})
+        self.fetch_inventory()
+
+    def update_quantity(self,potion_type,quantity):
+        with self.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE potion_inventory SET quantity=:quantity WHERE potion_type=:potion_type"),{"quantity":quantity,"potion_type":potion_type})
+        self.fetch_inventory()              
+
+    def get_inventory(self):
+        return self.potion_type,self.quantity,self.sku,self.price
+    
+    

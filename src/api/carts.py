@@ -80,7 +80,7 @@ def process_checkout(cart_id: int, cart_checkout: CartCheckout):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
+    print(f"checkout {cart_id} {cart_checkout}")
     cart = carts[cart_id]
     # total_potions = sum([item["quantity"] for _,item in enumerate(cart.get("items",{}))])
     total_potions = 0
@@ -90,4 +90,5 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     inventory.fetch_inventory()
     inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_potions - red_potions_bought, inventory.num_red_ml, inventory.num_blue_potions - blue_potions_bought, inventory.num_blue_ml, inventory.num_green_potions - green_potions_bought, inventory.num_green_ml)
     inventory.sync()
+    print(inventory.get_inventory())
     return {"total_potions_bought": total_potions, "total_gold_paid": gold_paid}
