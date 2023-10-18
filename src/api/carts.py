@@ -59,32 +59,38 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     # update gold
     with db.engine.begin() as connection:
         result= connection.execute(sqlalchemy.text(
-            "INSERT INTO stock_ledger(d_gold, description)\
-            VALUES ((carts_transactions.quantity * potion_inventory.cost), ':msg') \
-            FROM potion_inventory, carts_transactions \
-            WHERE potion_inventory.sku = carts_transactions.sku and carts_transactions.cart_id = :cart_id\
-            RETURNING carts_transactions.quantity * potion_inventory.cost"),
-            [
-                {"cart_id":cart_id},
-                {"msg":f"Checking out Cart {cart_id}"}
-            ]
-            )
-        result = connection.execute(sqlalchemy.text(
-            "SELECT \
-                                                    "))
-    # total_cost = result.first()[0]
+            "INSERT INTO stock_ledger (d_gold, :description) \
+            SELECT d_gold \
+            FROM \
+                ( \
+                SELECT carts_transactions.quantity * potion_inventory.cost as d_gold \
+                FROM carts_transactions \
+                JOIN potion_inventory on potion_inventory.sku = carts_transactions.sku \
+                WHERE carts_transactions.cart_id = :cart_id \
+                ) \
+            as subquery \
+            RETURNING d_gold;"), 
+            [{
+                'description':f"Checkout Cart {cart_id} with payment {cart_checkout.payment}",
+                'cart_id':cart_id
+            }])
+    total_cost = result.first()[0]
     
     with db.engine.begin() as connection:
         result= connection.execute(sqlalchemy.text(
-            "UPDATE potion_inventory \
-             SET quantity = potion_inventory.quantity - carts_transactions.quantity \
-             FROM carts_transactions \
-             WHERE potion_inventory.sku = carts_transactions.sku and carts_transactions.cart_id = :cart_id \
-             RETURNING carts_transactions.quantity"),
-             [{"cart_id":cart_id}]
-             )
+            "INSERT into potion_ledger (d_quan, potion_id, description) \
+            SELECT (-1*carts_transactions.quantity) as d_quan, potion_inventory.id as potion_id, :description as description\
+            FROM carts_transactions \
+            JOIN potion_inventory on potion_inventory.sku = carts_transactions.sku \
+            WHERE carts_transactions.cart_id = :cart_id) \
+            RETURNING d_quan"), 
+            [{
+                'description':f"Checkout Cart {cart_id}",
+                'cart_id':cart_id
+            }])
     for row in result:
-        total_quantity += row[0]
+        total_quantity += (-1)*row[0]
+
 
     print(f"Cart ID {cart_id} purchased {total_quantity} potions and paid {total_cost} gold")
 
