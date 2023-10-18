@@ -49,6 +49,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     inventory.fetch_inventory()
     inventory.set_inventory(*deliver_barrels(barrels_delivered,*inventory.get_inventory()))
     inventory.sync()
+    print(inventory.get_inventory())
     return "OK"
 
     
