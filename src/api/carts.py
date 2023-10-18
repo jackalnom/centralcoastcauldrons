@@ -88,6 +88,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     total_potions += red_potions_bought + blue_potions_bought + green_potions_bought
     inventory = Inventory(db.engine)
     inventory.fetch_inventory()
+    print(inventory.get_inventory())
     inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_potions - red_potions_bought, inventory.num_red_ml, inventory.num_blue_potions - blue_potions_bought, inventory.num_blue_ml, inventory.num_green_potions - green_potions_bought, inventory.num_green_ml)
     inventory.sync()
     print(inventory.get_inventory())

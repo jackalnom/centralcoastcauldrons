@@ -84,6 +84,6 @@ def get_bottle_plan():
     inventory = Inventory(db.engine)
     inventory.fetch_inventory()
     print(inventory.get_inventory())
-
+    print(bottle_plan(*inventory.get_inventory()))
 
     return bottle_plan(*inventory.get_inventory())
