@@ -21,7 +21,7 @@ def get_catalog():
         """)).fetchall()
     catalog = []
     for potion in potion_inventory:
-      if len(catalog) < 20 and potion.num_potion != 0:
+      if len(catalog) < 6 and potion.num_potion != 0:
         catalog.append({
           "sku": potion.sku,
           "name": potion.sku,
