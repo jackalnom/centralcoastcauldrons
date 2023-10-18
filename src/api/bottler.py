@@ -49,17 +49,23 @@ def get_bottle_plan():
     response = []
     # These are all the potions we want to make currently
 
-    #TODO
     with db.engine.begin() as connection:
         result_potions = connection.execute(sqlalchemy.text(
-            "SELECT name, sku, type_red, type_green, type_blue, type_dark, quantity \
-             FROM potion_inventory"))
+            "SELECT \
+            potion_inventory.name, \
+            potion_inventory.type_red, \
+            potion_inventory.type_green, \
+            potion_inventory.type_blue, \
+            potion_inventory.type_dark, \
+            SUM(d_quan) \
+            FROM potion_inventory \
+            join potion_ledger on potion_ledger.potion_id = potion_inventory.id \
+            GROUP BY potion_inventory.id"))
     inventory = result_potions.all()
     stock_dict = []
     for potion in inventory:
         stock_dict += [{
             "color": potion[0],
-            "sku": potion[1],
             "type": potion[2:6],
             "quantity": potion[5]
         }]

@@ -98,11 +98,17 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("Building purchase strategy...")
     # get current potion stock levels
 
-    # TODO refactor when doing potions
     with db.engine.begin() as connection:
-        check_stock_result = connection.execute(sqlalchemy.text(f"SELECT type_red, type_green, type_blue, type_dark, quantity \
-                                                                  FROM potion_inventory \
-                                                                  WHERE quantity != 0"))
+        check_stock_result = connection.execute(sqlalchemy.text(
+            "SELECT \
+            potion_inventory.type_red, \
+            potion_inventory.type_green, \
+            potion_inventory.type_blue, \
+            potion_inventory.type_dark, \
+            CAST(SUM(d_quan) AS INTEGER) AS total \
+            FROM potion_inventory \
+            join potion_ledger on potion_ledger.potion_id = potion_inventory.id \
+            GROUP BY potion_inventory.id"))
 
     total_stock = [0,0,0,0]
     for potion in check_stock_result:

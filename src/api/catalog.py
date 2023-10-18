@@ -10,70 +10,47 @@ def get_catalog():
     """
     Each unique item combination must have only a single price.
     """
-
-    # Can return a max of 20 items.
-    colors_list = ["red","green","blue"]
-    colors_dict = {
-        "red":[100,0,0,0],
-        "green":[0,100,0,0],
-        "blue":[0,0,100,0]
-    }
-    caps_dict = {
-        "red":"RED",
-        "green":"GREEN",
-        "blue":"BLUE"
-    }
-    cost_dict = {
-        "red":50,
-        "green":55,
-        "blue":60
-    }
     return_list = []
     # Get count of Red Potions
     print("Delivering Catalog...")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT sku,type_red,type_green,type_blue,cost,quantity,name FROM potion_inventory WHERE quantity > 0"))
+        result = connection.execute(sqlalchemy.text(
+            "SELECT \
+            potion_inventory.sku \
+            potion_inventory.type_red, \
+            potion_inventory.type_green, \
+            potion_inventory.type_blue, \
+            potion_inventory.type_dark, \
+            potion_inventory.cost \
+            potion_inventory.name, \
+            CAST(SUM(d_quan) AS INTEGER) AS total \
+            FROM potion_inventory \
+            join potion_ledger on potion_ledger.potion_id = potion_inventory.id \
+            GROUP BY potion_inventory.id"))
     for row in result:
         sku = row[0]
         red = row[1]
         green = row[2]
         blue = row[3]
-        cost = row[4]
-        name = row[5]
-        quantity = row[5]
+        dark = row[4]
+        cost = row[5]
+        name = row[6]
+        quantity = row[7]
         print(f"Catalog contains {quantity} {sku}...")
-        return_list += [
-                {
-                    "sku": sku,
-                    "name": f"{name}",
-                    "quantity": quantity,
-                    "price": cost,
-                    "potion_type": [red,green,blue,0],
-                }
-            ]
+        if quantity > 0:
+            return_list += [
+                    {
+                        "sku": sku,
+                        "name": f"{name}",
+                        "quantity": quantity,
+                        "price": cost,
+                        "potion_type": [red,green,blue,dark],
+                    }
+                ]
 
         if len(return_list) >= 20:
             break
-
-    # Depreciated, single color support
-    # for color in colors_list:
-    #     with db.engine.begin() as connection:
-    #         result = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
-    #     for row in result:
-    #         quantity_potions = row[0]
-    #     return_list = []
-    #     if quantity_potions > 0:
-    #         print(f"Catalog contains {quantity_potions} {color} potions...")
-    #         return_list += [
-    #             {
-    #                 "sku": f"{caps_dict[color]}_POTION_0",
-    #                 "name": f"{color} potion",
-    #                 "quantity": quantity_potions,
-    #                 "price": cost_dict[color],
-    #                 "potion_type": colors_dict[],
-    #             }
-    #         ]
     print("Current Catalog:")
     print(return_list)
     return return_list
