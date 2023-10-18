@@ -20,7 +20,7 @@ class Barrel(BaseModel):
     quantity: int
 
 
-def deliver_barrels(barrels_delivered: list[Barrel],gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml):
+def deliver_barrels(barrels_delivered: list[Barrel],gold, num_red_ml,num_blue_ml,num_green_ml):
     for barrel in barrels_delivered:
         match barrel.potion_type:
             case [1,0,0,0]:
@@ -36,7 +36,7 @@ def deliver_barrels(barrels_delivered: list[Barrel],gold, num_red_potions, num_r
                 pass
             case _:
                 raise Exception("Invalid potion type")
-    return gold, num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml
+    return gold, num_red_ml,num_blue_ml,num_green_ml
     
 
 
@@ -53,7 +53,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     return "OK"
 
     
-def get_orders(wholesale_catalog: list[Barrel],gold,num_red_potions, num_red_ml, num_blue_potions,num_blue_ml,num_green_potions,num_green_ml):
+def get_orders(wholesale_catalog: list[Barrel],gold, num_red_ml,num_blue_ml,num_green_ml):
     orders = []
     gold_left = gold
     for barrel in wholesale_catalog:

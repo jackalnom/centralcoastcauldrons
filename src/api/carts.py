@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import sqlalchemy
 from src.api import auth
 from src.api.database import engine as db
-from src.api.models import Inventory
+from src.api.models import Cart, CartModel, Inventory, PotionsInventory, CartItem as CartItemType
 
 router = APIRouter(
     prefix="/carts",
@@ -15,16 +15,12 @@ router = APIRouter(
 class NewCart(BaseModel):
     customer: str
 
-cart_id = 0
-
-carts = {}
 
 @router.post("/")
 def create_cart(new_cart: NewCart):
     """ """
-    global cart_id
-    cart_id +=1
-    carts[cart_id] = ({"customer":new_cart.customer})
+    cart_model = CartModel(db.engine)
+    cart_id = cart_model.create_cart(new_cart.customer).cart_id
     return {"cart_id": cart_id}
 
 
@@ -32,7 +28,7 @@ def create_cart(new_cart: NewCart):
 def get_cart(cart_id: int):
     """ """
 
-    return carts[cart_id]
+    return CartModel(db.engine).get_entry(cart_id)
 
 
 class CartItem(BaseModel):
@@ -42,54 +38,65 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
-    item = {"sku": item_sku, "quantity": cart_item.quantity}
-    cart = carts[cart_id]
-    if "items" not in cart:
-        cart["items"] = {}
-    cart["items"][item_sku] = item
-    return "OK"
+    entries = PotionsInventory(db.engine).get_inventory()
+    for entry in entries:
+        if entry[3] == item_sku:
+            print(entry)
+            item = CartItemType(quantity=cart_item.quantity,potion=entry[0])
+            cm = CartModel(db.engine)
+            cart = cm.get_entry(cart_id)
+            print(cart)
+            print("item",item)
+            cart.items.append(item)
+            cm.update_cart(cart)
+            return "OK"
+    return "Invalid SKU"
 
 
 class CartCheckout(BaseModel):
     payment: str
 
-def process_checkout(cart_id: int, cart_checkout: CartCheckout):
+def process_checkout(cart: Cart, cart_checkout: CartCheckout,potion_entries):
     """ """
-    cart = carts[cart_id]
-    red_potions_bought = 0
-    blue_potions_bought = 0
-    green_potions_bought = 0
     gold_paid = 0
     print(cart)
     print(cart_checkout)
+    potions_bought = []
+    print(potion_entries)
+    for item in cart.items:
+        for potion_entry in potion_entries:
+            if potion_entry[0] == item.potion:
+                potions_bought.append([potion_entry[1], item.quantity, potion_entry[4]])
+                break
+    print(potions_bought)
 
-    for _,item in cart.get("items",{}).items():
-        if item["sku"] == "RED_POTION_0":
-            red_potions_bought += item["quantity"]
-        elif item["sku"] == "BLUE_POTION_0":
-            blue_potions_bought += item["quantity"]
-        elif item["sku"] == "GREEN_POTION_0":
-            green_potions_bought += item["quantity"]
-        else:
-            raise Exception("Invalid sku")
-    gold_paid = red_potions_bought * 30 + blue_potions_bought * 1 + green_potions_bought * 1
-    return red_potions_bought, blue_potions_bought, green_potions_bought, gold_paid
+    gold_paid = sum([potion_entry[2] * potion_entry[1] for potion_entry in potions_bought])
+    return gold_paid , potions_bought
 
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     print(f"checkout {cart_id} {cart_checkout}")
-    cart = carts[cart_id]
+    cm = CartModel(db.engine)
+    cart = cm.get_entry(cart_id)
+
     # total_potions = sum([item["quantity"] for _,item in enumerate(cart.get("items",{}))])
     total_potions = 0
-    red_potions_bought, blue_potions_bought, green_potions_bought, gold_paid = process_checkout(cart_id, cart_checkout)
-    total_potions += red_potions_bought + blue_potions_bought + green_potions_bought
+
+    potions = PotionsInventory(db.engine)
+    
+
+    gold_paid, potions_bought = process_checkout(cart, cart_checkout, potions.get_inventory())
+    print(potions_bought)
+
+    total_potions += sum([potion_entry[1] for potion_entry in potions_bought])
     inventory = Inventory(db.engine)
     inventory.fetch_inventory()
-    print(inventory.get_inventory())
-    inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_potions - red_potions_bought, inventory.num_red_ml, inventory.num_blue_potions - blue_potions_bought, inventory.num_blue_ml, inventory.num_green_potions - green_potions_bought, inventory.num_green_ml)
+    inventory.set_inventory(inventory.gold + gold_paid, inventory.num_red_ml, inventory.num_blue_ml, inventory.num_green_ml)
     inventory.sync()
-    print(inventory.get_inventory())
+    for potion in potions_bought:
+        print(potion)
+        potions.update_quantity(potion[0], potions.get_entry(potion[0])[2] - potion[1])
+
     return {"total_potions_bought": total_potions, "total_gold_paid": gold_paid}

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from src.api.database import engine as db
 import sqlalchemy
 
-from src.api.models import Inventory
+from src.api.models import Inventory, PotionsInventory
 
 router = APIRouter()
 
@@ -15,33 +15,22 @@ def get_catalog():
 
     # Can return a max of 20 items.
 
-    inventory = Inventory(db.engine)
-    inventory.fetch_inventory()
+
+    potions = PotionsInventory(db.engine)
+    potion_entries = potions.get_inventory()
 
     catalog = []
-    if inventory.num_red_potions > 0:
-        catalog.append({
-            "sku": "RED_POTION_0",
-            "name": "red potion",
-            "quantity": inventory.num_red_potions,
-            "price": 30,
-            "potion_type": [100, 0, 0, 0],
-        })
-    if inventory.num_green_potions > 0:
-        catalog.append({
-            "sku": "GREEN_POTION_0",
-            "name": "green potion",
-            "quantity": inventory.num_green_potions,
-            "price": 1,
-            "potion_type": [0, 100, 0, 0],
-        })
-    if inventory.num_blue_potions > 0:
-        catalog.append({
-            "sku": "BLUE_POTION_0",
-            "name": "blue potion",
-            "quantity": inventory.num_blue_potions,
-            "price": 1,
-            "potion_type": [0, 0, 100, 0],
-        })
+    for potion_entry in potion_entries:
+        print(potion_entry)
+        if potion_entry[2] > 0:
+            catalog.append(
+                {
+                    "sku": potion_entry[3],
+                    "potion_type": potion_entry[1],
+                    "quantity": potion_entry[2],
+                    "price": potion_entry[4],
+                    "name": potion_entry[3]
+                }
+            )
     print(catalog)
     return catalog
