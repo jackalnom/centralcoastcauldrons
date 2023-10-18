@@ -24,55 +24,18 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     print("Delivering Potions:")
     for order in potions_delivered:
         count = order.quantity
-        current_count = 0
         sku = generate_sku(order)
-        with db.engine.begin() as connection:
-            # check if sku exists in table already
-                # sku alrd exists
-            result_current_count = connection.execute(sqlalchemy.text(f"SELECT quantity FROM potion_inventory WHERE sku = '{sku}'"))
-            for row in result_current_count:
-                current_count = row[0] 
-            result_potion = connection.execute(sqlalchemy.text(f"UPDATE potion_inventory SET quantity = {count + current_count} WHERE sku = '{sku}' RETURNING name"))
         
-            # remove ml amount from stock
-            red = order.potion_type[0]
-            green = order.potion_type[1]
-            blue = order.potion_type[2]
-            dark = order.potion_type[3]
+        p_id = db.get_potion_id(sku)
+        db.update_potion(count, p_id, f"Delivery of {count} {sku}")
 
-            stock_result = connection.execute(sqlalchemy.text(f"SELECT num_red_ml,num_green_ml,num_blue_ml,num_dark_ml \
-                                                                FROM global_inventory"))
-            stock_list = stock_result.first()
-            new_red = stock_list[0] - count * red
-            new_green = stock_list[1] - count * green
-            new_blue = stock_list[2] - count * blue
-            new_dark = stock_list[3] - count * dark
+        db.update_ml(-order.potion_type[0]*count, 'red', f"Delivery of {count} {sku}")
+        db.update_ml(-order.potion_type[1]*count, 'green', f"Delivery of {count} {sku}")
+        db.update_ml(-order.potion_type[2]*count, 'blue', f"Delivery of {count} {sku}")
+        db.update_ml(-order.potion_type[3]*count, 'dark', f"Delivery of {count} {sku}")
+        
+        print(f"Sucessfully delivered {count} {sku} potions.")
 
-            stock_update = connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
-                                                                SET num_red_ml = {new_red}, \
-                                                                    num_green_ml = {new_green}, \
-                                                                    num_blue_ml = {new_blue}, \
-                                                                    num_dark_ml = {new_dark}"))
-            name = result_potion.first()[0]
-
-        print(f"Sucessfully delivered {count} {name} potions. New total is {current_count + count}")
-
-        # Depreciated, only supports monolithic potions
-        # # pull and update potion delivery
-        # color = delivery_dict[order.potion_type.index(100)] # still assuming pure potions
-        # with db.engine.begin() as connection:
-        #     result_ml = connection.execute(sqlalchemy.text(f"SELECT num_{color}_ml FROM global_inventory"))
-        #     result_potion = connection.execute(sqlalchemy.text(f"SELECT num_{color}_potions FROM global_inventory"))
-        # for row in result_potion:
-        #     current_potion = row[0]
-        # for row in result_ml:
-        #     current_ml = row[0]
-        # updated_potion = current_potion + count
-        # updated_ml = current_ml - count*100
-        # print(f"{count} {color} potions delivered, new {color} mL stock is {updated_ml}, new {color} potion stock is {updated_potion}")
-        # with db.engine.begin() as connection:
-        #     result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_potions = {updated_ml}"))
-        #     result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_{color}_ml = {updated_ml}"))
     print(potions_delivered)
 
     return "OK"
@@ -86,6 +49,7 @@ def get_bottle_plan():
     response = []
     # These are all the potions we want to make currently
 
+    #TODO
     with db.engine.begin() as connection:
         result_potions = connection.execute(sqlalchemy.text(
             "SELECT name, sku, type_red, type_green, type_blue, type_dark, quantity \
@@ -111,10 +75,8 @@ def get_bottle_plan():
         request_list += [bottles_needed]
         total_need = [x + r*bottles_needed for x,r in zip(total_need, potion_type)]
     # Determine current barrel stock
-    with db.engine.begin() as connection:
-        result_ml = connection.execute(sqlalchemy.text(f"SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml \
-                                                         FROM global_inventory"))
-    current_ml = result_ml.first()
+    
+    current_ml = db.get_all_ml()
     
     for potion, num_req in zip(stock_dict, request_list):
         if num_req == 0:

@@ -32,30 +32,17 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     for indiv_barrel in barrels_delivered:
         ml_total_delivered=0
         cost_total=0
-        current_gold=0
-        current_ml=0
 
         color = delivery_dict.get(indiv_barrel.potion_type.index(1))
         
         ml_total_delivered = indiv_barrel.quantity*indiv_barrel.ml_per_barrel
         cost_total = indiv_barrel.quantity*indiv_barrel.price
 
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"SELECT gold, num_{color}_ml \
-                                                          FROM global_inventory"))
-        row = result.first()
-        current_gold = row[0] - cost_total
-        current_ml = row[1] + ml_total_delivered
+        db.update_gold(-cost_total, f"Delivery of {ml_total_delivered}mL {color}")
+        db.update_ml(ml_total_delivered, color, f"Delivery of {ml_total_delivered}mL {color}")
         
         print(f"Delivery taken of {ml_total_delivered}mL of {color} potion, at cost of {cost_total}.")
-        print(f"Current {color} potion stock is {current_ml}mL, current gold is {current_gold}")
-        
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
-                                                          SET num_{color}_ml = {current_ml}, gold = {current_gold}"))
-
-
-    ## end new implimentation 
+    
     print(barrels_delivered)
 
     return "OK"
@@ -110,20 +97,24 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #----------------------------------
     print("Building purchase strategy...")
     # get current potion stock levels
+
+    # TODO refactor when doing potions
     with db.engine.begin() as connection:
         check_stock_result = connection.execute(sqlalchemy.text(f"SELECT type_red, type_green, type_blue, type_dark, quantity \
                                                                   FROM potion_inventory \
                                                                   WHERE quantity != 0"))
-        check_ml_result = connection.execute(sqlalchemy.text(f"SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold \
-                                                               FROM global_inventory"))
+
     total_stock = [0,0,0,0]
     for potion in check_stock_result:
         quantity = potion[-1]
         total_stock = [x + c*quantity for x, c in zip(total_stock, potion[:-1])]
-    current_ml = check_ml_result.first()
-    NUM_GOLD = current_ml[-1]
+    
+    current_ml = db.get_all_ml()
+
+    NUM_GOLD = db.get_gold()
     gold_left = NUM_GOLD
     total_stock = [x + cml for x, cml in zip(total_stock, current_ml[:-1])]
+
     # create list of priority to purchase
     potion_stock = [
         {'name': 'RED', 'amount': total_stock[0]},
@@ -132,7 +123,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         {'name': 'DARK', 'amount': total_stock[3]}
     ]
     # sort based on lowest stock level (will evenly purchase potions)
-    # this stragetgy, combined with bottling stragegy should evenly purchase colors, prioritizing solid potions before making mixed potions
+    # this stragetgy, combined with bottling stragegy should evenly purchase colors
     potion_stock.sort(key=lambda x:x['amount'])
     
     TARGET_STOCK = 3000 # make this dynamic later, maybe 120% of previous day potions idk, this is currently enough for full potion inventory with some margin
