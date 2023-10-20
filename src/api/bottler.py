@@ -25,27 +25,34 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
   """ """
   print(potions_delivered)
   with db.engine.begin() as connection:
-    # for logging
     used_ml = [0, 0, 0, 0]
     for potion in potions_delivered:
-      # update number of potions in potion_inventory
+      # update potion_inventory
+      potion_transaction_id = connection.execute(sqlalchemy.text("""
+        INSERT INTO potion_transactions (description)
+        VALUES (:description)
+        RETURNING id
+        """), {"description": "Bottled: " + str(potion)}).first().id
       connection.execute(sqlalchemy.text("""
-          UPDATE potion_inventory
-          SET num_potion = num_potion + :add_potions
-          WHERE potion_type = :potion_type
-          """), {"add_potions": potion.quantity, "potion_type": potion.potion_type})
-      # update number of ml in global_inventory
+        INSERT INTO potion_entries (potion_sku, change, potion_transaction_id)
+        SELECT potions.sku, :change, :transaction_id
+        FROM potions WHERE potions.potion_type = :potion_type
+        """), {"change": potion.quantity, "transaction_id": potion_transaction_id, "potion_type": potion.potion_type})
       for i in range(len(colors)):
         potion_ml = potion.potion_type[i] * potion.quantity
         used_ml[i] += potion_ml
-        connection.execute(sqlalchemy.text(f"""
-            UPDATE global_inventory
-            SET num_{colors[i]}_ml = num_{colors[i]}_ml - :potion_ml
-            """), {"potion_ml": potion_ml})    
-    global_inventory = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory")).first()
-    print(f"Bottling used (ml): {used_ml}\n"
-          f"Current inventory (ml): [{global_inventory.num_red_ml}, {global_inventory.num_green_ml}, " \
-          f"{global_inventory.num_blue_ml}, {global_inventory.num_dark_ml}]")
+    # update global_inventory
+    global_transaction_id = connection.execute(sqlalchemy.text("""
+        INSERT INTO global_inventory_transactions (description)
+        VALUES (:description)
+        RETURNING id
+        """), {"description": "Bottled: " + str(potions_delivered)}).first().id
+    connection.execute(sqlalchemy.text("""
+        INSERT INTO global_inventory_entries
+          (change_gold, change_red_ml, change_green_ml, change_blue_ml, change_dark_ml, global_inventory_transaction_id)
+        VALUES (:gold, :num_red_ml, :num_green_ml, :num_blue_ml, :num_dark_ml, :transaction_id)
+        """), {"gold": 0, "num_red_ml": -used_ml[0], "num_green_ml": -used_ml[1],
+              "num_blue_ml": -used_ml[2], "num_dark_ml": -used_ml[3], "transaction_id": global_transaction_id})
   return "OK"
 
 
@@ -69,8 +76,10 @@ def get_bottle_plan():
         FROM global_inventory_entries
         """)).first()
     potion_inventory = connection.execute(sqlalchemy.text("""
-        SELECT potion_type, num_potion
-        FROM potion_inventory
+        SELECT potions.potion_type, COALESCE(SUM(change), 0) as num_potion
+        FROM potions
+        LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku                      
+        GROUP BY potions.potion_type
         """)).fetchall()
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
     # splits total_num_bottles to even amounts, tries to even out each color
