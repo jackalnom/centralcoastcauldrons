@@ -59,7 +59,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         """), {"description": "Barreled: " + str(barrels_delivered)}).first().id
     connection.execute(sqlalchemy.text("""
         INSERT INTO global_inventory_entries
-        (change_gold, change_red_ml, change_green_ml, change_blue_ml, change_dark_ml, global_inventory_transaction_id)
+          (change_gold, change_red_ml, change_green_ml, change_blue_ml, change_dark_ml, global_inventory_transaction_id)
         VALUES (:barrels_cost, :num_red_ml, :num_green_ml, :num_blue_ml, :num_dark_ml, :transaction_id)
         """), {"barrels_cost": -total_barrels_cost, "num_red_ml": added_ml["red"], "num_green_ml": added_ml["green"], 
                "num_blue_ml": added_ml["blue"], "num_dark_ml": added_ml["dark"], "transaction_id": transaction_id})
@@ -80,8 +80,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         FROM global_inventory_entries
         """)).first()
     potion_inventory = connection.execute(sqlalchemy.text("""
-        SELECT potion_type, num_potion
-        FROM potion_inventory
+        SELECT potions.potion_type, COALESCE(SUM(change), 0) as num_potion
+        FROM potions
+        LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku                      
+        GROUP BY potions.potion_type
         """)).fetchall()
     current_gold = global_inventory.gold
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
