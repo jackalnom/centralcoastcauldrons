@@ -77,7 +77,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         SELECT SUM(change_gold) as gold, SUM(change_red_ml) as num_red_ml,
                SUM(change_green_ml) as num_green_ml, SUM(change_blue_ml) as num_blue_ml,
                SUM(change_dark_ml) as num_dark_ml
-        FROM global_inventory
+        FROM global_inventory_entries
         """)).first()
     potion_inventory = connection.execute(sqlalchemy.text("""
         SELECT potion_type, num_potion
