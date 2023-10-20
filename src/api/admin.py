@@ -19,12 +19,12 @@ def reset():
   inventory, and all barrels are removed from inventory. Carts are all reset.
   """
   with db.engine.begin() as connection:
-    connection.execute(sqlalchemy.text("TRUNCATE global_inventory"))
+    connection.execute(sqlalchemy.text("TRUNCATE global_inventory_transactions CASCADE"))
+    transaction_id = connection.execute(sqlalchemy.text("INSERT INTO global_inventory_transactions DEFAULT VALUES RETURNING id")).first().id
     connection.execute(sqlalchemy.text("""
-        INSERT INTO global_inventory
-        (change_gold, change_red_ml, change_green_ml, change_blue_ml, change_dark_ml, description)
-        VALUES (100, 0, 0, 0, 0, 'Starting inventory')
-        """))
+        INSERT INTO global_inventory_entries (global_inventory_transaction_id)
+        VALUES (:transaction_id)
+        """), {"transaction_id": transaction_id})
   return "OK"
 
 
