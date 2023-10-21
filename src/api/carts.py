@@ -54,14 +54,16 @@ def get_cart(cart_id: int):
         else:
           message = f"Cart #{cart.cart_id}: {cart.customer} is seeking to buy:"
         for cart_item in cart_items:
-          potion_inventory = connection.execute(sqlalchemy.text("""
-              SELECT *
-              FROM potion_inventory
-              WHERE sku = :sku
+          potion = connection.execute(sqlalchemy.text("""
+              SELECT potions.price, potions.potion_type, COALESCE(SUM(change), 0) as num_potion
+              FROM potions
+              LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku
+              WHERE potions.sku = :sku
+              GROUP BY potions.price, potions.potion_type
               """), {"sku": cart_item.sku}).first()
-          message += f" {cart_item.quantity} {cart_item.sku} ({potion_inventory.potion_type}) "\
-                     f"for {cart_item.quantity * potion_inventory.price} gold "\
-                     f"({potion_inventory.num_potion} remaining),"
+          message += f" {cart_item.quantity} {cart_item.sku} ({potion.potion_type}) "\
+                     f"for {cart_item.quantity * potion.price} gold "\
+                     f"({potion.num_potion} remaining),"
         return message[:-1] + "."
     # cart has not been created
     else:
@@ -91,6 +93,13 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
+  # add payment to cart to confirm
+  with db.engine.begin() as connection:
+    connection.execute(sqlalchemy.text("""
+        UPDATE carts
+        SET payment = :payment
+        WHERE cart_id = :cart_id
+        """), {"payment": cart_checkout.payment, "cart_id": cart_id})
   with db.engine.begin() as connection:
     total_potions_bought = 0
     total_gold_paid = 0
@@ -100,31 +109,33 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         WHERE cart_id = :cart_id
         """), {"cart_id": cart_id}).fetchall()
     for cart_items in cart:
-      potion_inventory = connection.execute(sqlalchemy.text("""
+      potion = connection.execute(sqlalchemy.text("""
           SELECT *
-          FROM potion_inventory
+          FROM potions
           WHERE sku = :sku
           """), {"sku": cart_items.sku}).first()
-      # update gold in global_inventory
-      connection.execute(sqlalchemy.text("""
-          UPDATE global_inventory
-          SET gold = gold + :gold_received
-          """), {"gold_received": cart_items.quantity * potion_inventory.price})
-      # update num_potion in potion_inventory
-      connection.execute(sqlalchemy.text("""
-          UPDATE potion_inventory
-          SET num_potion = num_potion +- :num_bought
-          WHERE sku = :sku
-          """), {"num_bought": cart_items.quantity, "sku": cart_items.sku})
       total_potions_bought += cart_items.quantity
-      total_gold_paid += cart_items.quantity * potion_inventory.price
-    # add payment to cart to confirm
+      total_gold_paid += cart_items.quantity * potion.price
+    # update global_inventory
+    global_transaction_id = connection.execute(sqlalchemy.text("""
+        INSERT INTO global_inventory_transactions (description)
+        VALUES (:description)
+        RETURNING id
+        """), {"description": get_cart(cart_id)}).first().id
     connection.execute(sqlalchemy.text("""
-        UPDATE carts
-        SET payment = :payment
-        WHERE cart_id = :cart_id
-        """), {"payment": cart_checkout.payment, "cart_id": cart_id})
+        INSERT INTO global_inventory_entries (change_gold, global_inventory_transaction_id)
+        VALUES (:total_gold_paid, :transaction_id)
+        """), {"total_gold_paid": total_gold_paid, "transaction_id": global_transaction_id})
+    # update potion_inventory
+    potion_transaction_id = connection.execute(sqlalchemy.text("""
+        INSERT INTO potion_transactions (description)
+        VALUES (:description)
+        RETURNING id
+        """), {"description": get_cart(cart_id)}).first().id
+    connection.execute(sqlalchemy.text("""
+        INSERT INTO potion_entries (potion_sku, change, potion_transaction_id)
+        VALUES (:potion_sku, :change, :transaction_id)
+        """), {"potion_sku": cart_items.sku, "change": total_potions_bought, "transaction_id": potion_transaction_id})
     connection.commit()
-    print(get_cart(cart_id))
     return {"total_potions_bought": total_potions_bought, "total_gold_paid": total_gold_paid}
   
