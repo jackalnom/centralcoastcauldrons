@@ -22,7 +22,7 @@ app = FastAPI(
     },
 )
 
-origins = ["*"]
+origins = ["https://potion-exchange.vercel.app"]
 
 app.add_middleware(
     CORSMiddleware,
