@@ -1,9 +1,13 @@
 from fastapi import APIRouter
 import sqlalchemy
 from src import database as db
+from datetime import datetime
 
 
 router = APIRouter()
+
+
+convert_days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
 
 @router.get("/catalog/", tags=["catalog"])
@@ -14,12 +18,13 @@ def get_catalog():
 
   # Can return a max of 20 items.
   with db.engine.begin() as connection:
-    potion_inventory = connection.execute(sqlalchemy.text("""
-        SELECT potions.sku, potions.price, potions.potion_type, COALESCE(SUM(change), 0) as num_potion
+    day = convert_days[datetime.now().weekday()]
+    potion_inventory = connection.execute(sqlalchemy.text(f"""
+        SELECT potions.sku, potions.{day}_price as price, potions.potion_type, COALESCE(SUM(change), 0) as num_potion
         FROM potions
         LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku                      
-        GROUP BY potions.sku, potions.price, potions.potion_type
-        ORDER BY num_potion DESC
+        GROUP BY potions.sku, potions.{day}_price, potions.potion_type
+        ORDER BY {day}_sold DESC, random()
         """)).fetchall()
     catalog = []
     for potion in potion_inventory:

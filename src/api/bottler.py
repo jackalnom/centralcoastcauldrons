@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from datetime import datetime
 
 
 router = APIRouter(
@@ -56,6 +57,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
   return "OK"
 
 
+convert_days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+
 # Gets called 4 times a day
 @router.post("/plan")
 def get_bottle_plan():
@@ -68,6 +72,7 @@ def get_bottle_plan():
 
   # Initial logic: bottle all barrels into red potions.
   bottling_list = []
+  day = convert_days[datetime.now().weekday()]
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("""
         SELECT SUM(change_gold) as gold, SUM(change_red_ml) as num_red_ml,
@@ -75,11 +80,12 @@ def get_bottle_plan():
                SUM(change_dark_ml) as num_dark_ml
         FROM global_inventory_entries
         """)).first()
-    potion_inventory = connection.execute(sqlalchemy.text("""
+    potion_inventory = connection.execute(sqlalchemy.text(f"""
         SELECT potions.potion_type, COALESCE(SUM(change), 0) as num_potion
         FROM potions
         LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku                      
-        GROUP BY potions.potion_type
+        GROUP BY {day}_sold, potions.potion_type
+        ORDER BY {day}_sold DESC, random()
         """)).fetchall()
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
     # splits total_num_bottles to even amounts, tries to even out each color

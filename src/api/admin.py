@@ -21,7 +21,6 @@ def reset():
   with db.engine.begin() as connection:
     connection.execute(sqlalchemy.text("TRUNCATE global_inventory_transactions CASCADE"))
     connection.execute(sqlalchemy.text("TRUNCATE potion_transactions CASCADE"))
-    connection.execute(sqlalchemy.text("TRUNCATE carts CASCADE"))
     transaction_id = connection.execute(sqlalchemy.text("INSERT INTO global_inventory_transactions DEFAULT VALUES RETURNING id")).first().id
     connection.execute(sqlalchemy.text("""
         INSERT INTO global_inventory_entries (global_inventory_transaction_id)
