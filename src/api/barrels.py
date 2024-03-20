@@ -17,8 +17,8 @@ class Barrel(BaseModel):
 
     quantity: int
 
-@router.post("/deliver")
-def post_deliver_barrels(barrels_delivered: list[Barrel]):
+@router.post("/deliver/{order_id}")
+def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print(barrels_delivered)
 
@@ -36,3 +36,4 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             "quantity": 1,
         }
     ]
+

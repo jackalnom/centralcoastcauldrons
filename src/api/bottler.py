@@ -13,14 +13,13 @@ class PotionInventory(BaseModel):
     potion_type: list[int]
     quantity: int
 
-@router.post("/deliver")
-def post_deliver_bottles(potions_delivered: list[PotionInventory]):
+@router.post("/deliver/{order_id}")
+def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
     print(potions_delivered)
 
     return "OK"
 
-# Gets called 4 times a day
 @router.post("/plan")
 def get_bottle_plan():
     """
@@ -39,3 +38,6 @@ def get_bottle_plan():
                 "quantity": 5,
             }
         ]
+
+if __name__ == "__main__":
+    print(get_bottle_plan())

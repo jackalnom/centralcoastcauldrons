@@ -67,8 +67,17 @@ def search_orders(
     }
 
 
-class NewCart(BaseModel):
+class Customer(BaseModel):
     customer: str
+    character_class: str
+    level: int
+
+@router.post("/visits")
+def post_visits(customers : list[Customer]):
+    """
+    Which customers visited the shop today?
+    """
+    return "OK"
 
 
 @router.post("/")
