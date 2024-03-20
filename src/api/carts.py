@@ -72,11 +72,13 @@ class Customer(BaseModel):
     character_class: str
     level: int
 
-@router.post("/visits")
-def post_visits(customers : list[Customer]):
+@router.post("/visits/{visit_id}")
+def post_visits(visit_id: int, customers: list[Customer]):
     """
     Which customers visited the shop today?
     """
+    print(customers)
+    
     return "OK"
 
 
