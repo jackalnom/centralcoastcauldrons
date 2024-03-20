@@ -10,7 +10,7 @@ The API calls are made in this sequence when making a purchase:
 
 ### 1.1. Get Catalog - `/catalog/` (GET)
 
-Retrieves the catalog of items. Each unique item combination should have only a single price.
+Retrieves the catalog of items. Each unique item combination should have only a single price. You can have at most 6 potion SKUs offered in your catalog at one time.
 
 **Returns**:
 
