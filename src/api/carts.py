@@ -78,7 +78,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
     Which customers visited the shop today?
     """
     print(customers)
-    
+
     return "OK"
 
 
@@ -86,13 +86,6 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     return {"cart_id": 1}
-
-
-@router.get("/{cart_id}")
-def get_cart(cart_id: int):
-    """ """
-
-    return {}
 
 
 class CartItem(BaseModel):

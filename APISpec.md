@@ -1,12 +1,14 @@
-# API Specification
+# API Specification for Potion Exchange Compatible Shops
 
 ## 1. Customer Purchasing
 
 The API calls are made in this sequence when making a purchase:
 1. `Get Catalog`
-2. `New Cart`
-3. `Add Item to Cart` (Can be called multiple times)
-4. `Checkout Cart`
+2. `Customer Visits`
+3. `New Cart`
+4. `Add Item to Cart` (Can be called multiple times)
+5. `Checkout Cart`
+6. `Search Orders`
 
 ### 1.1. Get Catalog - `/catalog/` (GET)
 
@@ -26,7 +28,35 @@ Retrieves the catalog of items. Each unique item combination should have only a 
 ]
 ```
 
-### 1.2. New Cart - `/carts/` (POST)
+### 1.2. Visits - `/carts/visits/{visit_id}` (POST)
+
+Shares the customers that visited the store on that tick. Not all
+customers end up purchasing because they may not like what they see
+in the current catalog.
+
+**Request**:
+
+```json
+[
+  {
+    "customer_name": "string",
+    "character_class": "string",
+    "level": "number"
+  },
+  {
+    ...
+  }
+]
+```
+**Returns**:
+
+```json
+{
+    "success": "boolean"
+}
+```
+
+### 1.3. New Cart - `/carts/` (POST)
 
 Creates a new cart for a specific customer.
 
@@ -34,7 +64,9 @@ Creates a new cart for a specific customer.
 
 ```json
 {
-  "customer": "string"
+  "customer_name": "string",
+  "character_class": "string",
+  "level": "number"
 }
 ```
 
@@ -46,7 +78,7 @@ Creates a new cart for a specific customer.
 }
 ``` 
 
-### 1.3. Add Item to Cart - `/carts/{cart_id}/items/{item_sku}` (PUT)
+### 1.4. Add Item to Cart - `/carts/{cart_id}/items/{item_sku}` (PUT)
 
 Updates the quantity of a specific item in a cart. 
 
@@ -66,7 +98,7 @@ Updates the quantity of a specific item in a cart.
 }
 ```
 
-### 1.4. Checkout Cart - `/carts/{cart_id}/checkout` (POST)
+### 1.5. Checkout Cart - `/carts/{cart_id}/checkout` (POST)
 
 Handles the checkout process for a specific cart.
 
@@ -82,10 +114,35 @@ Handles the checkout process for a specific cart.
 
 ```json
 {
-    "total_potions_bought": "integer"
+    "total_potions_bought": "integer",
     "total_gold_paid": "integer"
 }
 ```
+
+### 1.6. Search orders - `/carts/search/` (GET)
+Searches for orders based on specified query parameters.
+
+**Query Parameters**:
+
+- `customer_name` (optional): The name of the customer.
+- `potion_sku` (optional): The SKU of the potion.
+- `search_page` (optional): The page number of the search results.
+- `sort_col` (optional): The column to sort the results by. Possible values: `customer_name`, `item_sku`, `line_item_total`, `timestamp`. Default: `timestamp`.
+- `sort_order` (optional): The sort order of the results. Possible values: `asc` (ascending), `desc` (descending). Default: `desc`.
+
+**Returns**:
+
+The API returns a JSON object with the following structure:
+
+- `previous`: A string that represents the link to the previous page of results. If there is no previous page, this value is an empty string.
+- `next`: A string that represents the link to the next page of results. If there is no next page, this value is an empty string.
+- `results`: An array of objects, each representing a line item. Each line item object has the following properties:
+    - `line_item_id`: An integer that represents the unique identifier of the line item.
+    - `item_sku`: A string that represents the SKU of the item. This includes the quantity and the name of the item.
+    - `customer_name`: A string that represents the name of the customer who purchased the item.
+    - `line_item_total`: An integer that represents the total cost of the line item.
+    - `timestamp`: A string that represents the date and time when the line item was created. This is in ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ).
+
 
 ## 2. Bottling
 
@@ -108,9 +165,10 @@ Gets the plan for bottling potions.
 ]
 ```
 
-### 2.2. Deliver Bottles - `/bottler/deliver` (POST)
+### 2.2. Deliver Bottles - `/bottler/deliver/{order_id}` (POST)
 
-Posts delivery of potions.
+Posts delivery of potions. order_id is a unique value representing
+a single delivery. 
 
 **Request**:
 
@@ -158,9 +216,10 @@ Gets the plan for purchasing wholesale barrels.
 ]
 ```
 
-### 3.2. Deliver Barrels - `/barrels/deliver` (POST)
+### 3.2. Deliver Barrels - `/barrels/deliver/{order_id}` (POST)
 
-Posts delivery of barrels.
+Posts delivery of barrels. order_id is a unique value representing
+a single delivery.
 
 **Request**:
 
@@ -182,13 +241,51 @@ Posts delivery of barrels.
 
 A call to reset shop will delete all inventory and in-flight carts and reset gold back to 100.
 
-### 4.2. Shop Info - `/admin/shop_info` (GET)
 
-Returns the name of the shop and who the shop owner is.
+### 5. Info Functions
+
+### 5.1. Current time - `/info/current_time` (POST)
+
+Shares what the latest time (in game time) is. 
+
+**Request**:
 
 ```json
-{
-    "shop_name": "string",
-    "shop_owner": "string",
-}
+[
+  {
+    "day": "string",
+    "hour": "number"
+  }
+]
 ```
+
+
+### 6. Audit Functions
+
+### 6.1. Get Inventory Summary - `/audit/inventory` (GET)
+
+Return a summary of your current number of potions, ml, and gold.
+
+**Returns**:
+```json
+{
+  "number_of_potions": "number",
+  "ml_in_barrels": "number",
+  "gold": "number"
+)
+```  
+
+### 6.2. Results of audit - `/audit/results` (POST)
+
+Returns back whether gold, barrels, or potions match how much the shop actually has.
+
+**Request**:
+```json
+{
+{
+  "gold_match": "boolean",
+  "barrels_match": "boolean",
+  "potions_match": "boolean"
+}
+)
+```  
