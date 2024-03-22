@@ -37,8 +37,8 @@ def get_capacity_plan():
     """
 
     return {
-        "potion_capacity": 1,
-        "barrel_capacity": 1
+        "potion_capacity": 0,
+        "barrel_capacity": 0
         }
 
 
@@ -47,8 +47,8 @@ class CapacityPurchase(BaseModel):
     barrel_capacity: int
 
 # Gets called once a day
-@router.post("/deliver_capacity_purchase")
-def deliver_capacity_plan(capacity_purchase : CapacityPurchase):
+@router.post("/deliver_capacity_purchase/{order_id}")
+def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """ 
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
     capacity unit costs 1000 gold.

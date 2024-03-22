@@ -16,7 +16,7 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-    print(potions_delivered)
+    print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
     return "OK"
 
