@@ -6,13 +6,20 @@ The application's setting is a simulated fantasy RPG world with adventurers seek
 
 ## Understanding the Game Mechanics
 
-With an initial capital of 100 gold, no potions in your inventory, and devoid of barrels, your backend API is scheduled to be invoked at regular intervals, known as 'ticks' (set at every 5 minutes while testing, but I will later make this happen every 2 hours and align with calendar-time). There are 12 ticks in a day, and 7 days in a week. 
+With an initial capital of 100 gold, no potions in your inventory, and devoid of barrels, your backend API is scheduled to be invoked at regular intervals, known as 'ticks' that go off every two hours. There are 12 ticks in a day, and 7 days in a week. The weekdays in the Potion Exchange world are:
+1. Edgeday
+1. Bloomday
+1. Aracanaday
+1. Hearthday
+1. Crownday
+1. Blesseday
+1. Soulday
 
 There are three primary actions that may unfold during these ticks:
 
 1. **Customer Interactions**: On each tick, one or more simulated customers access your catalog endpoint intending to buy potions. The frequency and timing of customer visits vary based on the time of day, and each customer exhibits specific potion preferences. Your shop's performance is evaluated and scored based on multiple criteria (more details on [Potion Exchange](https://potion-exchange.vercel.app/)), which in turn influences the frequency of customer visits.
 
-2. **Potion Creation**: Every alternate tick presents an opportunity to brew new potions. Each potion requires 100 ml of either red, green, blue, or dark liquid. You must have sufficient volume of the chosen color in your barrelled inventory to brew a potion.
+2. **Potion Creation**: Every alternate tick presents an opportunity to brew new potions. Each potion requires 100 ml of any combination of red, green, blue, or dark liquid. You must have sufficient volume of the chosen color in your barrelled inventory to brew a potion.
 
 3. **Barrel Purchasing**: On every alternate tick, you have an opportunity to purchase additional barrels of various colors. Your API receives a catalog of barrels available for sale and should respond with your purchase decisions. The gold cost of each barrel is deducted from your balance upon purchase.
 
