@@ -14,7 +14,7 @@ The API calls are made in this sequence when making a purchase:
 
 Retrieves the catalog of items. Each unique item combination should have only a single price. You can have at most 6 potion SKUs offered in your catalog at one time.
 
-**Returns**:
+**Response**:
 
 ```json
 [
@@ -48,7 +48,7 @@ in the current catalog.
   }
 ]
 ```
-**Returns**:
+**Response**:
 
 ```json
 {
@@ -70,7 +70,7 @@ Creates a new cart for a specific customer.
 }
 ```
 
-**Returns**:
+**Response**:
 
 ```json
 {
@@ -90,7 +90,7 @@ Updates the quantity of a specific item in a cart.
 }
 ```
 
-**Returns**:
+**Response**:
 
 ```json
 {
@@ -110,7 +110,7 @@ Handles the checkout process for a specific cart.
 }
 ```
 
-**Returns**:
+**Response**:
 
 ```json
 {
@@ -130,7 +130,7 @@ Searches for orders based on specified query parameters.
 - `sort_col` (optional): The column to sort the results by. Possible values: `customer_name`, `item_sku`, `line_item_total`, `timestamp`. Default: `timestamp`.
 - `sort_order` (optional): The sort order of the results. Possible values: `asc` (ascending), `desc` (descending). Default: `desc`.
 
-**Returns**:
+**Response**:
 
 The API returns a JSON object with the following structure:
 
@@ -154,7 +154,7 @@ The API calls are made in this sequence when the bottler comes:
 
 Gets the plan for bottling potions.
 
-**Returns**:
+**Response**:
 
 ```json
 [
@@ -189,7 +189,8 @@ The API calls are made in this sequence when Barrel Purchases can be made:
 
 ### 3.1. Get Barrel Purchase Plan - `/barrels/plan` (POST)
 
-Gets the plan for purchasing wholesale barrels.
+Gets the plan for purchasing wholesale barrels. The call passes in a catalog of available barrels
+and the shop returns back which barrels they'd like to purchase and how many.
 
 **Request**:
 
@@ -205,7 +206,7 @@ Gets the plan for purchasing wholesale barrels.
 ]
 ```
 
-**Returns**:
+**Response**:
 
 ```json
 [
@@ -239,12 +240,13 @@ a single delivery.
 
 ### 4.1. Reset Shop - `/admin/reset` (POST)
 
-A call to reset shop will delete all inventory and in-flight carts and reset gold back to 100.
-
+A call to reset shop will delete all inventory and in-flight carts and reset gold back to 100. The
+shop should take this as an opportunity to remove all of their inventory and set their gold back to
+100 as well.
 
 ### 5. Info Functions
 
-### 5.1. Current time - `/info/current_time` (POST)
+### .1. Current time - `/info/current_time` (POST)
 
 Shares what the latest time (in game time) is. 
 
@@ -259,14 +261,13 @@ Shares what the latest time (in game time) is.
 ]
 ```
 
-
 ### 6. Audit Functions
 
 ### 6.1. Get Inventory Summary - `/audit/inventory` (GET)
 
 Return a summary of your current number of potions, ml, and gold.
 
-**Returns**:
+**Response**:
 ```json
 {
   "number_of_potions": "number",
