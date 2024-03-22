@@ -43,8 +43,8 @@ Follow these steps to get your potion shop up and running:
 2. Register on [Render](https://render.com/). Click New + and select Web Service. We will do a basic Build and deploy from a Git repository. Connect it to your Github repository and point it the new repository you created on step 1.
 3. Name your service something cute and unique. Oregon is fine as a region. Leave branch and Root Directory as default. The Runtime should be Python 3. Build command should be pip install -r requirements.txt. Start command should be changed to uvicorn src.api.server:app --host 0.0.0.0 --port $PORT. Select the Free Instance Type. Seelct Advanced and add two environment variables to start. The first is called `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications. You will use it later when testing your service and registering it. The second is called `PYTHON_VERSION`. We will set this to 3.11.4.
 5. Visit your newly deployed project to ensure it's functioning as expected. Try navigating to https://`your-project`.onrender.com/docs. Once there, click the 'Authorize' button in the upper right corner and enter the same `API_KEY` you entered into environment variables earlier. After authorization, try out various endpoints to confirm their functionality.
-6. Navigate to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed webservice (don't include doc/, just the base url) and the `API_KEY` you set earlier.
-7. Return to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance, potion inventory, and other assets. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
+6. Navigate to [Potion Exchange](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed webservice (don't include doc/, just the base url) and the `API_KEY` you set earlier.
+7. Return to [Potion Exchange](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance and potion inventory. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
 
 ## Version 1 - Adding persistance
 
@@ -87,7 +87,7 @@ You will need to use SELECT and UPDATE sql statements. In this version you won't
 
 As a very basic initial logic, purchase a new small red potion barrel only if the number of potions in inventory is less than 10. Always mix all available red ml if any exists. Offer up for sale in the catalog only the amount of red potions that actually exist currently in inventory.
 
-Once you've finished making your changes, go back to [Consortium of Concotions and Charms](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
+Once you've finished making your changes, go back to [Potion Exchange](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
 
 With the release of this version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
 
