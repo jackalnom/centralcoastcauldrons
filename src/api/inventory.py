@@ -15,19 +15,6 @@ def get_inventory():
     
     return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
 
-class Result(BaseModel):
-    gold_match: bool
-    barrels_match: bool
-    potions_match: bool
-
-# Gets called once a day
-@router.post("/audit_results")
-def post_audit_results(audit_explanation: Result):
-    """ """
-    print(audit_explanation)
-
-    return "OK"
-
 # Gets called once a day
 @router.post("/plan_capacity_purchase")
 def get_capacity_plan():
@@ -40,7 +27,6 @@ def get_capacity_plan():
         "potion_capacity": 0,
         "barrel_capacity": 0
         }
-
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
