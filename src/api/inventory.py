@@ -16,7 +16,7 @@ def get_inventory():
     return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
 
 # Gets called once a day
-@router.post("/plan_capacity_purchase")
+@router.post("/plan")
 def get_capacity_plan():
     """ 
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
@@ -33,7 +33,7 @@ class CapacityPurchase(BaseModel):
     barrel_capacity: int
 
 # Gets called once a day
-@router.post("/deliver_capacity_purchase/{order_id}")
+@router.post("/deliver/{order_id}")
 def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """ 
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
