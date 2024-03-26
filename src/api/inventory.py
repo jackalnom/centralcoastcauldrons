@@ -25,12 +25,12 @@ def get_capacity_plan():
 
     return {
         "potion_capacity": 0,
-        "barrel_capacity": 0
+        "ml_capacity": 0
         }
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
-    barrel_capacity: int
+    ml_capacity: int
 
 # Gets called once a day
 @router.post("/deliver/{order_id}")
