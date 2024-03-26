@@ -263,7 +263,7 @@ Shares what the latest time (in game time) is.
 
 ### 6. Audit Functions
 
-### 6.1. Get Inventory Summary - `/audit/inventory` (GET)
+### 6.1. Get Inventory Summary - `/inventory/audit` (GET)
 
 Return a summary of your current number of potions, ml, and gold.
 
@@ -276,17 +276,28 @@ Return a summary of your current number of potions, ml, and gold.
 )
 ```  
 
-### 6.2. Results of audit - `/audit/results` (POST)
+### 6.2 Get capacity purchase plan - `/inventory/plan` (POST)
 
-Returns back whether gold, barrels, or potions match how much the shop actually has.
+What additional potion or ML capacity the shop would like to buy. Called once a day.
+You start with 1 capacity of potion and 1 capacity of ml storage. Each potion capacity
+allows 50 potion storage. Each ml capacity allows 10k of ml storage.
+
+**Response**:
+```json
+{
+  "potion_capacity": "number",
+  "ml_capacity": "number"
+}
+```
+
+### 6.3 Deliver capacity purchased - `/inventory/deliver` (POST)
+
+Delivers capacity purchased back to shop. Called when a capacity purchase succeeds.
 
 **Request**:
 ```json
 {
-{
-  "gold_match": "boolean",
-  "barrels_match": "boolean",
-  "potions_match": "boolean"
+  "potion_capacity": "number",
+  "ml_capacity": "number"
 }
-)
-```  
+```
