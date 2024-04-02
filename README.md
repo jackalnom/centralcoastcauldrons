@@ -83,7 +83,7 @@ with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
 ```
 
-You will need to use SELECT and UPDATE sql statements. In this version you won't need to do any INSERTs or DELETEs.
+You will need to use SELECT and UPDATE sql statements. In this version you won't need to do any INSERTs or DELETEs. See my [getting started guide](https://observablehq.com/@calpoly-pierce/getting-started-with-sql-in-python) for how to execute these initial statements in SQL using sqlaclhemy and python.
 
 As a very basic initial logic, purchase a new small red potion barrel only if the number of potions in inventory is less than 10. Always mix all available red ml if any exists. Offer up for sale in the catalog only the amount of red potions that actually exist currently in inventory.
 
