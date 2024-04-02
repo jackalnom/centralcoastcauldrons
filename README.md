@@ -69,7 +69,7 @@ def database_connection_url():
 engine = create_engine(database_connection_url(), pool_pre_ping=True)
 ```
 
-Next, we will leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling red potions at this stage.
+Next, we will leverage the `global_inventory` table to keep tabs on potion quantities and the total liquid volume in your inventory. Adapt your API to deliver updated JSON responses based on your inventory while maintaining the same API structure. For the sake of simplicity, assume you're only brewing and selling green potions at this stage.
 
 In your endpoint definition files add these imports:
 ```py
@@ -85,15 +85,15 @@ with db.engine.begin() as connection:
 
 You will need to use SELECT and UPDATE sql statements. In this version you won't need to do any INSERTs or DELETEs. See my [getting started guide](https://observablehq.com/@calpoly-pierce/getting-started-with-sql-in-python) for how to execute these initial statements in SQL using sqlaclhemy and python.
 
-As a very basic initial logic, purchase a new small red potion barrel only if the number of potions in inventory is less than 10. Always mix all available red ml if any exists. Offer up for sale in the catalog only the amount of red potions that actually exist currently in inventory.
+As a very basic initial logic, purchase a new small green potion barrel only if the number of potions in inventory is less than 10. Always mix all available green ml if any exists. Offer up for sale in the catalog only the amount of green potions that actually exist currently in inventory.
 
 Once you've finished making your changes, go back to [Potion Exchange](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
 
 With the release of this version, you should no longer encounter job errors resulting from attempting to buy barrels without sufficient gold, mix potions without the necessary ml of ingredients, or sell potions not currently in your inventory.
 
-## Version 2 - Selling more than red potions
+## Version 2 - Selling more than green potions
 
-In this second version of your shop, you need to also make and sell blue and green potions. You will need to come up with your own logic for when to buy red, green, or blue barrels. Your logic does not have to be particularly clever, you just have to make sure at some point your shop is successfully selling red, green, and blue potions. The implementation details from there are completely up to you.
+In this second version of your shop, you need to also make and sell red and blue potions. You will need to come up with your own logic for when to buy red, green, or blue barrels. Your logic does not have to be particularly clever, you just have to make sure at some point your shop is successfully selling red, green, and blue potions. The implementation details from there are completely up to you.
 
 ## Version 3 - Custom Potion Types and Order Management
 
