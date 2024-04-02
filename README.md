@@ -95,6 +95,8 @@ With the release of this version, you should no longer encounter job errors resu
 
 In this second version of your shop, you need to also make and sell red and blue potions. You will need to come up with your own logic for when to buy red, green, or blue barrels. Your logic does not have to be particularly clever, you just have to make sure at some point your shop is successfully selling red, green, and blue potions. The implementation details from there are completely up to you.
 
+Additionally, you must support resetting your inventory state. Go to admin.py and fill in the appropriate functionality to the reset method which will set your gold back to 100 and your inventory to 0 when called.
+
 ## Version 3 - Custom Potion Types and Order Management
 
 In the third version of central coast cauldrons, your goal is to:
