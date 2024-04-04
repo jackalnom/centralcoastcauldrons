@@ -39,7 +39,3 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         }
     ]
 
-with db.create_engine().connect() as connection:
-    result = connection.execute("SELECT * FROM barrels")
-    for row in result:
-        print(row)
