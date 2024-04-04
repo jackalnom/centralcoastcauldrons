@@ -6,6 +6,9 @@ import json
 import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
+import sqlalchemy
+from src import database as db
+
 
 description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
@@ -53,4 +56,4 @@ async def validation_exception_handler(request, exc):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Central Coast Cauldrons."}
+    return {"message": "Welcome to the Central Coast Cauldrons.", "data": barrels.get_wholesale_purchase_plan([])}
