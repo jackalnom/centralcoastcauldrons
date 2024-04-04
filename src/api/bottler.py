@@ -16,6 +16,8 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
+    # treating only as if green potions are being delivered
+    
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
     return "OK"
