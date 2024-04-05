@@ -36,11 +36,12 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         if (num_green_potions < delivered_green_potions):
             return "NOPE"
         
-    # update db to account for delivery of potions
-    connection.execute(sqlalchemy.text(f"""
-        UPDATE global_inventory
-        SET num_green_potions = num_green_potions - {delivered_green_potions}
-    """))
+        # update db to account for delivery of potions
+        connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory
+            SET num_green_potions = num_green_potions - {delivered_green_potions}
+            WHERE id = 1
+        """))
             
     
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
