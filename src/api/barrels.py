@@ -25,8 +25,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     mls_delivered = None
     total_gold = None
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT num_green_ml FROM global_inventory\
-                                                    WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text(f"""
+            SELECT num_green_ml 
+            FROM global_inventory
+            WHERE id = 1
+        """))
         if (not (result := result.first())):
             print("Server Error")
             raise("/deliver/{order_id} error with DB")
@@ -42,13 +45,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             return "NOPE"
         # update DB to take into account barrelt that were delivered
         # update gold that was recieved
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml \
-                                           = num_green_ml - {mls_delivered}, 
-                                           gold = gold + {total_gold} "))
+        connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory 
+            SET num_green_ml = num_green_ml - {mls_delivered}, 
 
+            gold = gold + {total_gold}
+        """))
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
+
 
 # Gets called once a day
 @router.post("/plan")
@@ -59,8 +65,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     quantity = None
     # as per docs, buy one GREEN_BARREL if we are short
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, gold FROM global_inventory\
-                                                    WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text(f"""
+            SELECT num_green_potions, gold 
+            FROM global_inventory
+            WHERE id = 1
+        """))
         if (not (result := result.first())):
             print('Id not found.')
             return []
@@ -81,10 +90,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     # TODO: take into accout how much we purchased
                     ml_gained = barrel.ml_per_barrel
                     print("purchased green barrel")
-                    connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
-                                                       SET gold = gold - {price}, \
-                                                       num_green_ml = \
-                                                       num_green_ml + {ml_gained}"))
+                    connection.execute(sqlalchemy.text(f"""
+                        UPDATE global_inventory 
+                        SET gold = gold - {price}, 
+                        num_green_ml = num_green_ml + {ml_gained}
+                    """))
                     return [
                         {
                             "sku": "SMALL_GREEN_BARREL",

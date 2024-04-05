@@ -22,8 +22,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     delivered_green_potions = None
     # treating only as if green potions are being delivered
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions FROM global_inventory \
-                                                    WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text(f"""
+            SELECT num_green_potions
+            FROM global_inventory
+            WHERE id = 1
+        """))
         # check if it is even possible to send that many
         if (not (num_green_potions := result.first())):
             return "NOPE"
@@ -32,9 +35,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             return "NOPE"
         
     # update db to account for delivery of potions
-    connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET \
-                                       num_green_potions = num_green_potions \
-                                       - {delivered_green_potions}"))
+    connection.execute(sqlalchemy.text(f"""
+        UPDATE global_inventory
+        SET num_green_potions = num_green_potions - {delivered_green_potions}
+    """))
             
     
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
@@ -49,8 +53,11 @@ def get_bottle_plan():
     green_ml = None
     green_potions = None
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, num_green_ml \
-                                                    FROM global_inventory WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text(f"""
+            SELECT num_green_potions, num_green_ml
+            FROM global_inventory
+            WHERE id = 1
+        """))
         result = result.all()
         if (len(result) == 0 ):
             print("Inventory not found.")
@@ -70,17 +77,19 @@ def get_bottle_plan():
         total_green = green_ml // 100
 
         # update db with corresponding new value
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml \
-                                           = {green_ml - (total_green * 100)}, num_green_potions = \
-                                             {total_green + green_potions} \
-                                                 WHERE id = 1 "))
+        connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory
+            SET num_green_ml = {green_ml - (total_green * 100)},
+                num_green_potions = {total_green + green_potions}
+            WHERE id = 1
+        """))
 
     return [
-            {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
-            }
-        ]
+        {
+            "potion_type": [100, 0, 0, 0],
+            "quantity": 5,
+        }
+    ]
 
 if __name__ == "__main__":
     print(get_bottle_plan())
