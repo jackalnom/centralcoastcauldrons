@@ -77,21 +77,22 @@ def get_bottle_plan():
         # Initial logic: bottle all barrels into red potions.
 
         # bottle into green potions if we can
-        total_green = green_ml // 100
+        green_produced = green_ml // 100
 
         # update db with corresponding new value
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
-            SET num_green_ml = {green_ml - (total_green * 100)},
-                num_green_potions = {total_green + green_potions}
+            SET num_green_ml = {green_ml - (green_produced * 100)},
+                num_green_potions = {green_produced + green_potions}
             WHERE id = 1
         """))
 
+        print(green_produced)
 
         return [
             {
                 "potion_type": [0, 0, 100, 0],
-                "quantity": green_potions,
+                "quantity": green_produced,
             }
         ]
 

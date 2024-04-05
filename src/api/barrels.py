@@ -22,8 +22,10 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    mls_delivered = None
-    total_gold = None
+    mls_delivered = 0 
+    total_gold = 0 
+    if (len(barrels_delivered) == 0):
+        raise("No barrels sent in API")
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
             SELECT num_green_ml 
