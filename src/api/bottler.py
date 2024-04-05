@@ -28,8 +28,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             WHERE id = 1
         """))
         # check if it is even possible to send that many
-        if (not (num_green_potions := result.first())):
+        if (not (result := result.first())):
             return "NOPE"
+
+        num_green_potions = result[0]
         delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered)
         if (num_green_potions < delivered_green_potions):
             return "NOPE"
