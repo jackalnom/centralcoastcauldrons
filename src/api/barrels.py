@@ -22,7 +22,8 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-
+    mls_delivered = None
+    total_gold = None
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"SELECT num_green_ml FROM global_inventory\
                                                     WHERE id = 1"))
@@ -31,6 +32,19 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             raise("/deliver/{order_id} error with DB")
         
         # check if we have sufficient mls to send
+        for barrel in barrels_delivered:
+            if (barrel.price < 0):
+                continue
+            mls_delivered += barrel.quantity + barrel.ml_per_barrel
+            total_gold += barrel.quantity * barrel.price
+        if (result[0] < mls_delivered):
+            print("Insufficient mls.")
+            return "NOPE"
+        # update DB to take into account barrelt that were delivered
+        # update gold that was recieved
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml \
+                                           = num_green_ml - {mls_delivered}, 
+                                           gold = gold + {total_gold} "))
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
