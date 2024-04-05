@@ -31,9 +31,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-    with db.engine.begin() as connection:
-        sql_to_execute = "SELECT * FROM global_inventory"
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
-    return result.fetchall()
+    return [
+        {
+            "sku": "SMALL_RED_BARREL",
+            "quantity": 1,
+        }
+    ]
 

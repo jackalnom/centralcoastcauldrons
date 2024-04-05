@@ -56,4 +56,4 @@ async def validation_exception_handler(request, exc):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Central Coast Cauldrons.", "data": barrels.get_wholesale_purchase_plan([])}
+    return {"message": "Welcome to the Central Coast Cauldrons."}

@@ -6,3 +6,4 @@ if __name__ == "__main__":
     )
     server = uvicorn.Server(config)
     server.run()
+
