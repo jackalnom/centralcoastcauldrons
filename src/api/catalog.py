@@ -31,7 +31,6 @@ def get_catalog():
             print(e)
             return []
 
-
     # parse quantity 
     '''
     Custom Potions??? Need more documentation on format of potions.
@@ -58,6 +57,6 @@ def get_catalog():
                 "name": "green potion",
                 "quantity": inventory[1],
                 "price": 50,
-                "potion_type": [0, 100, 0, 0],
+                "potion_type": [0, 0, 100, 0],
             }
         ]

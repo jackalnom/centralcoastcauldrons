@@ -24,7 +24,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"SELECT * FROM global_inventory "))
+        result = connection.execute(sqlalchemy.text(f"SELECT num_green_ml FROM global_inventory\
+                                                    WHERE id = 1"))
+        if (not (result := result.first())):
+            print("Server Error")
+            raise("/deliver/{order_id} error with DB")
+        
+        # check if we have sufficient mls to send
+
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
@@ -33,12 +40,47 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
+    num_green = None
+    gold = None
+    quantity = None
+    # as per docs, buy one GREEN_BARREL if we are short
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, gold FROM global_inventory\
+                                                    WHERE id = 1"))
+        if (not (result := result.first())):
+            print('Id not found.')
+            return []
+        num_green = result[0]
+        gold = result[1]
+        if (num_green < 10):
+            # find green barrel within catalog
+            for barrel in wholesale_catalog:
+                if barrel.sku == "SMALL_GREEN_BARREL" and \
+                    barrel.quantity >= 1:
+                    
+                    # get price and purhcase 1 if we have enough
+                    price = barrel.price
+                    if (gold < price):
+                        print("Insufficient gold.")
+                        return []
+                    # update db to take into account price and increase in ml
+                    # TODO: take into accout how much we purchased
+                    ml_gained = barrel.ml_per_barrel
+                    print("purchased green barrel")
+                    connection.execute(sqlalchemy.text(f"UPDATE global_inventory \
+                                                       SET gold = gold - {price}, \
+                                                       num_green_ml = \
+                                                       num_green_ml + {ml_gained}"))
+                    return [
+                        {
+                            "sku": "SMALL_GREEN_BARREL",
+                            "quantity" : 1
+                        }
+                    ]
+                    
+    
     print(wholesale_catalog)
 
     return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
-        }
     ]
 

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+import sqlalchemy
+from src import database as db
 
 router = APIRouter(
     prefix="/bottler",
@@ -16,7 +18,24 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
+    num_green_potions = None
+    delivered_green_potions = None
     # treating only as if green potions are being delivered
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions FROM global_inventory \
+                                                    WHERE id = 1"))
+        # check if it is even possible to send that many
+        if (not (num_green_potions := result.first())):
+            return "NOPE"
+        delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered)
+        if (num_green_potions < delivered_green_potions):
+            return "NOPE"
+        
+    # update db to account for delivery of potions
+    connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET \
+                                       num_green_potions = num_green_potions \
+                                       - {delivered_green_potions}"))
+            
     
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
@@ -27,12 +46,34 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
+    green_ml = None
+    green_potions = None
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, num_green_ml \
+                                                    FROM global_inventory WHERE id = 1"))
+        result = result.all()
+        if (len(result) == 0 ):
+            print("Inventory not found.")
+            return []
+        result = result[0]
+        green_potions = result[0]
+        green_ml = result[1]
+        
+        
+        # Each bottle has a quantity of what proportion of red, blue, and
+        # green potion to add.
+        # Expressed in integers from 1 to 100 that must sum up to 100.
 
-    # Each bottle has a quantity of what proportion of red, blue, and
-    # green potion to add.
-    # Expressed in integers from 1 to 100 that must sum up to 100.
+        # Initial logic: bottle all barrels into red potions.
 
-    # Initial logic: bottle all barrels into red potions.
+        # bottle into green potions if we can
+        total_green = green_ml // 100
+
+        # update db with corresponding new value
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml \
+                                           = {green_ml - (total_green * 100)}, num_green_potions = \
+                                             {total_green + green_potions} \
+                                                 WHERE id = 1 "))
 
     return [
             {
