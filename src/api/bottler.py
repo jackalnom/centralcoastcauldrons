@@ -86,12 +86,13 @@ def get_bottle_plan():
             WHERE id = 1
         """))
 
-    return [
-        {
-            "potion_type": [100, 0, 0, 0],
-            "quantity": 5,
-        }
-    ]
+
+        return [
+            {
+                "potion_type": [0, 0, 100, 0],
+                "quantity": green_potions,
+            }
+        ]
 
 if __name__ == "__main__":
     print(get_bottle_plan())
