@@ -32,7 +32,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             return "NOPE"
 
         num_green_potions = result[0]
-        delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered)
+        delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 0, 100, 0])
         if (num_green_potions < delivered_green_potions):
             return "NOPE"
         

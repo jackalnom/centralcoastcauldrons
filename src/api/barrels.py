@@ -38,7 +38,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         
         # check if we have sufficient mls to send
         for barrel in barrels_delivered:
-            if (barrel.price < 0):
+            if (barrel.price < 0) or barrel.potion_type != [0, 0, 100, 0]:
                 continue
             mls_delivered += barrel.quantity + barrel.ml_per_barrel
             total_gold += barrel.quantity * barrel.price
@@ -64,7 +64,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     num_green = None
     gold = None
-    quantity = None
     # as per docs, buy one GREEN_BARREL if we are short
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
