@@ -19,7 +19,16 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
-
+    sql_to_execute = "SELECT * FROM global_inventory"
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        row = result.fetchone()._asdict()
+        for potion in potions_delivered:
+            if potion.potion_type == [0, 100, 0, 0]:
+                current_potions = row["num_green_potions"]
+                sql_to_execute = f"UPDATE global_inventory SET num_green_potions = {current_potions + potion.quantity}"
+                connection.execute(sqlalchemy.text(sql_to_execute))
+    
     return "OK"
 
 @router.post("/plan")
@@ -32,14 +41,14 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
-    # Initial logic: bottle all barrels into red potions.
+    sql_to_execute = "SELECT * FROM global_inventory"
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        row = result.fetchone()._asdict()
 
-    return [
+        return [
             {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
+                "potion_type": [0, 100, 0, 0],
+                "quantity": 100 // row["num_green_ml"],
             }
         ]
-
-if __name__ == "__main__":
-    print(get_bottle_plan())
