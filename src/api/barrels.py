@@ -40,7 +40,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         for barrel in barrels_delivered:
             if (barrel.price < 0) or barrel.potion_type != [0, 0, 100, 0]:
                 continue
-            mls_delivered += barrel.quantity + barrel.ml_per_barrel
+            mls_delivered += barrel.quantity * barrel.ml_per_barrel
             total_gold += barrel.quantity * barrel.price
         if (result[0] < mls_delivered):
             print("Insufficient mls.")
