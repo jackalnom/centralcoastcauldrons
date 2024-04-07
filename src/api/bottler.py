@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from api import catalog
 
 router = APIRouter(
     prefix="/bottler",
@@ -16,10 +17,17 @@ class PotionInventory(BaseModel):
     quantity: int
 
 @router.post("/deliver/{order_id}")
-def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
+async def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-    num_green_potions = None
-    delivered_green_potions = None
+    num_green_potions = 0
+    delivered_green_potions = 0 
+    gold_gained = 0
+    # get prices for every potion
+    cat = await catalog.get_catalog()
+    if (not cat):
+        return "NOPE"
+
+     
     # treating only as if green potions are being delivered
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
@@ -33,6 +41,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
         num_green_potions = result[0]
         delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 0, 100, 0])
+        # really bad implementation finding total_gold gained
+        for potion in cat:
+            if potion.potion_type == [0, 0, 100, 0]:
+                gained_gold = delivered_green_potions * potion.price
+                break
         
         if delivered_green_potions == 0 or (num_green_potions < delivered_green_potions):
             return "NOPE"
@@ -40,7 +53,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         # update db to account for delivery of potions
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
-            SET num_green_potions = num_green_potions - {delivered_green_potions}
+            SET num_green_potions = num_green_potions - {delivered_green_potions},
+            SET gold = gold + {gained_gold}
             WHERE id = 1
         """))
             
