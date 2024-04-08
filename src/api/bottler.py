@@ -40,10 +40,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             return "NOPE"
 
         num_green_potions = result[0]
-        delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 0, 100, 0])
+        delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 100, 0, 0])
         # really bad implementation finding total_gold gained
         for potion in cat:
-            if potion["potion_type"] == [0, 0, 100, 0]:
+            if potion["potion_type"] == [0, 100, 0, 0]:
                 gained_gold = delivered_green_potions * potion["price"]
                 break
         
@@ -106,7 +106,7 @@ def get_bottle_plan():
 
         return [
             {
-                "potion_type": [0, 0, 100, 0],
+                "potion_type": [0, 100, 0, 0],
                 "quantity": green_produced,
             }
         ]
