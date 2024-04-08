@@ -28,7 +28,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         row = result.fetchone()._asdict()
         for barrel in barrels_delivered:
-            if barrel.potion_type == [0, 100, 0, 0]:
+            if barrel.potion_type == [0, 1, 0, 0]:
                 current_ml = row["num_green_ml"]
                 current_gold = row["gold"]
                 sql_to_execute = f"UPDATE global_inventory SET num_green_ml = {current_ml + (barrel.ml_per_barrel * barrel.quantity)}, gold = {current_gold - (barrel.price * barrel.quantity)}"
@@ -51,7 +51,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         quantity = 0
         sku = ""
         for barrel in wholesale_catalog:
-            if barrel.potion_type == [0, 100, 0, 0]:
+            if barrel.potion_type == [0, 1, 0, 0]:
                 if row["num_green_potions"] < 10:
                     if barrel.price < row["gold"]:
                         quantity = 1
