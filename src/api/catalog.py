@@ -51,6 +51,9 @@ def get_catalog():
             })
     '''
 
+    if (inventory[0] <= 0):
+        return []
+    
     return [
             {
                 "sku": "GREEN_POTION_0",
