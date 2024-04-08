@@ -9,13 +9,28 @@ def get_catalog():
     """
     Each unique item combination must have only a single price.
     """
+    with db.engine.begin() as connection:
+        # result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+    print("here is the result", result)
+    for row in result:
+        print("row", row)
 
+    # return [
+    #         {
+    #             "sku": "RED_POTION_0",
+    #             "name": "red potion",
+    #             "quantity": 1,
+    #             "price": 50,
+    #             "potion_type": [100, 0, 0, 0],
+    #         }
+    #     ]
     return [
             {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
+                "sku": "GREEN_POTION_0",
+                "name": "gren potion",
+                "quantity_potions": row[0],
+                "quantity_ml": row[1],
+                "price": row[2],
             }
         ]

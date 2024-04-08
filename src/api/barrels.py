@@ -21,7 +21,9 @@ class Barrel(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
-    """ """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"

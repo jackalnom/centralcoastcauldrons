@@ -54,6 +54,9 @@ def search_orders(
     time is 5 total line items.
     """
 
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+
     return {
         "previous": "",
         "next": "",
