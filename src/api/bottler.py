@@ -21,11 +21,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     num_green_potions = 0
     delivered_green_potions = 0 
-    gold_gained = 0
-    # get prices for every potion
-    cat = catalog.get_catalog()
-    if (not cat):
-        return "NOPE"
+    lost_gold = 0
+    # # get prices for every potion
+    # cat = catalog.get_catalog()
+    # if (not cat):
+    #     return "NOPE"
 
      
     # treating only as if green potions are being delivered
@@ -41,23 +41,19 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
         num_green_potions = result[0]
         delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 100, 0, 0])
-        # really bad implementation finding total_gold gained
-        for potion in cat:
-            if potion["potion_type"] == [0, 100, 0, 0]:
-                gained_gold = delivered_green_potions * potion["price"]
-                break
         
-        if delivered_green_potions == 0 or (num_green_potions < delivered_green_potions):
+        if delivered_green_potions == 0:
             return "NOPE"
         
         # update db to account for delivery of potions
+            
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
-            SET num_green_potions = num_green_potions - {delivered_green_potions},
-            gold = gold + {gained_gold}
+            SET num_green_ml = num_green_ml - {(delivered_green_potions * 100)},
+                num_green_potions = num_green_potions + {delivered_green_potions},
+                gold = gold - {lost_gold}
             WHERE id = 1
         """))
-            
     
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
@@ -94,13 +90,6 @@ def get_bottle_plan():
         # bottle into green potions if we can
         green_produced = green_ml // 100
 
-        # update db with corresponding new value
-        connection.execute(sqlalchemy.text(f"""
-            UPDATE global_inventory
-            SET num_green_ml = {green_ml - (green_produced * 100)},
-                num_green_potions = {green_produced + green_potions}
-            WHERE id = 1
-        """))
 
         print(green_produced)
 
