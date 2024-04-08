@@ -28,6 +28,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 current_potions = row["num_green_potions"]
                 sql_to_execute = f"UPDATE global_inventory SET num_green_potions = {current_potions + potion.quantity}"
                 connection.execute(sqlalchemy.text(sql_to_execute))
+                sql_to_execute = f"UPDATE potion_catalog_items SET quantity = quantity + {potion.quantity} WHERE name = 'Small_Green_Potion'"
+                connection.execute(sqlalchemy.text(sql_to_execute))
     
     return "OK"
 

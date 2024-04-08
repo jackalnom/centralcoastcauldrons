@@ -33,6 +33,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                 current_gold = row["gold"]
                 sql_to_execute = f"UPDATE global_inventory SET num_green_ml = {current_ml + (barrel.ml_per_barrel * barrel.quantity)}, gold = {current_gold - (barrel.price * barrel.quantity)}"
                 connection.execute(sqlalchemy.text(sql_to_execute))
+            sql_to_execute = f"INSERT INTO barrel_purchases (sku, quantity) VALUES ('{barrel.sku}', {barrel.quantity})"
+            connection.execute(sqlalchemy.text(sql_to_execute))
     
     return "OK"
 
