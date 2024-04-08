@@ -20,7 +20,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     bottles = potions_delivered[0]
     green_deduction = 100 * bottles.quantity
     with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions + {bottles.quantity}, num_green_ml = num_green_ml - {green_deduction}"))
+        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions + {bottles.quantity}, num_green_ml = num_green_ml - {green_deduction}"))
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
     print(result)
