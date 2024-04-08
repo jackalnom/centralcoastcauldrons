@@ -90,13 +90,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         return []
                     # update db to take into account price and increase in ml
                     # TODO: take into accout how much we purchased
-                    ml_gained = barrel.ml_per_barrel
                     print("purchased green barrel")
-                    connection.execute(sqlalchemy.text(f"""
-                        UPDATE global_inventory 
-                        SET gold = gold - {price}, 
-                        num_green_ml = num_green_ml + {ml_gained}
-                    """))
                     return [
                         {
                             "sku": "SMALL_GREEN_BARREL",
