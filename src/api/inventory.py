@@ -36,7 +36,7 @@ def get_capacity_plan():
     sql_to_execute = "SELECT * FROM global_plan"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
-        row = result.fetchone()._asdict()
+        row1 = result.fetchone()._asdict()
         return {
             "potion_capacity": 0,
             "ml_capacity": 0,

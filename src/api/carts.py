@@ -1,3 +1,4 @@
+from random import randint
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
@@ -87,7 +88,9 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": 1}
+    cart_id = randint(1, 100)
+    sql_to_execute = f"INSERT INTO carts (cart_id, customer_name, character_class, level) VALUES ({cart_id}, '{new_cart.customer_name}', '{new_cart.character_class}', {new_cart.level})"
+    return {"cart_id": cart_id}
 
 
 class CartItem(BaseModel):

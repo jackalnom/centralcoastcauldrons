@@ -18,7 +18,7 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-    print(f"potions delievered: {potions_delivered} order_id: {order_id}")
+    print(f"potions delivered: {potions_delivered} order_id: {order_id}")
     sql_to_execute = "SELECT * FROM global_inventory"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
@@ -26,9 +26,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         for potion in potions_delivered:
             if potion.potion_type == [0, 100, 0, 0]:
                 current_potions = row["num_green_potions"]
-                sql_to_execute = f"UPDATE global_inventory SET num_green_potions = {current_potions + potion.quantity}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-                sql_to_execute = f"UPDATE potion_catalog_items SET quantity = quantity + {potion.quantity} WHERE name = 'Small_Green_Potion'"
+                sql_to_execute = f"UPDATE global_inventory SET num_green_potions = {current_potions + potion.quantity}, num_green_ml = num_green_ml - {potion.quantity * 100}"
                 connection.execute(sqlalchemy.text(sql_to_execute))
     
     return "OK"
@@ -54,9 +52,11 @@ def get_bottle_plan():
                     "quantity": 0
                 }
             ]
-        return [
-            {
-                "potion_type": [0, 100, 0, 0],
-                "quantity": 100 // row["num_green_ml"],
-            }
-        ]
+        else:
+            quantity = row["num_green_ml"] // 100
+            return [
+                {
+                    "potion_type": [0, 100, 0, 0],
+                    "quantity": quantity,
+                }
+            ]
