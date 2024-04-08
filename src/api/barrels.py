@@ -28,7 +28,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT num_green_ml 
+            SELECT gold 
             FROM global_inventory
             WHERE id = 1
         """))
@@ -38,19 +38,20 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         
         # check if we have sufficient mls to send
         for barrel in barrels_delivered:
-            if (barrel.price < 0) or barrel.potion_type != [0, 0, 100, 0]:
+            if (barrel.price < 0) or barrel.potion_type != [0, 100, 0, 0]:
                 continue
             mls_delivered += barrel.quantity * barrel.ml_per_barrel
             total_gold += barrel.quantity * barrel.price
-        if (result[0] < mls_delivered):
-            print("Insufficient mls.")
-            return "NOPE"
         # update DB to take into account barrelt that were delivered
         # update gold that was recieved
+        if (result[0] < total_gold):
+            print("insufficient gold.")
+            return "NOPE"
+
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory 
-            SET num_green_ml = num_green_ml - {mls_delivered}, 
-            gold = gold + {total_gold}
+            SET num_green_ml = num_green_ml + {mls_delivered}, 
+            gold = gold - {total_gold}
             WHERE id = 1
         """))
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
