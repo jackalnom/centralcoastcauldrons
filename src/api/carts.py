@@ -90,6 +90,8 @@ def create_cart(new_cart: Customer):
     """ """
     cart_id = randint(1, 100)
     sql_to_execute = f"INSERT INTO carts (cart_id, customer_name, character_class, level) VALUES ({cart_id}, '{new_cart.customer_name}', '{new_cart.character_class}', {new_cart.level})"
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(sql_to_execute))
     return {"cart_id": cart_id}
 
 
@@ -100,7 +102,9 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-
+    sql_to_execute = f"INSERT INTO cart_items (item_sku, quantity) VALUES ('{item_sku}', {cart_item.quantity}) WHERE cart_id = {cart_id}"
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(sql_to_execute))
     return "OK"
 
 
@@ -110,5 +114,12 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    quantity = 0
+    sql_to_execute = f"SELECT * FROM cart_items WHERE cart_id = {cart_id}"
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        row = result.fetchone()._asdict()   
+        quantity = row["quantity"]
+        sql_to_execute = f"UPDATE global_inventory SET num_green_potions = num_green_potions - {quantity}, gold = gold + {quantity * 50}"
+        connection.execute(sqlalchemy.text(sql_to_execute))
+    return {"total_potions_bought": quantity, "total_gold_paid": quantity * 50}
