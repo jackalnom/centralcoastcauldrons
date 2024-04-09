@@ -19,5 +19,11 @@ def reset():
     sql_to_execute = f"UPDATE global_inventory SET num_green_potions = 0, num_green_ml = 0, gold = 100"
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text(sql_to_execute))
+    sql_to_execute = f"DELETE FROM barrel_purchases"
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(sql_to_execute))
+    sql_to_execute = f"DELETE FROM carts"
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(sql_to_execute))
     return "OK"
 
