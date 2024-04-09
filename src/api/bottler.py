@@ -19,7 +19,6 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
-    num_green_potions = 0
     delivered_green_potions = 0 
     lost_gold = 0
     # # get prices for every potion
@@ -30,18 +29,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
      
     # treating only as if green potions are being delivered
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"""
-            SELECT num_green_potions
-            FROM global_inventory
-            WHERE id = 1
-        """))
-        # check if it is even possible to send that many
-        if (not (result := result.first())):
-            return "NOPE"
 
-        num_green_potions = result[0]
         delivered_green_potions = sum(delivery.quantity for delivery in potions_delivered if delivery.potion_type == [0, 100, 0, 0])
-        
+
         if delivered_green_potions == 0:
             return "NOPE"
         
@@ -49,8 +39,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
-            SET num_green_ml = num_green_ml - {(delivered_green_potions * 100)},
-                num_green_potions = num_green_potions + {delivered_green_potions},
+            SET num_green_potions = num_green_potions + {delivered_green_potions},
                 gold = gold - {lost_gold}
             WHERE id = 1
         """))
@@ -64,11 +53,10 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
-    green_ml = None
-    green_potions = None
+    green_ml = 0 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT num_green_potions, num_green_ml
+            SELECT num_green_ml
             FROM global_inventory
             WHERE id = 1
         """))
@@ -77,7 +65,6 @@ def get_bottle_plan():
             print("Inventory not found.")
             return []
         result = result[0]
-        green_potions = result[0]
         green_ml = result[1]
         
         
@@ -90,15 +77,24 @@ def get_bottle_plan():
         # bottle into green potions if we can
         green_produced = green_ml // 100
 
+        if green_produced > 0:
 
-        print(green_produced)
+            print(green_produced)
 
-        return [
-            {
-                "potion_type": [0, 100, 0, 0],
-                "quantity": green_produced,
-            }
-        ]
+            # update db to reflect the ml that the goblin took
+            connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory
+            SET num_green_ml = num_green_ml - {green_produced * 100}
+            WHERE id = 1
+            """))
+
+            return [
+                {
+                    "potion_type": [0, 100, 0, 0],
+                    "quantity": green_produced,
+                }
+            ]
+        return []
 
 if __name__ == "__main__":
     print(get_bottle_plan())
