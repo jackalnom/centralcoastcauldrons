@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+import re
 
 router = APIRouter(
     prefix="/barrels",
@@ -63,18 +64,36 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    num_green = None
-    gold = None
-    # as per docs, buy one GREEN_BARREL if we are short
+    # keep track of ml and potion count for each color
+    color_ml = {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+    }
+    color_potions = {
+        
+    }
+    gold = 0
+    num_re = re.compile("num_(\w+)_potions")
+    color = None
+    # buy BARRELS of any color when we are short of said color and have sufficient money
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT num_green_potions, gold 
+            SELECT num_red_potions, num_green_potions, num_blue_potions, gold 
             FROM global_inventory
             WHERE id = 1
         """))
+        print(result.mappings().all())
+        for idx, key in enumerate(result.keys):
+            if (color := num_re.match(key)):
+                # add color to color_potions
+                color_potions[color] = result[idx]
+
+        print(color_potions)
         if (not (result := result.first())):
             print('Id not found.')
             return []
+        # iterate through keys and update color_potions correspondingly
         num_green = result[0]
         gold = result[1]
         if (num_green < 10):
@@ -88,9 +107,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     if (gold < price):
                         print("Insufficient gold.")
                         return []
-                    # update db to take into account price and increase in ml
-                    # TODO: take into accout how much we purchased
+            
                     print("purchased green barrel")
+                    # update gold to reflect this
                     return [
                         {
                             "sku": "SMALL_GREEN_BARREL",
@@ -98,7 +117,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         }
                     ]
                     
-    
     print(wholesale_catalog)
 
     return [

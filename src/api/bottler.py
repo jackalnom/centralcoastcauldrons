@@ -82,6 +82,7 @@ def get_bottle_plan():
             print(green_produced)
 
             # update db to reflect the ml that the goblin took
+            # may be a mistake adding it to plan rather than when we recieve the potions.
             connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
             SET num_green_ml = num_green_ml - {green_produced * 100}
