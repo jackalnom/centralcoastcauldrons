@@ -73,9 +73,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     color_potions = {
         
     }
+    inventory = None
     gold = 0
     num_re = re.compile("num_(\w+)_potions")
-    color = None
     # buy BARRELS of any color when we are short of said color and have sufficient money
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
@@ -83,19 +83,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             FROM global_inventory
             WHERE id = 1
         """))
-        print(result.mappings().all())
-        for idx, key in enumerate(result.keys()):
-            if (color := num_re.match(key)):
-                # add color to color_potions
-                print(color)
-                color_potions[color] = result.first()[idx]
+        inventory = result.mappings().all()
 
-        print(color_potions)
-        if (not (result := result.first())):
-            print('Id not found.')
-            return []
         # iterate through keys and update color_potions correspondingly
-        num_green = result[0]
+        num_green = inventory["num_green_potions"]
         gold = result[1]
         if (num_green < 10):
             # find green barrel within catalog
