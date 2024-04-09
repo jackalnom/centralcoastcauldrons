@@ -102,7 +102,7 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
-    sql_to_execute = f"INSERT INTO cart_items (item_sku, quantity) VALUES ('{item_sku}', {cart_item.quantity}) WHERE cart_id = {cart_id}"
+    sql_to_execute = f"INSERT INTO carts (item_sku, quantity) VALUES ('{item_sku}', {cart_item.quantity}) WHERE cart_id = {cart_id}"
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text(sql_to_execute))
     return "OK"
@@ -115,7 +115,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     quantity = 0
-    sql_to_execute = f"SELECT * FROM cart_items WHERE cart_id = {cart_id}"
+    sql_to_execute = f"SELECT * FROM carts WHERE cart_id = {cart_id}"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         row = result.fetchone()._asdict()   
