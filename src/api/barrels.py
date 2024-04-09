@@ -88,7 +88,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             if (color := num_re.match(key)):
                 # add color to color_potions
                 print(color)
-                # color_potions[color] = result[idx]
+                color_potions[color] = result.first()[idx]
 
         print(color_potions)
         if (not (result := result.first())):
