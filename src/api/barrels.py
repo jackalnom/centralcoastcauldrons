@@ -84,7 +84,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             WHERE id = 1
         """))
         print(result.mappings().all())
-        for idx, key in enumerate(result.keys):
+        for idx, key in enumerate(result.keys()):
             if (color := num_re.match(key)):
                 # add color to color_potions
                 color_potions[color] = result[idx]
