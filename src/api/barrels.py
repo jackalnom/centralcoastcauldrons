@@ -37,22 +37,22 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")   # get inventory state to plan purchase of ingredients (ml)
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
-    res = [{}]
+    res = []
 
     for sale in wholesale_catalog:
-
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, gold FROM global_inventory"))
-        for row in result:
-            num_potions = row[0]
-            gold = row[1]
-            quantity = 0
-            if num_potions < 10 and gold >= sale.price:
-                quantity += 1 
-        res.append({
-            "sku": sale.sku,
-            "quantity": quantity
-        })
+        if sale.sku == "SMALL_GREEN_BARREL":
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, gold FROM global_inventory"))
+            for row in result:
+                num_potions = row[0]
+                gold = row[1]
+                quantity = 0
+                if num_potions < 10 and gold >= sale.price:
+                    quantity += 1 
+            res.append({
+                "sku": "SMALL_GREEN_BARREL",
+                "quantity": quantity
+            })
 
     print(wholesale_catalog)
 
