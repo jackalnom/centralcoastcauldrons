@@ -13,9 +13,9 @@ def get_catalog():
     sql_to_execute = "SELECT * FROM global_inventory"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
-        rows = [row._asdict() for row in result.fetchall()]
+        row = result.fetchall().asdict()
         results = []
-        for row in rows:
+        if (row["num_green_potions"]) > 0:
             results.append(
                 {
                     "sku": "GREEN_POTION",

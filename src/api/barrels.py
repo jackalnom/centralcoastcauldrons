@@ -56,6 +56,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     if barrel.price <= row["gold"]:
                         quantity = 1
                         sku = barrel.sku
+        if quantity == 0:
+            return []
         return [
             {
                 "sku": sku,
