@@ -26,8 +26,7 @@ def reset():
             for key in res.keys():
                 if (key not in ['id', 'gold']):
                     sql_string += key + " = 0,"
-            # remove last comma
-            sql_string = sql_string[:len(sql_string) - 1]
+            sql_string += "gold = 100"
             sql_string += " WHERE id = 1"
             connection.execute(sqlalchemy.text(sql_string))
         else:
