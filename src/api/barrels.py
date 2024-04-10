@@ -26,7 +26,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     mls_delivered = 0 
     total_gold = 0 
     gold = 0
-    barrel_re = re.compile("(w+)_(w+)_BARREL")
+    barrel_re = re.compile("(\w+)_(\w+)_BARREL")
     if (len(barrels_delivered) == 0):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
@@ -41,6 +41,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         
         # check if potion exists???
         for barrel in barrels_delivered:
+            print(barrel_re.match(barrel.sku))
             if (barrel.price < 0) or not (match := barrel_re.match(barrel.sku)):
                 continue
             # assuming barrel exists
@@ -49,7 +50,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
             if gold < cost:
                 print("insufficient gold.")
-                return "NOPE"
+                continue;
 
              # update gold
             gold -= cost
@@ -67,7 +68,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory 
-            gold = {gold}
+            SET gold = {gold}
             WHERE id = 1
         """))
 
