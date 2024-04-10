@@ -50,12 +50,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         row = result.fetchone()._asdict()
         quantity = 0
         sku = ""
+        current_ml = 0
         for barrel in wholesale_catalog:
             if barrel.potion_type == [0, 1, 0, 0]:
                 if row["num_green_potions"] < 10:
                     if barrel.price <= row["gold"]:
-                        quantity = 1
-                        sku = barrel.sku
+                        if barrel.ml_per_barrel > current_ml:
+                            current_ml = barrel.ml_per_barrel
+                            quantity = 1
+                            sku = barrel.sku
         if quantity == 0:
             return []
         return [
