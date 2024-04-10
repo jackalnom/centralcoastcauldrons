@@ -25,6 +25,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     mls_delivered = 0 
     total_gold = 0 
+    gold = 0
+    barrel_re = re.compile("(\w+)_(\w+)_BARREL")
     if (len(barrels_delivered) == 0):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
@@ -33,28 +35,43 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             FROM global_inventory
             WHERE id = 1
         """))
-        if (not (result := result.first())):
+        if (not (gold := result.first()[0])):
             print("Server Error")
             raise("/deliver/{order_id} error with DB")
         
-        # check if we have sufficient mls to send
+        # check if potion exists???
         for barrel in barrels_delivered:
-            if (barrel.price < 0) or barrel.potion_type != [0, 100, 0, 0]:
+            print(barrel_re.match(barrel.sku))
+            if (barrel.price < 0) or not (match := barrel_re.match(barrel.sku)):
                 continue
-            mls_delivered += barrel.quantity * barrel.ml_per_barrel
-            total_gold += barrel.quantity * barrel.price
-        # update DB to take into account barrelt that were delivered
+            # assuming barrel exists
+            mls_delivered = (barrel.quantity * barrel.ml_per_barrel)
+            cost = barrel.quantity * barrel.price
+
+            if gold < cost:
+                print("insufficient gold.")
+                continue;
+
+             # update gold
+            gold -= cost
+            barrel_type = f"num_{match.group(2)}_ml"
+            print(barrel_type)
+            # update ML for db
+            connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory
+            SET {barrel_type} = {barrel_type} + {mls_delivered}  
+            WHERE id = 1
+            """))
+            print("Recieved: ", barrel_type, " AMOUNT: ", mls_delivered)
+
         # update gold that was recieved
-        if (result[0] < total_gold):
-            print("insufficient gold.")
-            return "NOPE"
 
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory 
-            SET num_green_ml = num_green_ml + {mls_delivered}, 
-            gold = gold - {total_gold}
+            SET gold = {gold}
             WHERE id = 1
         """))
+
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
@@ -65,17 +82,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     # keep track of ml and potion count for each color
-    color_ml = {
-        "red": 0,
-        "green": 0,
-        "blue": 0
-    }
-    color_potions = {
-        
-    }
-    inventory = None
+    color_potions = 0
+    inventory = {}
     gold = 0
-    num_re = re.compile("num_(\w+)_potions")
+
+    # simple regex to get all available potions
+    num_potion_re = re.compile("num_(\w+)_potions")
+    # keept track of what we want to purchase
+    purchased = []
     # buy BARRELS of any color when we are short of said color and have sufficient money
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
@@ -83,34 +97,40 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             FROM global_inventory
             WHERE id = 1
         """))
-        inventory = result.mappings().all()
+        inventory = result.mappings().first()
 
-        # iterate through keys and update color_potions correspondingly
-        num_green = inventory["num_green_potions"]
-        gold = result[1]
-        if (num_green < 10):
-            # find green barrel within catalog
-            for barrel in wholesale_catalog:
-                if barrel.sku == "SMALL_GREEN_BARREL" and \
-                    barrel.quantity >= 1:
+        # iterate through keys looking for all available colors
+        gold = inventory["gold"]
+        for key in inventory.keys():
+            if (color := num_potion_re.match(key)):
+                color_potions = inventory[color.string]
+                color = color.group(1)
+                if (color_potions < 10):
+                    # find corresponding color barrel
+                    # TODO: use regex and search dictionary instead of having a double for loop <- one search over many
+                    # TODO: explore different types of sizing for barrels
+                    print( f"SMALL_{color.upper()}_BARREL")
+                    for barrel in wholesale_catalog:
+                        if barrel.sku == f"SMALL_{color.upper()}_BARREL" and \
+                            barrel.quantity >= 1:
+                            
+                            # get price and purhcase 1 if we have enough
+                            price = barrel.price
+                            if (gold < price):
+                                print("Insufficient gold.")
+                                break;
                     
-                    # get price and purhcase 1 if we have enough
-                    price = barrel.price
-                    if (gold < price):
-                        print("Insufficient gold.")
-                        return []
-            
-                    print("purchased green barrel")
-                    # update gold to reflect this
-                    return [
-                        {
-                            "sku": "SMALL_GREEN_BARREL",
-                            "quantity" : 1
-                        }
-                    ]
-                    
+                            print(f"purchased {color} barrel")
+                            # update gold to reflect this
+                            gold -= price
+                            purchased.append(
+                            {
+                                "sku": f"SMALL_{color.upper()}_BARREL",
+                                "quantity" : 1
+                            }
+                            )
+                        
     print(wholesale_catalog)
+    return purchased
 
-    return [
-    ]
 
