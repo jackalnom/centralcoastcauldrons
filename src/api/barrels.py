@@ -25,6 +25,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     mls_delivered = 0 
     total_gold = 0 
+    gold = 0
+    barrel_re = re.compile("(w+)_(w+)_BARREL")
     if (len(barrels_delivered) == 0):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
@@ -33,28 +35,42 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             FROM global_inventory
             WHERE id = 1
         """))
-        if (not (result := result.first())):
+        if (not (gold := result.first()[0])):
             print("Server Error")
             raise("/deliver/{order_id} error with DB")
         
-        # check if we have sufficient mls to send
+        # check if potion exists???
         for barrel in barrels_delivered:
-            if (barrel.price < 0) or barrel.potion_type != [0, 100, 0, 0]:
+            if (barrel.price < 0) or not (match := barrel_re.match(barrel.sku)):
                 continue
-            mls_delivered += barrel.quantity * barrel.ml_per_barrel
-            total_gold += barrel.quantity * barrel.price
-        # update DB to take into account barrelt that were delivered
+            # assuming barrel exists
+            mls_delivered = (barrel.quantity * barrel.ml_per_barrel)
+            cost = barrel.quantity * barrel.price
+
+            if gold < cost:
+                print("insufficient gold.")
+                return "NOPE"
+
+             # update gold
+            gold -= cost
+            barrel_type = f"num_{match.group(2)}_ml"
+            print(barrel_type)
+            # update ML for db
+            connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory
+            SET {barrel_type} = {barrel_type} + {mls_delivered}  
+            WHERE id = 1
+            """))
+            print("Recieved: ", barrel_type, " AMOUNT: ", mls_delivered)
+
         # update gold that was recieved
-        if (result[0] < total_gold):
-            print("insufficient gold.")
-            return "NOPE"
 
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory 
-            SET num_green_ml = num_green_ml + {mls_delivered}, 
-            gold = gold - {total_gold}
+            gold = {gold}
             WHERE id = 1
         """))
+
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
