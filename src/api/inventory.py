@@ -33,14 +33,29 @@ def get_capacity_plan():
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
     capacity unit costs 1000 gold.
     """
-    sql_to_execute = "SELECT * FROM global_plan"
+    sql_to_execute = f"SELECT * FROM global_plan"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
-        row1 = result.fetchone()._asdict()
-        return {
-            "potion_capacity": 0,
-            "ml_capacity": 0,
+        row = result.fetchone()._asdict()
+        sql_to_execute = f"SELECT * FROM global_inventory"
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        row_inventory = result.fetchone()._asdict()
+        if row_inventory["gold"] < 1000:
+            return {
+                "potion_capacity": 0,
+                "ml_capacity": 0,
             }
+        else:
+            if row["potion_capacity_units"] < row["ml_capacity_units"]:
+                return {
+                    "potion_capacity": 1,
+                    "ml_capacity": 0,
+                }
+            else:
+                return {
+                    "potion_capacity": 0,
+                    "ml_capacity": 1,
+                }
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
