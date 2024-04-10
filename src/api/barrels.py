@@ -49,10 +49,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 quantity = 0
                 if num_potions < 10 and gold >= sale.price:
                     quantity += 1 
-            res.append({
-                "sku": "SMALL_GREEN_BARREL",
-                "quantity": quantity
-            })
+                if quantity > 0:
+                    res.append({
+                        "sku": "SMALL_GREEN_BARREL",
+                        "quantity": quantity
+                    })
 
     print(wholesale_catalog)
 

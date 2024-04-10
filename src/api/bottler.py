@@ -41,8 +41,13 @@ def get_bottle_plan():
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory"))
-    for row in result:
-        quantity = row[0] // 100
+    row1 = result.fetchone()
+    quantity = row1[0] // 100
+    # for row in result:
+    #     quantity = row[0] // 100
+
+    if quantity == 0:
+        return []
 
     return [
             {

@@ -11,12 +11,14 @@ def get_catalog():
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml FROM global_inventory"))
-    print("here is the result", result)
     row1 = result.fetchone()
 
     num = 0
     if row1[0] > 0:
         num = 1
+
+    if num == 0:
+        return []
 
     # return [
     #         {
