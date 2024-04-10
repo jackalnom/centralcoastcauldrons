@@ -28,6 +28,14 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 current_potions = row["num_green_potions"]
                 sql_to_execute = f"UPDATE global_inventory SET num_green_potions = {current_potions + potion.quantity}, num_green_ml = num_green_ml - {potion.quantity * 100}"
                 connection.execute(sqlalchemy.text(sql_to_execute))
+            elif potion.potion_type == [100, 0, 0, 0]:
+                current_potions = row["num_red_potions"]
+                sql_to_execute = f"UPDATE global_inventory SET num_red_potions = {current_potions + potion.quantity}, num_red_ml = num_red_ml - {potion.quantity * 100}"
+                connection.execute(sqlalchemy.text(sql_to_execute))
+            elif potion.potion_type == [0, 0, 100, 0]:
+                current_potions = row["num_blue_potions"]
+                sql_to_execute = f"UPDATE global_inventory SET num_blue_potions = {current_potions + potion.quantity}, num_blue_ml = num_blue_ml - {potion.quantity * 100}"
+                connection.execute(sqlalchemy.text(sql_to_execute))
     
     return "OK"
 
@@ -45,18 +53,26 @@ def get_bottle_plan():
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         row = result.fetchone()._asdict()
-        if row["num_green_ml"] == 0:
-            return [
+        bottling_plan = []
+        if row["num_green_ml"] != 0:
+            bottling_plan.append(
                 {
                     "potion_type": [0, 100, 0, 0],
-                    "quantity": 0
+                    "quantity": row["num_green_ml"] // 100
                 }
-            ]
-        else:
-            quantity = row["num_green_ml"] // 100
-            return [
+            )
+        if row["num_red_ml"] != 0:
+            bottling_plan.append(
                 {
-                    "potion_type": [0, 100, 0, 0],
-                    "quantity": quantity,
+                    "potion_type": [100, 0, 0, 0],
+                    "quantity": row["num_red_ml"] // 100
                 }
-            ]
+            )
+        if row["num_blue_ml"] != 0:
+            bottling_plan.append(
+                {
+                    "potion_type": [0, 0, 100, 0],
+                    "quantity": row["num_blue_ml"] // 100
+                }
+            )
+        return bottling_plan
