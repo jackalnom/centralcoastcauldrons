@@ -20,8 +20,8 @@ def get_inventory():
         row = result.fetchone()._asdict()
         return [
                 {
-                    "num_green_potions": row["num_green_potions"],
-                    "num_green_ml": row["num_green_ml"],
+                    "number_of_potions": row["num_green_potions"] + row["num_red_potions"] + row["num_blue_potions"],
+                    "ml_in_barrels": row["num_green_ml"] + row["num_red_ml"] + row["num_blue_ml"],
                     "gold": row["gold"],
                 }
             ]
