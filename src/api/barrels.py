@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-
+from src.api.helpers import potion_type_tostr
 router = APIRouter(
     prefix="/barrels",
     tags=["barrels"],
@@ -22,18 +22,13 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
-            if barrel.potion_type == [0, 1, 0, 0]:
-                sql_to_execute = f"UPDATE global_inventory SET num_green_ml = num_green_ml + {barrel.ml_per_barrel * barrel.quantity}, gold = gold - {barrel.price * barrel.quantity}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-            elif barrel.potion_type == [1, 0, 0, 0]:
-                sql_to_execute = f"UPDATE global_inventory SET num_red_ml = num_red_ml + {barrel.ml_per_barrel * barrel.quantity}, gold = gold - {barrel.price * barrel.quantity}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-            elif barrel.potion_type == [0, 0, 1, 0]:
-                sql_to_execute = f"UPDATE global_inventory SET num_blue_ml = num_blue_ml + {barrel.ml_per_barrel * barrel.quantity}, gold = gold - {barrel.price * barrel.quantity}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
+            sql_to_execute = f"UPDATE barrel_inventory SET potion_ml = potion_ml + {barrel.ml_per_barrel * barrel.quantity} WHERE barrel_type = '{potion_type_tostr(barrel.potion_type)}'"
+            connection.execute(sqlalchemy.text(sql_to_execute))
+            sql_to_execute = f"UPDATE global_inventory SET gold = gold - {barrel.price * barrel.quantity}"
+            connection.execute(sqlalchemy.text(sql_to_execute))
     
     return "OK"
 
@@ -43,78 +38,30 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    sql_to_execute = "SELECT * FROM global_inventory"
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-        row = result.fetchone()._asdict()
         barrels_to_purchase = []
         for barrel in wholesale_catalog:
-            if barrel.potion_type == [0, 1, 0, 0]:
-                if row["num_green_potions"] < 10:
-                    barrels_to_purchase.append(barrel)
-            elif barrel.potion_type == [1, 0, 0, 0]:
-                if row["num_red_potions"] < 10:
-                    barrels_to_purchase.append(barrel)
-            elif barrel.potion_type == [0, 0, 1, 0]:
-                if row["num_blue_potions"] < 10:
-                    barrels_to_purchase.append(barrel)
-        current_green_barrel = None
-        current_red_barrel = None
-        current_blue_barrel = None
-        green_running_total = 0
-        red_running_total = 0
-        blue_running_total = 0
+            potion_type = [barrel.potion_type[0] * 100, barrel.potion_type[1] * 100, barrel.potion_type[2] * 100, barrel.potion_type[3] * 100]
+            sql_to_execute = f"SELECT * FROM potion_catalog_items WHERE potion_type = '{potion_type_tostr(potion_type)}'"
+            result = connection.execute(sqlalchemy.text(sql_to_execute))
+            potion = result.fetchone()._asdict()
+            if potion["quantity"] < 10:
+                barrels_to_purchase.append(barrel)
+
+        barrels = []
+        barrels_to_purchase.sort(key=lambda x: x.ml_per_barrel, reverse=True)
+        sql_to_execute = "SELECT * FROM global_inventory"
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        global_inventory = result.fetchone()._asdict()
+        running_total = global_inventory["gold"]
         for barrel in barrels_to_purchase:
-            if barrel.potion_type == [0, 1, 0, 0]:
-                if red_running_total + blue_running_total + barrel.price <= row["gold"]:
-                    if current_green_barrel:
-                        if barrel.ml_per_barrel > current_green_barrel.ml_per_barrel:
-                            green_running_total += barrel.price
-                            green_running_total -= current_green_barrel.price
-                            current_green_barrel = barrel
-                    else:
-                        current_green_barrel = barrel
-                        green_running_total += barrel.price
-            elif barrel.potion_type == [1, 0, 0, 0]:
-                if green_running_total + blue_running_total + barrel.price <= row["gold"]:
-                    if current_red_barrel:
-                        if barrel.ml_per_barrel > current_red_barrel.ml_per_barrel:
-                            red_running_total += barrel.price
-                            red_running_total -= current_red_barrel.price
-                            current_red_barrel = barrel
-                    else:
-                        current_red_barrel = barrel
-                        red_running_total += barrel.price
-            elif barrel.potion_type == [0, 0, 1, 0]:
-                if green_running_total + red_running_total + barrel.price <= row["gold"]:
-                    if current_blue_barrel:
-                        if barrel.ml_per_barrel > current_blue_barrel.ml_per_barrel:
-                            blue_running_total += barrel.price
-                            blue_running_total -= current_blue_barrel.price
-                            current_blue_barrel = barrel
-                    else:
-                        current_blue_barrel = barrel
-                        blue_running_total += barrel.price
-        purchase_plan = []
-        if current_green_barrel:
-            purchase_plan.append(
-                {
-                    "sku": current_green_barrel.sku,
-                    "quantity": 1,
-                }
-            )
-        if current_red_barrel:
-            purchase_plan.append(
-                {
-                    "sku": current_red_barrel.sku,
-                    "quantity": 1,
-                }
-            )
-        if current_blue_barrel:
-            purchase_plan.append(
-                {
-                    "sku": current_blue_barrel.sku,
-                    "quantity": 1,
-                }
-            )
-        return purchase_plan
+            print(f'running_total: {running_total} barrel.price: {barrel.price} global_inventory["gold"]: {global_inventory["gold"]}')
+            if barrel.price <= running_total:
+                running_total -= barrel.price
+                barrels.append(
+                    {
+                        "sku": barrel.sku,
+                        "quantity": 1,
+                    }
+                )
+        return barrels

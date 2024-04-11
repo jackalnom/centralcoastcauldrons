@@ -116,19 +116,21 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     print(cart_checkout.payment)
     quantity = 0
-    sql_to_execute = f"SELECT * FROM cart_items WHERE cart_id = {cart_id}"
+    total_gold = 0
+    cart_items_sql = f"SELECT * FROM cart_items WHERE cart_id = {cart_id}"
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        result = connection.execute(sqlalchemy.text(cart_items_sql))
         rows = [row._asdict() for row in result]
         for row in rows:   
             quantity += row["quantity"]
-            if row["item_sku"] == "GREEN_POTION":
-                sql_to_execute = f"UPDATE global_inventory SET num_green_potions = num_green_potions - {quantity}, gold = gold + {quantity * 45}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-            elif row["item_sku"] == "RED_POTION":
-                sql_to_execute = f"UPDATE global_inventory SET num_red_potions = num_red_potions - {quantity}, gold = gold + {quantity * 45}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-            elif row["item_sku"] == "BLUE_POTION":
-                sql_to_execute = f"UPDATE global_inventory SET num_blue_potions = num_blue_potions - {quantity}, gold = gold + {quantity * 45}"
-                connection.execute(sqlalchemy.text(sql_to_execute))
-    return {"total_potions_bought": quantity, "total_gold_paid": quantity * 45}
+            potion_quantity_sql = f"UPDATE potion_catalog_items SET quantity = quantity - {row['quantity']} WHERE sku = '{row['item_sku']}'"
+            connection.execute(sqlalchemy.text(potion_quantity_sql))
+
+            potion_price_sql = f"SELECT price FROM potion_catalog_items WHERE sku = '{row['item_sku']}'"
+            result = connection.execute(sqlalchemy.text(potion_price_sql))
+            price = result.fetchone()[0]
+
+            gold_sql = f"UPDATE global_inventory SET gold = gold + {price * row['quantity']}"
+            connection.execute(sqlalchemy.text(gold_sql))
+            total_gold += price * row["quantity"]
+    return {"total_potions_bought": quantity, "total_gold_paid": total_gold}
