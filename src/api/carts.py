@@ -131,8 +131,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             elif row["item_sku"] == "BLUE_POTION":
                 sql_to_execute = f"UPDATE global_inventory SET num_blue_potions = num_blue_potions - {quantity}, gold = gold + {quantity * 45}"
                 connection.execute(sqlalchemy.text(sql_to_execute))
-        sql_to_execute = f"DELETE FROM carts WHERE cart_id = {cart_id}"
-        connection.execute(sqlalchemy.text(sql_to_execute))
-        sql_to_execute = f"DELETE FROM cart_items WHERE cart_id = {cart_id}"
-        connection.execute(sqlalchemy.text(sql_to_execute))
     return {"total_potions_bought": quantity, "total_gold_paid": quantity * 45}
