@@ -88,10 +88,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    cart_id = randint(1, 1000)
-    sql_to_execute = f"INSERT INTO carts (cart_id, customer_name, character_class, level) VALUES ('{cart_id}', '{new_cart.customer_name}', '{new_cart.character_class}', {new_cart.level})"
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(sql_to_execute))
+        sql_to_execute = f"INSERT INTO carts (customer_name, character_class, level) VALUES ('{new_cart.customer_name}', '{new_cart.character_class}', {new_cart.level}) RETURNING id"
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        cart_id = result.fetchone()[0]
     return {"cart_id": cart_id}
 
 
