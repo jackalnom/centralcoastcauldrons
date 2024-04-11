@@ -16,11 +16,12 @@ def get_inventory():
     
     # query the db
     with db.engine.begin() as connection:
-        res = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold \
+        res = connection.execute(sqlalchemy.text("SELECT * \
                                            FROM global_inventory WHERE id = 1"))
-        potions, ml, gold = res.first();
+        inventory = res.mappings().first()
+
+        return inventory
         
-    return {"number_of_potions": potions, "ml_in_barrels": ml, "gold": gold}
 
 # Gets called once a day
 @router.post("/plan")

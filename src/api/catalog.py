@@ -20,13 +20,14 @@ def get_catalog():
         "dark": 0
     }
     inventory = None
+    num_potion_re = re.compile("num_(\w+)_potions")
     # list available potions
     with db.engine.begin() as connection:
         # result = connection.execute(sqlalchemy.text(f"SELECT * FROM global_inventory WHERE id = 1"))
         # get green potion prop.
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml FROM global_inventory WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 1"))
         try:
-            inventory = result.all()[0]
+            inventory = result.mappings().first()
         except Exception as e:
             print(e)
             return []
@@ -41,25 +42,31 @@ def get_catalog():
     for key in result.keys():
         if match := potion_re.match(key):
             color = match.group(1)
-            # parse color properties
+    '''
+    # iterate and add to catalog if the name of the given potion color matches the regex
+    for key, value in inventory.items():
+        if (potion_key:=num_potion_re.match(key)):
+            if (value <= 0):
+                continue
+            # select capture group that contains color
+            color = potion_key.group(1)
+            # check frequency and set that as the potion number
+
+            # really poor logic
+            # TODO: find way to represent potions better other than SKU???
+            potion_type = None 
+            if ('red' in color.lower()):
+                potion_type = [100, 0, 0, 0]
+            elif ('green' in color.lower()):
+                potion_type = [0, 100, 0, 0]
+            else:
+                potion_type = [0, 0, 100, 0]
+
             catalog.append({
                 "sku": freq_sku[color],
-                "name": f"{color} potion"
-                "quantity": 100,
-                "price": 500,
-                "potion_type": [0, 100, 0, 0]
-            })
-    '''
-
-    if (inventory[0] <= 0):
-        return []
-    
-    return [
-            {
-                "sku": "GREEN_POTION_0",
-                "name": "green potion",
-                "quantity": inventory[0],
+                "name": f"{color} potion",
+                "quantity": value,
                 "price": 50,
-                "potion_type": [0, 100, 0, 0],
-            }
-        ]
+                "potion_type": potion_type,
+            })
+    return catalog
