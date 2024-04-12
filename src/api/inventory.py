@@ -34,7 +34,8 @@ def get_inventory():
         for barrel in barrels:
             barrel = barrel._asdict()
             num_ml += barrel["potion_ml"]
-            
+        
+        print(f"num_potions: {num_potions} num_ml: {num_ml} gold: {inventory['gold']}")    
         return [
                 {
                     "number_of_potions": num_potions,

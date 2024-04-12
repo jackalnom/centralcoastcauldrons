@@ -14,10 +14,10 @@ def get_catalog():
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         rows = result.fetchall()
-        results = []
+        catalog = []
         for row in rows:
             row = row._asdict()
-            results.append(
+            catalog.append(
                 {
                     "sku": row["sku"],
                     "name": row["name"],
@@ -26,4 +26,5 @@ def get_catalog():
                     "potion_type": row["potion_type"],
                 }
             )
-        return results
+        print(f"catalog: {catalog}")
+        return catalog

@@ -50,4 +50,5 @@ def get_bottle_plan():
                     "quantity": row["potion_ml"] // 100,
                 }
             )
+        print(f"bottling_plan: {bottling_plan}")
         return bottling_plan

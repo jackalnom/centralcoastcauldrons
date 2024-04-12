@@ -49,13 +49,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 barrels_to_purchase.append(barrel)
 
         barrels = []
-        barrels_to_purchase.sort(key=lambda x: x.ml_per_barrel, reverse=True)
+        barrels_to_purchase.sort(key=lambda x: x.ml_per_barrel/barrel.price, reverse=True)
         sql_to_execute = "SELECT * FROM global_inventory"
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         global_inventory = result.fetchone()._asdict()
         running_total = global_inventory["gold"]
+
         for barrel in barrels_to_purchase:
-            print(f'running_total: {running_total} barrel.price: {barrel.price} global_inventory["gold"]: {global_inventory["gold"]}')
             if barrel.price <= running_total:
                 running_total -= barrel.price
                 barrels.append(
@@ -64,4 +64,5 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "quantity": 1,
                     }
                 )
+        print(f"barrels: {barrels}")
         return barrels

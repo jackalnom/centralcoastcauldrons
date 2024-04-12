@@ -92,6 +92,7 @@ def create_cart(new_cart: Customer):
         sql_to_execute = f"INSERT INTO carts (customer_name, character_class, level) VALUES ('{new_cart.customer_name}', '{new_cart.character_class}', {new_cart.level}) RETURNING id"
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         cart_id = result.fetchone()[0]
+    print(f"cart_id: {cart_id} customer_name: {new_cart.customer_name} character_class: {new_cart.character_class} level: {new_cart.level}")
     return {"cart_id": cart_id}
 
 
@@ -102,6 +103,7 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    print(f"cart_id: {cart_id} item_sku: {item_sku} quantity: {cart_item.quantity}")
     sql_to_execute = f"INSERT INTO cart_items (cart_id, item_sku, quantity) VALUES ({cart_id}, '{item_sku}', {cart_item.quantity})"
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text(sql_to_execute))
@@ -114,7 +116,7 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    print(cart_checkout.payment)
+    print(f"cart_id: {cart_id} payment: {cart_checkout.payment}")
     quantity = 0
     total_gold = 0
     cart_items_sql = f"SELECT * FROM cart_items WHERE cart_id = {cart_id}"
