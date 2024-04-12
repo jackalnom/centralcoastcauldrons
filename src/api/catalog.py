@@ -2,7 +2,9 @@ from fastapi import APIRouter
 import re
 import sqlalchemy
 from src import database as db
+from src.helper import get_potion_type
 router = APIRouter()
+
 
 
 @router.get("/catalog/", tags=["catalog"])
@@ -55,13 +57,8 @@ def get_catalog():
             # really poor logic
             # TODO: find way to represent potions better other than SKU???
             potion_type = None 
-            if ('red' in color.lower()):
-                potion_type = [100, 0, 0, 0]
-            elif ('green' in color.lower()):
-                potion_type = [0, 100, 0, 0]
-            else:
-                potion_type = [0, 0, 100, 0]
-
+            potion_type = get_potion_type(color)
+           
             catalog.append({
                 "sku": freq_sku[color],
                 "name": f"{color} potion",
