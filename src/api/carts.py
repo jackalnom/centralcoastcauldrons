@@ -87,7 +87,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": "1"}
+    return {"cart_id": 1}
 
 
 class CartItem(BaseModel):
