@@ -29,7 +29,7 @@ def get_catalog():
     #             "potion_type": [100, 0, 0, 0],
     #         }
     #     ]
-    return [
+    catalog = [
             {
                 "sku": "GREEN_POTION_0",
                 "name": "green potion",
@@ -38,3 +38,7 @@ def get_catalog():
                 "potion_type": [0, 100, 0, 0]
             }
         ]
+    
+    print(f"catalog: {catalog}")
+    
+    return catalog
