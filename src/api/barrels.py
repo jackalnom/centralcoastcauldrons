@@ -33,7 +33,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         result = connection.execute(sqlalchemy.text(f"""
             SELECT gold 
             FROM global_inventory
-            WHERE id = 1
+            WHERE id = 2
         """))
         if (not (gold := result.first()[0])):
             print("Server Error")
@@ -60,7 +60,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
             SET {barrel_type} = {barrel_type} + {mls_delivered}  
-            WHERE id = 1
+            WHERE id = 2
             """))
             print("Recieved: ", barrel_type, " AMOUNT: ", mls_delivered)
 
@@ -69,7 +69,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory 
             SET gold = {gold}
-            WHERE id = 1
+            WHERE id = 2
         """))
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
@@ -95,7 +95,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = connection.execute(sqlalchemy.text(f"""
             SELECT num_red_potions, num_green_potions, num_blue_potions, gold 
             FROM global_inventory
-            WHERE id = 1
+            WHERE id = 2
         """))
         inventory = result.mappings().first()
 

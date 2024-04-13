@@ -20,14 +20,14 @@ def reset():
     # update all columsn to zero, except GOLD, which will be set to 100
     with db.engine.begin() as connection:
         # For the time being, all attributes are integers, meaning we can select all keys and set them equal to zero
-        res = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 1"))
+        res = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 2"))
 
         if (res):
             for key in res.keys():
                 if (key not in ['id', 'gold']):
                     sql_string += key + " = 0,"
             sql_string += "gold = 100"
-            sql_string += " WHERE id = 1"
+            sql_string += " WHERE id = 2"
             connection.execute(sqlalchemy.text(sql_string))
         else:
             return "Error occured."

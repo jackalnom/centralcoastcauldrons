@@ -25,9 +25,9 @@ def get_catalog():
     num_potion_re = re.compile("num_(\w+)_potions")
     # list available potions
     with db.engine.begin() as connection:
-        # result = connection.execute(sqlalchemy.text(f"SELECT * FROM global_inventory WHERE id = 1"))
+        # result = connection.execute(sqlalchemy.text(f"SELECT * FROM global_inventory WHERE id = 2"))
         # get green potion prop.
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 1"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 2"))
         try:
             inventory = result.mappings().first()
         except Exception as e:

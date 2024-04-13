@@ -43,7 +43,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             connection.execute(sqlalchemy.text(f"""
             UPDATE global_inventory
             SET {delivered_query}
-            WHERE id = 1
+            WHERE id = 2
             """))
 
     print(f"bottles delievered: {potions_delivered} order_id: {order_id}")
@@ -65,7 +65,7 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text(f"""
             SELECT * 
             FROM global_inventory
-            WHERE id = 1
+            WHERE id = 2
         """))
         ml_inventory = result.mappings().first()
         
@@ -93,7 +93,7 @@ def get_bottle_plan():
                     connection.execute(sqlalchemy.text(f"""
                     UPDATE global_inventory
                     SET {ml_name} = {ml_name} - {potions_produced * 100}
-                    WHERE id = 1
+                    WHERE id = 2
                     """))
 
                     # get potion_type and add to the list of what we need bottled
