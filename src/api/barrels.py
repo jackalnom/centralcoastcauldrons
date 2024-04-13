@@ -44,9 +44,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             potion_type = [barrel.potion_type[0] * 100, barrel.potion_type[1] * 100, barrel.potion_type[2] * 100, barrel.potion_type[3] * 100]
             sql_to_execute = f"SELECT * FROM potion_catalog_items WHERE potion_type = '{potion_type_tostr(potion_type)}'"
             result = connection.execute(sqlalchemy.text(sql_to_execute))
-            if result.fetchone() is None:
+            potion = result.fetchone()
+            if potion is None:
                 continue
-            potion = result.fetchone()._asdict()
+            potion = potion._asdict()
             if potion["quantity"] < 10:
                 barrels_to_purchase.append(barrel)
 
