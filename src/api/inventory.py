@@ -85,8 +85,9 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
         potion_capacity = row["potion_capacity_units"]
         ml_capacity = row["ml_capacity_units"]
         update_sql_to_execute = f"UPDATE global_plan SET potion_capacity_units = {potion_capacity + capacity_purchase.potion_capacity}, ml_capacity_units = {ml_capacity + capacity_purchase.ml_capacity}"
-
         connection.execute(sqlalchemy.text(update_sql_to_execute))
+        update_gold_sql = f"UPDATE global_inventory SET gold = gold - {capacity_purchase.potion_capacity * 1000 + capacity_purchase.ml_capacity * 1000}"
+        connection.execute(sqlalchemy.text(update_gold_sql))
 
 
     return "OK"
