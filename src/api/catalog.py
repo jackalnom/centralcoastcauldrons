@@ -59,10 +59,11 @@ def get_catalog():
             potion_type = None 
             potion_type = get_potion_type(color)
            
+           #TODO: allow functionality to purchase more than 1 potions
             catalog.append({
                 "sku": freq_sku[color],
                 "name": f"{color} potion",
-                "quantity": value,
+                "quantity": 1,
                 "price": 50,
                 "potion_type": potion_type,
             })
