@@ -52,37 +52,27 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         running_total = global_inventory["gold"]
         wholesale_catalog.sort(key=lambda x: x.ml_per_barrel/x.price, reverse=True)
         barrel_plan = []
-
-        for barrel in wholesale_catalog:
-            barrel_bought = False
-            if barrel.price > running_total:
-                continue
-            if barrel.ml_per_barrel > available_ml:
-                continue
-            print(f"barrel: {barrel} running_total: {running_total}")
-            potion_catalog_sql = f'SELECT * FROM potion_catalog_items'
-            result = connection.execute(sqlalchemy.text(potion_catalog_sql))
-            potions = result.fetchall()
-            potions.sort(key=lambda x: x.price, reverse=True)
-            for potion in potions:
-                potion = potion._asdict()
-                if potion["quantity"] < 10:
-                    for i in range(4):
-                        if potion["potion_type"][i] == 0:
-                            continue
-                        if barrel.potion_type[i] == 0:
-                            continue
-                        barrel_plan.append(
-                            {
-                                "sku": barrel.sku,
-                                "quantity": 1,
-                            }
-                        )
-                        running_total -= barrel.price
-                        available_ml -= barrel.ml_per_barrel
-                        barrel_bought = True
-                        break
-                if barrel_bought:
+        barrel_inventory_sql = "SELECT * FROM barrel_inventory"
+        result = connection.execute(sqlalchemy.text(barrel_inventory_sql))
+        rows = result.fetchall()
+        barrel_inventory = [row._asdict() for row in rows]
+        barrel_inventory.sort(key=lambda x: x["potion_ml"])
+        for potion_type in barrel_inventory:
+            for barrel in wholesale_catalog:
+                if barrel.ml_per_barrel > available_ml:
+                    continue
+                if barrel.price > running_total:
+                    continue
+                if potion_type["barrel_type"] == barrel.potion_type:
+                    barrel_plan.append(
+                        {
+                            "sku": barrel.sku,
+                            "quantity": 1
+                        }
+                    )
+                    running_total -= barrel.price
+                    available_ml -= barrel.ml_per_barrel
                     break
+
         print(f"barrel purchase plan: {barrel_plan}, running_total: {running_total}")
         return barrel_plan
