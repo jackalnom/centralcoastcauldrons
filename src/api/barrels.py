@@ -39,6 +39,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
+        max_ml_sql = "SELECT ml_capacity_units FROM global_plan"
+        result = connection.execute(sqlalchemy.text(max_ml_sql))
+        max_ml = result.fetchone()[0] * 10000
+        ml_sql = "SELECT SUM(potion_ml) FROM barrel_inventory"
+        result = connection.execute(sqlalchemy.text(ml_sql))
+        ml = result.fetchone()[0]
+        available_ml = max_ml - ml
         gold_sql = "SELECT * FROM global_inventory"
         result = connection.execute(sqlalchemy.text(gold_sql))
         global_inventory = result.fetchone()._asdict()
@@ -49,6 +56,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for barrel in wholesale_catalog:
             barrel_bought = False
             if barrel.price > running_total:
+                continue
+            if barrel.ml_per_barrel > available_ml:
                 continue
             print(f"barrel: {barrel} running_total: {running_total}")
             potion_catalog_sql = f'SELECT * FROM potion_catalog_items'
@@ -70,6 +79,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                             }
                         )
                         running_total -= barrel.price
+                        available_ml -= barrel.ml_per_barrel
                         barrel_bought = True
                         break
                 if barrel_bought:

@@ -18,22 +18,13 @@ def get_inventory():
         global_inventory_sql = "SELECT * FROM global_inventory"
         result = connection.execute(sqlalchemy.text(global_inventory_sql))
         inventory = result.fetchone()._asdict()
-        potion_catalog_sql = "SELECT * FROM potion_catalog_items"
+        potion_catalog_sql = "SELECT SUM(quantity) FROM potion_catalog_items"
         result = connection.execute(sqlalchemy.text(potion_catalog_sql))
-        potion_catalog = result.fetchall()
-        barrels_sql = "SELECT * FROM barrel_inventory"
+        num_potions = result.fetchone()[0]
+        barrels_sql = "SELECT SUM(potion_ml) FROM barrel_inventory"
         result = connection.execute(sqlalchemy.text(barrels_sql))
-        barrels = result.fetchall()
-
-        num_potions = 0
-        for potion in potion_catalog:
-            potion = potion._asdict()
-            num_potions += potion["quantity"]
-
-        num_ml = 0
-        for barrel in barrels:
-            barrel = barrel._asdict()
-            num_ml += barrel["potion_ml"]
+        num_ml = result.fetchone()[0]
+  
         
         print(f"num_potions: {num_potions} num_ml: {num_ml} gold: {inventory['gold']}")    
         return [

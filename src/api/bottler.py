@@ -43,6 +43,13 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
     with db.engine.begin() as connection:
+        max_potion_sql = "SELECT potion_capacity_units FROM global_plan"
+        result = connection.execute(sqlalchemy.text(max_potion_sql))
+        max_potion = result.fetchone()[0] * 50
+        potion_sql = "SELECT SUM(quantity) FROM potion_catalog_items"
+        result = connection.execute(sqlalchemy.text(potion_sql))
+        potions = result.fetchone()[0]
+        available_potions = max_potion - potions
         barrel_inventory_sql = "SELECT * FROM barrel_inventory"
         result = connection.execute(sqlalchemy.text(barrel_inventory_sql))
         rows = result.fetchall()
@@ -58,6 +65,8 @@ def get_bottle_plan():
         for potion in potions:
             potion = potion._asdict()
             quantity = list_floor_division(ml_inventory, potion["potion_type"])
+            quantity = min(quantity, available_potions)
+            available_potions -= quantity
             ml_inventory = [ml_inventory[i] - quantity * potion["potion_type"][i] for i in range(4)]
             if quantity > 0:
                 bottling_plan.append(
