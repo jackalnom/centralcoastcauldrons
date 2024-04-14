@@ -1,3 +1,4 @@
+import re
 from fastapi import HTTPException, status
 # TODO: add more colors and find more efficient way / less hardcoded
 def get_potion_type(color: str):
@@ -27,3 +28,12 @@ def get_color(potion_type: list[int]) -> str:
     if (len(color_str)) == 0:
         return ''
     return color_str[:len(color_str) -1]
+
+def sku_to_db_col(potion_sku: str) -> str:
+    # ONLY matches three conditons, will be deprecated soon
+    if (potion_sku == "green potion"):
+        return "num_green_potions"
+    elif (potion_sku == "red potion"):
+        return "num_red_potions"
+    else:
+        return "num_blue_potions"

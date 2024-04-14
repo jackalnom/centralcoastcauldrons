@@ -7,6 +7,7 @@ from sqlalchemy import Integer, Column, BigInteger, String, MetaData, ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
 from src import database as db
+from src.helper import sku_to_db_col
 
 class Base(DeclarativeBase):
     pass
@@ -120,19 +121,19 @@ def create_cart(new_cart: Customer):
     # create a cart for a user
     with db.engine.begin() as connection:
         # insert into customer_table
-        values = {"customer_name": new_cart.customer_name, 
-                "character_class": new_cart.character_class, 
-                "level": new_cart.level}
-        smtp = customer_carts.insert().values(values)
-        res = connection.execute(smtp)
-        # memory_cart.append({
-        #     "customer": new_cart,
-        #     "cart": []
-        # })
+        # values = {"customer_name": new_cart.customer_name, 
+        #         "character_class": new_cart.character_class, 
+        #         "level": new_cart.level}
+        # smtp = customer_carts.insert().values(values)
+        # res = connection.execute(smtp)
+        memory_cart.append({
+            "customer": new_cart,
+            "cart": []
+        })
         # memory_cart[new_cart.__hash__()]
-    # return {"cart_id": len(memory_cart) - 1}
+    return {"cart_id": len(memory_cart) - 1}
 
-    return {"cart_id": res.inserted_primary_key[0]}
+    # return {"cart_id": res.inserted_primary_key[0]}
 
 
 class CartItem(BaseModel):
@@ -154,9 +155,13 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         # will this be an update or insertion????
         # assuming insertions
         try:
-            connection.execute(sqlalchemy.text( "INSERT INTO potion_carts (customer_id, potion_sku, quantity)" +\
-                        "VALUES (:customer_id, :sku, :quantity)" 
-                        ), values)
+            # connection.execute(sqlalchemy.text( "INSERT INTO potion_carts (customer_id, potion_sku, quantity)" +\
+            #             "VALUES (:customer_id, :sku, :quantity)" 
+            #             ), values)
+            memory_cart[cart_id]["cart"].append({
+                "sku": item_sku,
+                "quantity": cart_item.quantity
+            })
         except Exception as e:
             # TODO: find out if custom messages is better, in this case it probably won't be
             #       as invalid customer id isn't the only reason why this api would fail
@@ -173,19 +178,67 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     # update db to reflect potions purchased and gold gained
     #TODO: refactor to new potions table
+    gold_recv = 0
+    total_purchased = 0
     values = {
         "cart_id": cart_id
     }
+    # update_val = {
+    #     "cart_id": cart_id,
+    #     "sku": "",
+    #     "quantity": 0
+    # }
+    update_val = {
+        "quantity": 0
+    }
     with db.engine.begin() as connection:
         # retrieve all potions in cart
-        res = connection.execute(sqlalchemy.text(
-            "SELECT * FROM potion_carts " +\
-            "WHERE customer_id = :cart_id"
-        ), values)
-        print(res.all())
-        # update potion via sku
+        cart = memory_cart[cart_id]["cart"]
+        # res = connection.execute(sqlalchemy.text(
+        #     "SELECT potion_sku, quantity FROM potion_carts " +\
+        #     "WHERE customer_id = :cart_id"
+        # ), values)
+        # print(res.all())
+        # keys = res.keys()
+        # potions_purchased = res.all()
+        # # update potion via sku
+        while len(cart) > 0:
+            item = cart.pop()
+            update_val["quantity"] = item["quantity"]
+            # get column name
+            # TODO: switch to dynamic potion types
+            # update potion quantity
+            col_name = sku_to_db_col(item["sku"])
+            connection.execute(sqlalchemy.text(
+                "UPDATE global_inventory " +\
+                f"SET {col_name} = {col_name} - :quantity " +\
+                "WHERE id = 2"
+            ), update_val)
+
+            # TODO: switch from hardcoded values - dynamic potion value
+            gold_recv += (item["quantity"] * 50)
+            total_purchased += 1
+
+
+        # for potion in potions_purchased:
+        #     sku, quantity = potion
+
+        #     update_val["sku"] = sku
+        #     update_val["quantity"] = quantity
+        #     # update potion quantity
+        #     connection.execute(sqlalchemy.text(
+        #         "UPDATE potion_carts" +\
+        #         "SET quantity = quantity - :quantity" +\
+        #         "WHERE customer_id = :cart_id AND potion_sku = :sku"
+        #     ), update_val)
+        
         # connection.execute(sqlalchemy.text(
         #     "UPDATE potions_cart SET "
         # ))
+        # update gold recieved
+        connection.execute(sqlalchemy.text(
+            "UPDATE global_inventory " + \
+            "SET gold = gold + :gold_recv"
+        ), {"gold_recv": gold_recv})
 
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    return {"total_potions_bought": total_purchased, "total_gold_paid": gold_recv}
