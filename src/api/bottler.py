@@ -17,10 +17,27 @@ class PotionInventory(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
-    bottles = potions_delivered[0]
-    green_deduction = 100 * bottles.quantity
+
+    red_deduction = red_amount = green_deduction = green_amount = blue_deduction = blue_amount = 0
+    for potion in potions_delivered:
+        potion_type = potion.potion_type
+        amount = potion.quantity
+
+        # check if red potion
+        if potion_type == [100, 0, 0, 0]:
+            red_deduction += 100 * amount
+            red_amount += amount
+        # check if green potion
+        elif potion_type == [0, 100, 0, 0]:
+            green_deduction += 100 * amount
+            green_amount += amount
+        # check if blue potion
+        elif potion_type == [0, 0, 100, 0]:
+            blue_deduction += 100 * amount
+            blue_amount += amount
+
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions + {bottles.quantity}, num_green_ml = num_green_ml - {green_deduction}"))
+        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = num_red_potions + {red_amount}, num_red_ml = num_red_ml - {red_deduction}, num_green_potions = num_green_potions + {green_amount}, num_green_ml = num_green_ml - {green_deduction}, num_blue_potions = num_blue_potions + {blue_amount}, num_blue_ml = num_blue_ml - {blue_deduction}"))
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
