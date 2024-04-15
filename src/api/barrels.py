@@ -52,10 +52,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     num_red_p = row[1]
     num_blue_p = row[2]
     gold = row[3]
-    count = 0
     for sale in wholesale_catalog:
-        count += 1
-        print(count)
         if sale.sku == "SMALL_GREEN_BARREL":
             quantity = 0
             if num_green_p < 2 and gold >= sale.price:
