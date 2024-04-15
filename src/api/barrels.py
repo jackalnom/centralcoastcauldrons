@@ -38,26 +38,51 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     res = []
-
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory"))
+    row = result.fetchone()
+    num_green_p = row[0]
+    num_red_p = row[1]
+    num_blue_p = row[2]
+    gold = row[3]
+    count = 0
     for sale in wholesale_catalog:
+        count += 1
+        print(count)
         if sale.sku == "SMALL_GREEN_BARREL":
-            with db.engine.begin() as connection:
-                result = connection.execute(sqlalchemy.text(f"SELECT num_green_potions, gold FROM global_inventory"))
-            for row in result:
-                num_potions = row[0]
-                gold = row[1]
-                quantity = 0
-                if num_potions < 10 and gold >= sale.price:
-                    quantity += 1 
-                if quantity > 0:
-                    res.append({
-                        "sku": "SMALL_GREEN_BARREL",
-                        "quantity": quantity
-                    })
+            quantity = 0
+            if num_green_p < 2 and gold >= sale.price:
+                quantity = 1 
+            if quantity > 0:
+                res.append({
+                    "sku": "SMALL_GREEN_BARREL",
+                    "quantity": quantity
+                })
+                gold -= sale.price
+        elif sale.sku == "SMALL_RED_BARREL":
+            quantity = 0
+            if num_red_p < 2 and gold >= sale.price:
+                quantity = 1
+            if quantity > 0:
+                res.append({
+                    "sku": "SMALL_RED_BARREL",
+                    "quantity": quantity
+                })
+                gold -= sale.price
+        elif sale.sku == "SMALL_BLUE_BARREL":
+            quantity = 0
+            if num_blue_p < 2 and gold >= sale.price:
+                quantity = 1
+            if quantity > 0:
+                res.append({
+                    "sku": "SMALL_BLUE_BARREL",
+                    "quantity": quantity
+                }) 
+                gold -= sale.price
 
-    print(wholesale_catalog)
+    print("Barrel Catalog: ", wholesale_catalog)
 
-    print("purchase plan:", res)
+    print("Barrel Purchase Plan:", res)
 
     # return [
     #     {
