@@ -93,6 +93,7 @@ def search_orders(
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
+    print("CALLED post_visits()")
     """
     Which customers visited the shop today?
     """
@@ -103,6 +104,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 
 @router.post("/")
 def create_cart(new_cart: Customer):
+    print("CALLED create_cart()")
     """ """
     temp_cart = Cart()
     temp_cart.cart_id = len(carts_array)
@@ -119,6 +121,7 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
+    print("CALLED set_item_quantity()")
     """ """
     # get cart by cart_id
     if len(carts_array) > cart_id:
@@ -139,7 +142,7 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
-
+    print("CALLED checkout()")
     if cart_id >= len(carts_array):
         return "FAILED"
     

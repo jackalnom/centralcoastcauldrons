@@ -9,9 +9,9 @@ def get_catalog():
     """
     Each unique item combination must have only a single price.
     """
-    sql_text = "SELECT num_green_potions, num_red_potions, num_blue_potions FROM global_inventory"
+    print("CALLED get_catalog()")
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_text))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions FROM global_inventory"))
     row = result.fetchone()
 
     # initialize catalog

@@ -21,6 +21,7 @@ class Barrel(BaseModel):
 
 @router.post("/deliver/{order_id}") # update inventory based on order to get ingredients (ml)
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
+    print("CALLED post_deliver_barrels()")
     price_of_delivery = num_green_ml = num_red_ml = num_blue_ml = 0
 
     for barrel in barrels_delivered:
@@ -44,6 +45,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 # Gets called once a day
 @router.post("/plan")   # get inventory state to plan purchase of ingredients (ml)
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
+    print("CALLED get_wholesale_purchase_plan()")
     res = []
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory"))
