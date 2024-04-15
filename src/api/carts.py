@@ -153,13 +153,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         elif item[0] == "RED_POTION_0":
             num_red_p += item[1]
             gold_payment += item[1] * 40
-        elif item[0] == "BLUE+POTION_0":
+        elif item[0] == "BLUE_POTION_0":
             num_blue_p += item[1]
-            gold_payment += item[1] * 35
+            gold_payment += item[1] * 40
         total_num_potions += item[1]
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions - {num_green_p}, num_red_potions = num_red_potions - {num_red_p}, num_blue_potions = num_blue_potions - {num_blue_p}, gold = gold + {gold_payment}"))
-    print(f"Cart {cart_id} payment 30 successfully processed.")
+    print(f"Cart {cart_id} successfully purchased {total_num_potions} potions and paid {gold_payment} gold.")
 
     return {"total_potions_bought": total_num_potions, "total_gold_paid": gold_payment}
