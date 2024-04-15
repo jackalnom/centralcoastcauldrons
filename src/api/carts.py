@@ -19,7 +19,24 @@ class search_sort_options(str, Enum):
 
 class search_sort_order(str, Enum):
     asc = "asc"
-    desc = "desc"   
+    desc = "desc" 
+
+
+class Customer(BaseModel):
+    customer_name: str
+    character_class: str
+    level: int
+
+# used for global list of carts
+# items : list of tuples of (potion_sku, quantity)
+class Cart(BaseModel):  
+    cart_id: int = None
+    items: list[tuple] = []
+    customer: Customer = None
+
+# global list of carts
+carts_array: list[Cart] = []
+
 
 @router.get("/search/", tags=["search"])
 def search_orders(
@@ -69,10 +86,10 @@ def search_orders(
     }
 
 
-class Customer(BaseModel):
-    customer_name: str
-    character_class: str
-    level: int
+# class Customer(BaseModel):
+#     customer_name: str
+#     character_class: str
+#     level: int
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
@@ -87,7 +104,13 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": 1}
+    temp_cart = Cart()
+    temp_cart.cart_id = len(carts_array)
+    temp_cart.customer = new_cart
+
+    carts_array.append(temp_cart)
+
+    return {"cart_id": temp_cart.cart_id}
 
 
 class CartItem(BaseModel):
@@ -97,6 +120,16 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    # get cart by cart_id
+    if len(carts_array) > cart_id:
+        cart = carts_array[cart_id]
+    else:
+        return "FAILED"
+    
+    # add item with quantity to items list in cart
+    entry = (item_sku, cart_item.quantity)
+    cart.items.append(entry)
+    print(carts_array)
 
     return "OK"
 
@@ -106,8 +139,27 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
+
+    if cart_id >= len(carts_array):
+        return "FAILED"
+    
+    total_num_potions = num_green_p = num_red_p = num_blue_p = gold_payment = 0
+    
+    cart = carts_array[cart_id]
+    for item in cart.items:
+        if item[0] == "GREEN_POTION_0":
+            num_green_p += item[1]
+            gold_payment += item[1] * 40
+        elif item[0] == "RED_POTION_0":
+            num_red_p += item[1]
+            gold_payment += item[1] * 40
+        elif item[0] == "BLUE+POTION_0":
+            num_blue_p += item[1]
+            gold_payment += item[1] * 35
+        total_num_potions += item[1]
+
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions - 1, gold = gold + 30"))
+        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions - {num_green_p}, num_red_potions = num_red_potions - {num_red_p}, num_blue_potions = num_blue_potions - {num_blue_p}, gold = gold + {gold_payment}"))
     print(f"Cart {cart_id} payment 30 successfully processed.")
 
-    return {"total_potions_bought": 1, "total_gold_paid": 30}
+    return {"total_potions_bought": total_num_potions, "total_gold_paid": gold_payment}
