@@ -23,7 +23,6 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_potions = num_green_potions + {bottles.quantity}, num_green_ml = num_green_ml - {green_deduction}"))
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
-    print(result)
 
     return "OK"
 
@@ -46,15 +45,20 @@ def get_bottle_plan():
     # for row in result:
     #     quantity = row[0] // 100
 
-    if quantity == 0:
-        return []
+    bottle_plan = []
 
-    return [
-            {
-                "potion_type": [0, 100, 0, 0],
-                "quantity": quantity,
-            }
-        ]
+    if quantity == 0:
+        print("bottle_plan: ", bottle_plan)
+        return bottle_plan
+    
+    bottle_plan = [
+        {
+            "potion_type": [0, 100, 0, 0],
+            "quantity": quantity,
+        }
+    ]
+    print("bottle_plan: ", bottle_plan)
+    return bottle_plan
 
 if __name__ == "__main__":
     print(get_bottle_plan())
