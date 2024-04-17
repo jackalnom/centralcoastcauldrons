@@ -5,6 +5,15 @@ import sqlalchemy
 from src import database as db
 import re
 
+# GLOBAL regex
+barrel_re = re.compile("(\w+)_(\w+)_BARREL")
+COLOR_THRESEHOLD = {
+    "red": 300,
+    "blue": 300,
+    "green": 500,
+    "dark": 500
+}
+
 router = APIRouter(
     prefix="/barrels",
     tags=["barrels"],
@@ -26,7 +35,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     mls_delivered = 0 
     total_gold = 0 
     gold = 0
-    barrel_re = re.compile("(\w+)_(\w+)_BARREL")
     if (len(barrels_delivered) == 0):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
@@ -84,52 +92,52 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     # keep track of ml and potion count for each color
     color_potions = 0
     inventory = {}
+    
     gold = 0
 
     # simple regex to get all available potions
-    num_potion_re = re.compile("num_(\w+)_potions")
+    num_potion_re = re.compile("((?:\w+\s+)+)(?=potions?)")
     # keept track of what we want to purchase
     purchased = []
     # buy BARRELS of any color when we are short of said color and have sufficient money
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT num_red_potions, num_green_potions, num_blue_potions, gold 
-            FROM global_inventory
-            WHERE id = 2
+            SELECT gold, red_ml AS red, green_ml AS green, blue_ml AS blue, dark_ml AS dark
+            FROM global_inventory_temp
         """))
-        inventory = result.mappings().first()
+        map = result.mappings().first()
 
         # iterate through keys looking for all available colors
+        inventory = dict(map.items())
         gold = inventory["gold"]
-        for key in inventory.keys():
-            if (color := num_potion_re.match(key)):
-                color_potions = inventory[color.string]
-                color = color.group(1)
-                if (color_potions < 10):
-                    # find corresponding color barrel
-                    # TODO: use regex and search dictionary instead of having a double for loop <- one search over many
-                    # TODO: explore different types of sizing for barrels
-                    print( f"SMALL_{color.upper()}_BARREL")
-                    for barrel in wholesale_catalog:
-                        if barrel.sku == f"SMALL_{color.upper()}_BARREL" and \
-                            barrel.quantity >= 1:
-                            
-                            # get price and purhcase 1 if we have enough
-                            price = barrel.price
-                            if (gold < price):
-                                print("Insufficient gold.")
-                                break;
-                    
-                            print(f"purchased {color} barrel at {barrel.price}")
-                            # update gold to reflect this
-                            gold -= price
-                            purchased.append(
-                            {
-                                "sku": f"SMALL_{color.upper()}_BARREL",
-                                "quantity" : 1
-                            }
-                            )
-                        
+        # check respective barrels and how much they have
+        # iterate throug barrel catalog, see if we need any of those colors
+        for barrel in wholesale_catalog:
+            # get the color of the barrel
+            barrel_match = barrel_re.match(barrel.sku)
+            if(not barrel_match):
+                print(barrel.sku)
+                continue
+            size = barrel_match.group(1)
+            color = barrel_match.group(2)
+            # check if the number of ml we want for a given color is less than thresehold
+            if (inventory[color] < COLOR_THRESEHOLD.get(color, 0)):
+                # purchase barrel
+                if (barrel.price < gold and size.lower() != "mini"):
+                    gold -= barrel.price
+                    print(f"purchased {barrel.sku} at {barrel.price}")
+                    purchased.append(
+                        {
+                            "sku": barrel.sku,
+                            "quantity" : 1
+                        }
+                    )
+                    # add to "demo" inventory
+                    inventory[color] += barrel.ml_per_barrel
+                else:
+                    print("Insufficient gold")
+                    continue;
+
     print(wholesale_catalog)
     return purchased
 
