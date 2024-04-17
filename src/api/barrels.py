@@ -58,6 +58,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         barrel_inventory = [row._asdict() for row in rows]
         barrel_inventory.sort(key=lambda x: x["potion_ml"])
         for potion_type in barrel_inventory:
+            if potion_type["potion_ml"] > global_inventory["ml_threshold"]:
+                continue
             for barrel in wholesale_catalog:
                 if barrel.ml_per_barrel > available_ml:
                     continue
