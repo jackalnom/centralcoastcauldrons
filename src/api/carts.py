@@ -152,13 +152,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     for item in cart.items:
         if item[0] == "GREEN_POTION_0":
             num_green_p += item[1]
-            gold_payment += item[1] * 40
+            gold_payment += item[1] * 35
         elif item[0] == "RED_POTION_0":
             num_red_p += item[1]
-            gold_payment += item[1] * 40
+            gold_payment += item[1] * 35
         elif item[0] == "BLUE_POTION_0":
             num_blue_p += item[1]
-            gold_payment += item[1] * 40
+            gold_payment += item[1] * 35
         total_num_potions += item[1]
 
     with db.engine.begin() as connection:
