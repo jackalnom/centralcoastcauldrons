@@ -47,6 +47,7 @@ def get_capacity_plan():
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         row_inventory = result.fetchone()._asdict()
         if row_inventory["potion_capacity_plan"] + row_inventory["ml_capacity_plan"] < (row_inventory["gold"] // 1000):
+            print(f"potion capacity: {row_inventory['potion_capacity_plan']} ml capacity: {row_inventory['ml_capacity_plan']} gold: {row_inventory['gold']}")
             return {
                 "potion_capacity": row_inventory["potion_capacity_plan"],
                 "ml_capacity": row_inventory["ml_capacity_plan"],
