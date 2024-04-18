@@ -52,7 +52,11 @@ def get_capacity_plan():
                 "ml_capacity": row_inventory["ml_capacity_plan"],
             }
         else:
-            raise Exception("Invalid capacity plan. Not enough gold to purchase planned capacity.")
+            print("Invalid capacity plan. Not enough gold to purchase planned capacity.")
+            return {
+                "potion_capacity": 0,
+                "ml_capacity": 0,
+            }
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
