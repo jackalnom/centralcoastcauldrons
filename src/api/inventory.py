@@ -54,17 +54,25 @@ def get_capacity_plan():
                 "potion_capacity": 0,
                 "ml_capacity": 0,
             }
-        else:
-            if row["potion_capacity_units"] < row["ml_capacity_units"]:
-                return {
-                    "potion_capacity": 1,
-                    "ml_capacity": 0,
-                }
-            else:
+        elif row_inventory["gold"] < 2000:
+            if row["ml_capacity_units"] < row["potion_capacity_units"]:
                 return {
                     "potion_capacity": 0,
                     "ml_capacity": 1,
                 }
+            else:
+                return {
+                    "potion_capacity": 1,
+                    "ml_capacity": 0,
+                }
+        elif row_inventory["gold"] >= 2000:
+            return {
+                "potion_capacity": 1,
+                "ml_capacity": 1,
+            
+            }
+        else:
+            raise Exception("Invalid gold amount")
 
 class CapacityPurchase(BaseModel):
     potion_capacity: int
@@ -79,7 +87,7 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     """
     current_capacity_sql = "SELECT * FROM global_plan"
 
-    with db.engine.begin() as connection:    
+    with db.engine.begin() as connection:   
         result = connection.execute(sqlalchemy.text(current_capacity_sql))
         row = result.fetchone()._asdict()
         potion_capacity = row["potion_capacity_units"]
