@@ -29,6 +29,7 @@ class Barrel(BaseModel):
 
     quantity: int
 
+#TODO: create Orders table to keep track of all orders???
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
@@ -62,7 +63,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
              # update gold
             gold -= cost
-            barrel_type = f"num_{match.group(2)}_ml"
+            barrel_type = f"{match.group(2)}_ml"
             print(barrel_type)
             # update ML for db
             connection.execute(sqlalchemy.text(f"""

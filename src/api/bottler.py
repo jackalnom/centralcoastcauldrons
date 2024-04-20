@@ -5,8 +5,16 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 from src.api import catalog
-from src.helper import get_potion_type, get_color
+from src.helper import potion_type_name
 import re
+from src.models import potions_table
+
+POTION_THRESEHOLD = {
+    "red": 3,
+    "green": 2,
+    "blue": 1,
+    "dark": 1
+}
 
 router = APIRouter(
     prefix="/bottler",
@@ -21,30 +29,33 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
+    # parsing all delivered potion to be accepted by param binding
+    param_update = []
+    param_insert = []
+    for delivery in potions_delivered:
+        print(potion_type_name(delivery.potion_type))
+        param_update.append({
+            "red": delivery.potion_type[0], 
+            "green": delivery.potion_type[1],
+            "blue": delivery.potion_type[2],
+            "dark": delivery.potion_type[3],
+            "quantity": delivery.quantity
+            })
     # keep track of all potion_types delivered and parse as JSON
-    delivered_query = ""
     if (len(potions_delivered) == 0):
-        return "WOW"
+        return "OK"
     with db.engine.begin() as connection:
+        # get all potions available, 
         # iterate and add all bottles that have been delivered to db
         for idx in range(len(potions_delivered)):
             bottle = potions_delivered[idx]
             if bottle.quantity <= 0:
                 continue
             # get potion_type
-            color = get_color(bottle.potion_type)
 
-            # parse and add to delivered JSON
-            delivered_query += f"num_{color}_potions = num_{color}_potions + {bottle.quantity}{',' if idx < len(potions_delivered) - 1 else ''}" 
-            print("Recieved: ", color, " AMOUNT: ", bottle.quantity)
 
-        # update bottles amount in db
-        if (len(delivered_query) > 0):
-            connection.execute(sqlalchemy.text(f"""
-            UPDATE global_inventory
-            SET {delivered_query}
-            WHERE id = 2
-            """))
+
+
 
     print(f"bottles delievered: {potions_delivered} order_id: {order_id}")
 
@@ -56,54 +67,71 @@ def get_bottle_plan():
     Go from bottle to bottle.
     """
     # keep track of our needs
-    color_ml = 0
+    inventory = {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "dark": 0
+    }
     needs = []
 
     # regex for bottles
-    num_bottle_re = re.compile("num_(\w+)_ml")
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT * 
-            FROM global_inventory
-            WHERE id = 2
+            SELECT red_ml AS red, green_ml AS green, blue_ml AS blue, dark_ml AS dark
+            FROM global_inventory_temp
         """))
-        ml_inventory = result.mappings().first()
-        
         # Each bottle has a quantity of what proportion of red, blue, and
         # green potion to add.
         # Expressed in integers from 1 to 100 that must sum up to 100.
 
-        # Initial logic: bottle all bottles into red potions.
+        barrels = result.mappings().first()
+        inventory = dict(barrels)
 
-        # bottle into only the three colors that we know as of recently, red, green and blue
-        for key, value in ml_inventory.items():
-            if (match_ml := num_bottle_re.match(key)):
-                potions_produced = value // 100
 
-                ml_name = match_ml.group(0)
-                color = match_ml.group(1)
+        # we want to produce at least 1 custom potion for the meantime, we will have this be known
+        # as potion thresehold
+        # DEFAULT POTIONS - fully red, green, blue or dark
+        params = {
+            "red": 0,
+            "green": 0,
+            "blue": 0,
+            "dark": 0
+        }
+        for color, value in inventory.items():
+            potions_produced = value // 100
+            params[color] = 100
+
+            # check potion thresehold
+            if (potions_produced == 0):
+                continue;
+
+            # calculating any ml leftover
+            if (potions_produced > POTION_THRESEHOLD[color]):
                 print(color, value, potions_produced)
+                # subtract by thresehold, this will be used to create custom potions
+                inventory[color] = value - ((potions_produced * 100) - (POTION_THRESEHOLD[color] * 100))
+                potions_produced = POTION_THRESEHOLD[color] 
+            else:
+                inventory[color] = value - (potions_produced * 100)
 
-                if potions_produced > 0:
+            # update db to reflect the ml that the goblin took
+            # may be a mistake adding it to plan rather than when we recieve the potions.
+            connection.execute(sqlalchemy.text(f"""
+            UPDATE global_inventory_temp
+            SET {color}_ml = {color}_ml - :produced
+            """), {
+                "color": color,
+                "produced": (potions_produced * 100)
+            })
 
-                    print(potions_produced)
-
-                    # update db to reflect the ml that the goblin took
-                    # may be a mistake adding it to plan rather than when we recieve the potions.
-                    connection.execute(sqlalchemy.text(f"""
-                    UPDATE global_inventory
-                    SET {ml_name} = {ml_name} - {potions_produced * 100}
-                    WHERE id = 2
-                    """))
-
-                    # get potion_type and add to the list of what we need bottled
-                    potion_type = get_potion_type(color)
-                    needs.append(
-                        {
-                            "potion_type": potion_type,
-                            "quantity": potions_produced,
-                        }
-                    )
+            params[color] = 0
+            needs.append(
+                {
+                    "potion_type": color + " potion",
+                    "quantity": potions_produced,
+                }
+            )
         return needs 
 
 if __name__ == "__main__":

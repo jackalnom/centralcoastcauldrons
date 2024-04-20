@@ -1,5 +1,10 @@
+import io
 import re
 from fastapi import HTTPException, status
+
+COLORS = ["red", "green", "blue", "dark"]
+
+
 # TODO: add more colors and find more efficient way / less hardcoded
 def get_potion_type(color: str):
     potion_type = None
@@ -37,3 +42,24 @@ def sku_to_db_col(potion_sku: str) -> str:
         return "num_red_potions"
     else:
         return "num_blue_potions"
+
+def potion_type_name(potion_type: list[int]):
+    if (len(potion_type) != 4):
+        raise Exception("Invalid length passed. Must be 4, (red, green, blue, dark).") 
+    
+    name = ""
+
+    # see how many words we will need to match
+    for idx in range(len(potion_type)):
+        # will derive values from 4 different files
+        if (potion_type[idx] != 0):
+            with open(f"potion_names/{COLORS[idx]}.csv") as potion_names:
+                for _ in range(potion_type[idx] - 1):
+                    next(potion_names)
+                name += potion_names.readline().strip('\n') + " "
+    name += "Potion"
+    return name
+
+
+    
+    
