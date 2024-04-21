@@ -1,0 +1,100 @@
+Elixir of Arcane
+Draught of Shadows
+Potion of Ethereal
+Tincture of Radiance
+Brew of Foresight
+Concoction of Vigor
+Philter of Tranquility
+Essence of Metamorphosis
+Decoction of Swiftness
+Infusion of Fortitude
+Solution of Clarity
+Mixture of Illusion
+Syrup of Levitation
+Tonic of Restoration
+Distillation of Harmony
+Extract of Invisibility
+Amalgam of Resistance
+Cordial of Persuasion
+Liquor of Divination
+Aqua of Regeneration
+Balm of Serenity
+Nectar of Telepathy
+Dew of Invigoration
+Ichor of Transmutation
+Serum of Enchantment
+Ointment of Protection
+Unguent of Clairvoyance
+Drops of Evanescence
+Concentrate of Alacrity
+Suspension of Deflection
+Fluid of Empowerment
+Quintessence of Translocation
+Chrism of Illumination
+Lotion of Disguise
+Liniment of Strength
+Salve of Insight
+Juice of Charisma
+Perfume of Allure
+Bouquet of Inspiration
+Aroma of Revelation
+Musk of Courage
+Fragrance of Luck
+Scent of Wisdom
+Redolence of Agility
+Effluvium of Endurance
+Odor of Reflexes
+Stench of Fear
+Reek of Confusion
+Miasma of Deception
+Vapor of Truth
+Fume of Oblivion
+Exhalation of Recovery
+Emanation of Repulsion
+Gas of Intangibility
+Steam of Shrinking
+Haze of Enlargement
+Fog of Silence
+Mist of Tongues
+Cloud of Invisibility
+Smoke of Shapeshifting
+Spray of Healing
+Sprinkle of Levitation
+Splash of Haste
+Shower of Slowness
+Drizzle of Feather Falling
+Deluge of Water Breathing
+Torrent of Fire Resistance
+Flood of Frost Ward
+Wave of Shock Absorption
+Surge of Acid Neutralization
+Blast of Sonic Dampening
+Gust of Etherealness
+Breeze of Spell Reflection
+Zephyr of Mind Reading
+Whirlwind of Telekinesis
+Cyclone of Force Field
+Tempest of Disintegration
+Hurricane of Resurrection
+Typhoon of Planar Travel
+Squall of Necromancy
+Gale of Illusion
+Flurry of Enchantment
+Blizzard of Transmutation
+Sleet of Abjuration
+Hail of Conjuration
+Thunderstorm of Evocation
+Sandstorm of Divination
+Duststorm of Illusion
+Firestorm of Enchantment
+Rainstorm of Abjuration
+Snowstorm of Transmutation
+Windstorm of Conjuration
+Lightning Storm of Evocation
+Ice Storm of Divination
+Meteor Shower of Necromancy
+Solar Flare of Resurrection
+Cosmic Ray of Planar Travel
+Nebula of Etherealness
+Aurora of Spell Reflection
+Constellation of Mind Reading

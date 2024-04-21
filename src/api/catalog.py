@@ -14,22 +14,14 @@ def get_catalog():
     """
     # keep track of inventory
     catalog = []
-    # keep track of colored potions
-    freq_sku = {
-        "green": 0,
-        "blue": 0,
-        "red": 0,
-        "dark": 0
-    }
     inventory = None
-    num_potion_re = re.compile("num_(\w+)_potions")
     # list available potions
     with db.engine.begin() as connection:
         # result = connection.execute(sqlalchemy.text(f"SELECT * FROM global_inventory WHERE id = 2"))
         # get green potion prop.
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory WHERE id = 2"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM potions "))
         try:
-            inventory = result.mappings().first()
+            inventory = result.mappings().all()
         except Exception as e:
             print(e)
             return []
@@ -46,25 +38,15 @@ def get_catalog():
             color = match.group(1)
     '''
     # iterate and add to catalog if the name of the given potion color matches the regex
-    for key, value in inventory.items():
-        if (potion_key:=num_potion_re.match(key)):
-            if (value <= 0):
-                continue
-            # select capture group that contains color
-            color = potion_key.group(1)
-            # check frequency and set that as the potion number
-
-            # really poor logic
-            # TODO: find way to represent potions better other than SKU???
-            potion_type = None 
-            potion_type = get_potion_type(color)
-           
-           #TODO: allow functionality to purchase more than 1 potions
-            catalog.append({
-                "sku": freq_sku[color],
-                "name": f"{color} potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": potion_type,
-            })
+    for potion in inventory:
+        #TODO: allow functionality to purchase more than 1 potions
+        if potion["quantity"] <= 0:
+            continue
+        catalog.append({
+            "sku": potion["potion_sku"],
+            "name": potion["potion_sku"],
+            "quantity": potion["quantity"],
+            "price": potion["price"],
+            "potion_type": [potion["red"], potion["green"], potion["blue"], potion["dark"]],
+        })
     return catalog
