@@ -13,3 +13,7 @@ customer_table = sqlalchemy.Table("customers", meta_customer, autoload_with=data
 # SQL table for Cart
 meta_cart = sqlalchemy.MetaData()
 carts_table = sqlalchemy.Table("carts", meta_cart, autoload_with=database.engine)
+
+# SQL table for Global
+meta_global = sqlalchemy.MetaData()
+global_table = sqlalchemy.Table("global_inventory_temp", meta_global, autoload_with=database.engine)

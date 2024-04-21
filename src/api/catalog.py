@@ -40,10 +40,12 @@ def get_catalog():
     # iterate and add to catalog if the name of the given potion color matches the regex
     for potion in inventory:
         #TODO: allow functionality to purchase more than 1 potions
+        if potion["quantity"] <= 0:
+            continue
         catalog.append({
             "sku": potion["potion_sku"],
             "name": potion["potion_sku"],
-            "quantity": 1,
+            "quantity": potion["quantity"],
             "price": potion["price"],
             "potion_type": [potion["red"], potion["green"], potion["blue"], potion["dark"]],
         })
