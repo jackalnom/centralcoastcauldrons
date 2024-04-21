@@ -62,4 +62,3 @@ def potion_type_name(potion_type: list[int]):
 
 
     
-    

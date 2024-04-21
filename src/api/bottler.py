@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.dialects.postgresql import Insert
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
@@ -30,30 +31,40 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     """ """
     # parsing all delivered potion to be accepted by param binding
-    param_update = []
-    param_insert = []
-    for delivery in potions_delivered:
-        print(potion_type_name(delivery.potion_type))
-        param_update.append({
-            "red": delivery.potion_type[0], 
-            "green": delivery.potion_type[1],
-            "blue": delivery.potion_type[2],
-            "dark": delivery.potion_type[3],
-            "quantity": delivery.quantity
-            })
+    param_upsert = []
     # keep track of all potion_types delivered and parse as JSON
     if (len(potions_delivered) == 0):
         return "OK"
     with db.engine.begin() as connection:
-        # get all potions available, 
-        # iterate and add all bottles that have been delivered to db
-        for idx in range(len(potions_delivered)):
-            bottle = potions_delivered[idx]
-            if bottle.quantity <= 0:
-                continue
-            # get potion_type
+        
+        # if potion is already in db, simply update value, else insert
+        for delivery in potions_delivered:
+            name = potion_type_name(delivery.potion_type)
+            param_upsert.append({
+                "potion_sku": name,
+                "red": delivery.potion_type[0], 
+                "green": delivery.potion_type[1],
+                "blue": delivery.potion_type[2],
+                "dark": delivery.potion_type[3],
+                "quantity": delivery.quantity
+                })
 
+        # upsertion
+        stmt = Insert(potions_table).values(param_upsert)
+        upsert_stmt = stmt.on_conflict_do_update(
+            index_elements=["potion_sku"],
+            set_=dict({
+                "potion_sku": stmt.excluded.potion_sku,
+                "red": stmt.excluded.red,
+                "green": stmt.excluded.green,
+                "blue": stmt.excluded.blue,
+                "dark": stmt.excluded.dark,
+                "quantity": potions_table.c.quantity + stmt.excluded.quantity
+            })
+        )
 
+        # update db
+        connection.execute(upsert_stmt)
 
 
 
