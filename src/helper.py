@@ -16,7 +16,8 @@ def get_potion_type(color: str):
         potion_type = [0, 100, 0, 0]
     elif ('blue' in lower_color):
         potion_type = [0, 0, 100, 0]
-    return potion_type
+    elif ('dark' in lower_color):
+        return potion_type
 
 def get_color(potion_type: list[int]) -> str:
 
