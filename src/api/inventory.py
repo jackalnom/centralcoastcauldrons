@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from sqlalchemy import func
+from src.models import potions_table
 
 router = APIRouter(
     prefix="/inventory",
@@ -13,14 +15,24 @@ router = APIRouter(
 @router.get("/audit")
 def get_inventory():
     """ """
+    num_potions = num_ml = gold = 0
     
     # query the db
     with db.engine.begin() as connection:
-        res = connection.execute(sqlalchemy.text("SELECT * \
+        res = connection.execute(sqlalchemy.text("SELECT gold, red_ml, green_ml, blue_ml, dark_ml \
                                            FROM global_inventory_temp"))
-        inventory = res.mappings().first()
+        inventory = res.first()
+        res = connection.execute(func.sum(potions_table.c.quantity))
 
-        return inventory
+        num_potions = res.scalar_one_or_none()
+        gold = inventory[0]
+        num_ml = sum(inventory[1:])
+
+        return {
+            "number_of_potions": num_potions if num_potions else 0,
+            "ml_in_barrels": num_ml,
+            "gold": gold
+        }
         
 
 # Gets called once a day

@@ -169,7 +169,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     # update db to reflect potions purchased and gold gained
-    total = 0
+    total  = total_quantity = 0
     values = {
         "cart_id": cart_id
     }
@@ -189,24 +189,29 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         cart = res.all()
         print(cart)
         for purchase in cart:
+            # check new quantity of potion before proceeding????
+            if purchase[3] < purchase[1]:
+                print("Error in checkout. Too many potions requested.")
+                continue
+            total_quantity += purchase[1]
             # quantity x price
             total += purchase[1] * purchase[2]
             update_val.append({
                 "b_potion_sku": purchase[0],
                 "quantity": purchase[3] - purchase[1]
             })
+        if total_quantity > 0:
+            # bulk update all potion quantities
+            # ASSUMING no maliscious requests are made :(
+            connection.execute(sqlalchemy.update(potions_table).where(
+                potions_table.c.potion_sku == sqlalchemy.bindparam("b_potion_sku")
+            ), update_val)
 
-        # bulk update all potion quantities
-        # ASSUMING no maliscious requests are made :(
-        connection.execute(sqlalchemy.update(potions_table).where(
-            potions_table.c.potion_sku == sqlalchemy.bindparam("b_potion_sku")
-        ), update_val)
-
-        # update gold?? better way to do this?? same time as last sql??
-        connection.execute(sqlalchemy.update(global_table).values({
-            "gold": global_table.c.gold + total
-        }))
-    
+            # update gold?? better way to do this?? same time as last sql??
+            connection.execute(sqlalchemy.update(global_table).values({
+                "gold": global_table.c.gold + total
+            }))
+        
 
         # # update potion via sku
         # while len(cart) > 0:
@@ -248,4 +253,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         #     "SET gold = gold + :gold_recv"
         # ), {"gold_recv": gold_recv})
 
-    return {"total_potions_bought": total, "total_gold_paid": cart_checkout.payment}
+    return {"total_potions_bought": total_quantity, "total_gold_paid": cart_checkout.payment}

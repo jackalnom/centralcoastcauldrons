@@ -120,7 +120,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             size = barrel_match.group(1)
             color = barrel_match.group(2).lower()
             # check if the number of ml we want for a given color is less than thresehold
-            if (inventory[color] < COLOR_THRESEHOLD.get(color.lower(), 0)):
+            if (inventory[color] < COLOR_THRESEHOLD.get(color, 0)):
                 # purchase barrel
                 if (barrel.price < gold and size.lower() != "mini"):
                     gold -= barrel.price
@@ -134,7 +134,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     # add to "demo" inventory
                     inventory[color] += barrel.ml_per_barrel
                 else:
-                    print("Insufficient gold")
+                    print("Insufficient gold", barrel, gold)
                     continue;
 
     print(wholesale_catalog)

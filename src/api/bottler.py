@@ -8,7 +8,7 @@ from src import database as db
 from src.api import catalog
 from src.helper import potion_type_name, get_potion_type
 import re
-from src.models import potions_table
+from src.models import potions_table, global_table
 
 # RED, GREEN, BLUE, DARK
 POTION_THRESEHOLD = [3, 3, 2, 1]
@@ -154,7 +154,14 @@ def get_bottle_plan():
          
         # if more ml is needed, add from max element
         # update db to reflect the ml that the goblin took
+        connection.execute(global_table.update().values({
+            "red_ml": inventory[0],
+            "green_ml": inventory[1],
+            "red_ml": inventory[2],
+            "dark_ml": inventory[3]
+        }))
         # may be a mistake adding it to plan rather than when we recieve the potions.
+        print(needs)
         return needs 
 
 if __name__ == "__main__":
