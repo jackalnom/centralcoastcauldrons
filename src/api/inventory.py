@@ -17,7 +17,7 @@ def get_inventory():
     # query the db
     with db.engine.begin() as connection:
         res = connection.execute(sqlalchemy.text("SELECT * \
-                                           FROM global_inventory WHERE id = 2"))
+                                           FROM global_inventory_temp"))
         inventory = res.mappings().first()
 
         return inventory
