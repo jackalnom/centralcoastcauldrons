@@ -22,21 +22,36 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}") # update inventory based on order to get ingredients (ml)
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print("CALLED post_deliver_barrels()")
-    price_of_delivery = num_green_ml = num_red_ml = num_blue_ml = 0
+    price_of_delivery = num_green_ml = num_red_ml = num_blue_ml = num_dark_ml = 0
 
     for barrel in barrels_delivered:
-        if barrel.sku == "SMALL_GREEN_BARREL":
-            num_green_ml = barrel.ml_per_barrel * barrel.quantity
-            price_of_delivery += barrel.quantity * barrel.price
-        elif barrel.sku == "SMALL_RED_BARREL":
+        if barrel.potion_type == [1, 0, 0, 0]:
             num_red_ml = barrel.ml_per_barrel * barrel.quantity
             price_of_delivery += barrel.quantity * barrel.price
-        elif barrel.sku == "SMALL_BLUE_BARREL":
+        if barrel.potion_type == [0, 1, 0, 0]:
+            num_green_ml = barrel.ml_per_barrel * barrel.quantity
+            price_of_delivery += barrel.quantity * barrel.price
+        elif barrel.potion_type == [0, 0, 1, 0]:
             num_blue_ml = barrel.ml_per_barrel * barrel.quantity
             price_of_delivery += barrel.quantity * barrel.price
+        elif barrel.potion_type == [0, 0, 0, 1]:
+            num_dark_ml = barrel.ml_per_barrel * barrel.quantity
+            price_of_delivery += barrel.quantity * barrel.price
+        print("type:", barrel.potion_type)
+    print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml = num_green_ml + {num_green_ml}, num_red_ml = num_red_ml + {num_red_ml}, num_blue_ml = num_blue_ml + {num_blue_ml}, gold = gold - {price_of_delivery}"))
+        result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+                                                    SET num_red_ml = num_red_ml + :num_red_ml, 
+                                                    num_green_ml = num_green_ml + :num_green_ml, 
+                                                    num_blue_ml = num_blue_ml + :num_blue_ml, 
+                                                    num_dark_ml = num_dark_ml + :num_dark_ml, 
+                                                    gold = gold - :price_of_delivery"""), 
+                                                    [{"num_red_ml": num_red_ml,
+                                                      "num_green_ml": num_green_ml,
+                                                      "num_blue_ml": num_blue_ml,
+                                                      "num_dark_ml": num_dark_ml,
+                                                      "price_of_delivery": price_of_delivery}])
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
     return "OK"
