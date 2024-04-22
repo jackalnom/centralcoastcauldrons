@@ -41,8 +41,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
             SELECT gold 
-            FROM global_inventory
-            WHERE id = 2
+            FROM global_inventory_temp
         """))
         if (not (gold := result.first()[0])):
             print("Server Error")
@@ -67,18 +66,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             print(barrel_type)
             # update ML for db
             connection.execute(sqlalchemy.text(f"""
-            UPDATE global_inventory
+            UPDATE global_inventory_temp
             SET {barrel_type} = {barrel_type} + {mls_delivered}  
-            WHERE id = 2
             """))
             print("Recieved: ", barrel_type, " AMOUNT: ", mls_delivered)
 
         # update gold that was recieved
 
         connection.execute(sqlalchemy.text(f"""
-            UPDATE global_inventory 
+            UPDATE global_inventory_temp
             SET gold = {gold}
-            WHERE id = 2
         """))
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
@@ -122,7 +119,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             size = barrel_match.group(1)
             color = barrel_match.group(2)
             # check if the number of ml we want for a given color is less than thresehold
-            if (inventory[color] < COLOR_THRESEHOLD.get(color, 0)):
+            if (inventory[color.lower()] < COLOR_THRESEHOLD.get(color.lower(), 0)):
                 # purchase barrel
                 if (barrel.price < gold and size.lower() != "mini"):
                     gold -= barrel.price
