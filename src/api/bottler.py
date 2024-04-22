@@ -23,14 +23,15 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     with db.engine.begin() as connection:
         for potion in potions_delivered:
             for i in range(4):
-                barrel_type = [0 for _ in range(4)]
-                barrel_type[i] = 1
+                barrel_type = [j == i for j in range(4)]
                 if potion.potion_type[i] == 0:
                     continue
-                barrel_update_sql = f"UPDATE barrel_inventory SET potion_ml = potion_ml - {potion.quantity * potion.potion_type[i]} WHERE barrel_type = '{potion_type_tostr(barrel_type)}'"
-                connection.execute(sqlalchemy.text(barrel_update_sql))
-            gold_update_sql = f"UPDATE potion_catalog_items SET quantity = quantity + {potion.quantity} WHERE potion_type = '{potion_type_tostr(potion.potion_type)}'"
-            connection.execute(sqlalchemy.text(gold_update_sql))
+                barrel_update_sql = "INSERT INTO barrels (order_id, barrel_type, potion_ml) VALUES (:order_id, :barrel_type, :potion_ml)"
+                connection.execute(sqlalchemy.text(barrel_update_sql),
+                                    [{"order_id": order_id,"barrel_type": potion_type_tostr(barrel_type), "potion_ml": (-potion.quantity * potion.potion_type[i])}])
+            potion_insert_sql = "INSERT INTO potions (order_id, potion_type, quantity) VALUES (:order_id, :potion_type, :quantity)"
+            connection.execute(sqlalchemy.text(potion_insert_sql),
+                                [{"order_id": order_id,"potion_type": potion_type_tostr(potion.potion_type), "quantity": potion.quantity}])
     return "OK"
 
 @router.post("/plan")
@@ -50,13 +51,13 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text(potion_sql))
         potions = result.fetchone()[0]
         available_potions = max_potion - potions
-        barrel_inventory_sql = "SELECT * FROM barrel_inventory"
-        result = connection.execute(sqlalchemy.text(barrel_inventory_sql))
-        rows = result.fetchall()
-        rows = [row._asdict() for row in rows]
-        ml_inventory = [0, 0, 0, 0]
-        for row in rows:
-            ml_inventory = [ml_inventory[i] + row["potion_ml"] * row["barrel_type"][i] for i in range(4)]
+        
+        ml_inventory = [0 for i in range(4)]
+        for i in range(4):
+            barrel_type = [j == i for j in range(4)]
+            barrel_sql = "SELECT SUM(potion_ml) FROM barrels WHERE barrel_type = :barrel_type"
+            result = connection.execute(sqlalchemy.text(barrel_sql), [{"barrel_type": potion_type_tostr(barrel_type)}])
+            ml_inventory[i] = result.fetchone()[0]
         potion_catalog_sql = "SELECT * FROM potion_catalog_items"
         result = connection.execute(sqlalchemy.text(potion_catalog_sql))
         potions = result.fetchall()

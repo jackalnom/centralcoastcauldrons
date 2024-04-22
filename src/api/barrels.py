@@ -25,11 +25,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
     with db.engine.begin() as connection:
         for barrel in barrels_delivered:
-            sql_to_execute = f"UPDATE barrel_inventory SET potion_ml = potion_ml + {barrel.ml_per_barrel * barrel.quantity} WHERE barrel_type = '{potion_type_tostr(barrel.potion_type)}'"
-            connection.execute(sqlalchemy.text(sql_to_execute))
-            sql_to_execute = f"UPDATE global_inventory SET gold = gold - {barrel.price * barrel.quantity}"
-            connection.execute(sqlalchemy.text(sql_to_execute))
-    
+            for i in range(barrel.quantity):
+                barrel_insert_sql = "INSERT INTO barrels (order_id, barrel_type, potion_ml) VALUES (:order_id, :barrel_type, :potion_ml)"
+                connection.execute(sqlalchemy.text(barrel_insert_sql), [{"order_id": order_id, 
+                                                                         "barrel_type": potion_type_tostr(barrel.potion_type), 
+                                                                         "potion_ml": barrel.ml_per_barrel}])
+            gold_ledger_sql = "INSERT INTO gold_ledger (order_id, gold) VALUES (:order_id, :gold)"
+            connection.execute(sqlalchemy.text(gold_ledger_sql), 
+                               [{"order_id": order_id, 
+                                 "gold": -barrel.price * barrel.quantity}])
     return "OK"
 
 # Gets called once a day
@@ -42,7 +46,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         max_ml_sql = "SELECT ml_capacity_units FROM global_plan"
         result = connection.execute(sqlalchemy.text(max_ml_sql))
         max_ml = result.fetchone()[0] * 10000
-        ml_sql = "SELECT SUM(potion_ml) FROM barrel_inventory"
+        ml_sql = "SELECT SUM(potion_ml) FROM barrels"
         result = connection.execute(sqlalchemy.text(ml_sql))
         ml = result.fetchone()[0]
         available_ml = max_ml - ml
@@ -52,20 +56,23 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         running_total = global_inventory["gold"]
         wholesale_catalog.sort(key=lambda x: x.ml_per_barrel/x.price, reverse=True)
         barrel_plan = []
-        barrel_inventory_sql = "SELECT * FROM barrel_inventory"
-        result = connection.execute(sqlalchemy.text(barrel_inventory_sql))
-        rows = result.fetchall()
-        barrel_inventory = [row._asdict() for row in rows]
-        barrel_inventory.sort(key=lambda x: x["potion_ml"])
-        for potion_type in barrel_inventory:
-            if potion_type["potion_ml"] > global_inventory["ml_threshold"]:
+        ml_inventory = [0 for i in range(4)]
+        for i in range(4):
+            barrel_type = [j == i for j in range(4)]
+            barrel_sum_sql = "SELECT SUM(potion_ml) FROM barrels WHERE barrel_type = :barrel_type"
+            result = connection.execute(sqlalchemy.text(barrel_sum_sql),
+                                        [{"barrel_type": barrel_type}])
+            ml_inventory[i] = result.fetchone()[0]
+        for barrel_ml, i in ml_inventory:
+            barrel_type = [j == i for j in range(4)]
+            if barrel_ml > global_inventory["ml_threshold"]:
                 continue
             for barrel in wholesale_catalog:
                 if barrel.ml_per_barrel > available_ml:
                     continue
                 if barrel.price > running_total:
                     continue
-                if potion_type["barrel_type"] == barrel.potion_type:
+                if barrel_ml == barrel.potion_type:
                     barrel_plan.append(
                         {
                             "sku": barrel.sku,

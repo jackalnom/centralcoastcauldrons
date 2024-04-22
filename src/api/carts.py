@@ -5,6 +5,7 @@ from src.api import auth
 from enum import Enum
 import sqlalchemy
 from src import database as db
+from src.api.helpers import potion_type_tostr
 
 router = APIRouter(
     prefix="/carts",
@@ -124,15 +125,21 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         result = connection.execute(sqlalchemy.text(cart_items_sql))
         rows = [row._asdict() for row in result]
         for row in rows:   
+            potion_type_sql = "SELECT potion_type FROM potion_catalog_items WHERE sku = :sku"
+            result = connection.execute(sqlalchemy.text(potion_type_sql), [{"sku": row["item_sku"]}]).scalar_one()
+            potion_type = result[0]
             quantity += row["quantity"]
-            potion_quantity_sql = f"UPDATE potion_catalog_items SET quantity = quantity - {row['quantity']} WHERE sku = '{row['item_sku']}'"
-            connection.execute(sqlalchemy.text(potion_quantity_sql))
+            potion_update_sql = "INSERT INTO potions (order_id, potion_type, quantity) VALUES (:order_id, :potion_type, :quantity)"
+            connection.execute(sqlalchemy.text(potion_update_sql), [{"order_id": cart_id, 
+                                                                     "potion_type": potion_type_tostr(potion_type), 
+                                                                     "quantity": row["quantity"]}])
 
             potion_price_sql = f"SELECT price FROM potion_catalog_items WHERE sku = '{row['item_sku']}'"
             result = connection.execute(sqlalchemy.text(potion_price_sql))
             price = result.fetchone()[0]
 
-            gold_sql = f"UPDATE global_inventory SET gold = gold + {price * row['quantity']}"
-            connection.execute(sqlalchemy.text(gold_sql))
+            gold_sql = "INSERT INTO gold_ledger (order_id, gold) VALUES (:order_id, :gold)"
+            connection.execute(sqlalchemy.text(gold_sql), [{"order_id": cart_id, 
+                                                            "gold": price * row["quantity"]}])
             total_gold += price * row["quantity"]
     return {"total_potions_bought": quantity, "total_gold_paid": total_gold}

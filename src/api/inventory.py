@@ -15,23 +15,23 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        global_inventory_sql = "SELECT * FROM global_inventory"
+        global_inventory_sql = "SELECT SUM(gold) FROM gold_ledger"
         result = connection.execute(sqlalchemy.text(global_inventory_sql))
-        inventory = result.fetchone()._asdict()
-        potion_catalog_sql = "SELECT SUM(quantity) FROM potion_catalog_items"
+        gold = result.fetchone()[0]
+        potion_catalog_sql = "SELECT SUM(quantity) FROM potions"
         result = connection.execute(sqlalchemy.text(potion_catalog_sql))
         num_potions = result.fetchone()[0]
-        barrels_sql = "SELECT SUM(potion_ml) FROM barrel_inventory"
+        barrels_sql = "SELECT SUM(potion_ml) FROM barrels"
         result = connection.execute(sqlalchemy.text(barrels_sql))
         num_ml = result.fetchone()[0]
   
         
-        print(f"num_potions: {num_potions} num_ml: {num_ml} gold: {inventory['gold']}")    
+        print(f"num_potions: {num_potions} num_ml: {num_ml} gold: {gold}")    
         return [
                 {
                     "number_of_potions": num_potions,
                     "ml_in_barrels": num_ml,
-                    "gold": inventory["gold"],
+                    "gold": gold,
                 }
             ]
 
@@ -43,10 +43,13 @@ def get_capacity_plan():
     capacity unit costs 1000 gold.
     """
     with db.engine.begin() as connection:
-        sql_to_execute = f"SELECT * FROM global_inventory"
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        gold_sql = "SELECT SUM(gold) FROM gold_ledger"
+        result = connection.execute(sqlalchemy.text(gold_sql))
+        gold = result.fetchone()[0]
+        inventory_sql = "SELECT * FROM global_inventory"
+        result = connection.execute(sqlalchemy.text(inventory_sql))
         row_inventory = result.fetchone()._asdict()
-        if row_inventory["potion_capacity_plan"] + row_inventory["ml_capacity_plan"] < (row_inventory["gold"] // 1000):
+        if row_inventory["potion_capacity_plan"] + row_inventory["ml_capacity_plan"] < (gold // 1000):
             print(f"potion capacity: {row_inventory['potion_capacity_plan']} ml capacity: {row_inventory['ml_capacity_plan']} gold: {row_inventory['gold']}")
             return {
                 "potion_capacity": row_inventory["potion_capacity_plan"],
@@ -71,17 +74,16 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     capacity unit costs 1000 gold.
     """
     print(f"order_id: {order_id} potion_capacity: {capacity_purchase.potion_capacity} ml_capacity: {capacity_purchase.ml_capacity}")
-    current_capacity_sql = "SELECT * FROM global_plan"
 
     with db.engine.begin() as connection:   
-        result = connection.execute(sqlalchemy.text(current_capacity_sql))
-        row = result.fetchone()._asdict()
-        potion_capacity = row["potion_capacity_units"]
-        ml_capacity = row["ml_capacity_units"]
-        update_sql_to_execute = f"UPDATE global_plan SET potion_capacity_units = {potion_capacity + capacity_purchase.potion_capacity}, ml_capacity_units = {ml_capacity + capacity_purchase.ml_capacity}"
-        connection.execute(sqlalchemy.text(update_sql_to_execute))
-        update_gold_sql = f"UPDATE global_inventory SET gold = gold - {capacity_purchase.potion_capacity * 1000 + capacity_purchase.ml_capacity * 1000}"
-        connection.execute(sqlalchemy.text(update_gold_sql))
+        capacity_update_sql = "UPDATE global_inventory SET potion_capacity_units = potion_capacity_units + :potion_capacity, ml_capacity_units = ml_capacity_units + :ml_capacity"
+        connection.execute(sqlalchemy.text(capacity_update_sql), 
+                           [{"potion_capacity": capacity_purchase.potion_capacity, 
+                             "ml_capacity": capacity_purchase.ml_capacity}])
+        gold_sql = "INSERT INTO gold_ledger (order_id, gold) VALUES (:order_id, :gold)"
+        connection.execute(sqlalchemy.text(gold_sql),
+                           [{"order_id": order_id, 
+                          "gold": -1000 * (capacity_purchase.potion_capacity + capacity_purchase.ml_capacity)}])
 
 
     return "OK"
