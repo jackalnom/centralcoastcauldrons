@@ -13,7 +13,7 @@ def get_catalog():
     sql_to_execute = "SELECT * FROM potion_catalog_items"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
-        rows = [row.asdict() for row in result.fetchall()]
+        rows = [row._asdict() for row in result.fetchall()]
         catalog = []
         for row in rows:
             potion_quantity_sql = "SELECT SUM(quantity) FROM potions WHERE potion_type = :potion_type"

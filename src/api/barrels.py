@@ -43,7 +43,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        max_ml_sql = "SELECT ml_capacity_units FROM global_plan"
+        max_ml_sql = "SELECT SUM(ml_capacity_units) FROM global_plan"
         result = connection.execute(sqlalchemy.text(max_ml_sql))
         max_ml = result.fetchone()[0] * 10000
         ml_sql = "SELECT SUM(potion_ml) FROM barrels"
@@ -53,17 +53,19 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         gold_sql = "SELECT * FROM global_inventory"
         result = connection.execute(sqlalchemy.text(gold_sql))
         global_inventory = result.fetchone()._asdict()
-        running_total = global_inventory["gold"]
+        gold_sql = "SELECT SUM(gold) FROM gold_ledger"
+        running_total = connection.execute(sqlalchemy.text(gold_sql)).scalar_one()
         wholesale_catalog.sort(key=lambda x: x.ml_per_barrel/x.price, reverse=True)
         barrel_plan = []
         ml_inventory = [0 for i in range(4)]
         for i in range(4):
-            barrel_type = [j == i for j in range(4)]
+            barrel_type = [1 if j == i else 0 for j in range(4)]
             barrel_sum_sql = "SELECT SUM(potion_ml) FROM barrels WHERE barrel_type = :barrel_type"
             result = connection.execute(sqlalchemy.text(barrel_sum_sql),
-                                        [{"barrel_type": barrel_type}])
+                                        [{"barrel_type": potion_type_tostr(barrel_type)}])
             ml_inventory[i] = result.fetchone()[0]
-        for barrel_ml, i in ml_inventory:
+        for i in range(4):
+            barrel_ml = ml_inventory[i]
             barrel_type = [j == i for j in range(4)]
             if barrel_ml > global_inventory["ml_threshold"]:
                 continue
@@ -72,7 +74,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     continue
                 if barrel.price > running_total:
                     continue
-                if barrel_ml == barrel.potion_type:
+                if barrel_type == barrel.potion_type:
                     barrel_plan.append(
                         {
                             "sku": barrel.sku,

@@ -23,7 +23,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     with db.engine.begin() as connection:
         for potion in potions_delivered:
             for i in range(4):
-                barrel_type = [j == i for j in range(4)]
+                barrel_type = [1 if j == i else 0 for j in range(4)]
                 if potion.potion_type[i] == 0:
                     continue
                 barrel_update_sql = "INSERT INTO barrels (order_id, barrel_type, potion_ml) VALUES (:order_id, :barrel_type, :potion_ml)"
@@ -44,17 +44,17 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
     with db.engine.begin() as connection:
-        max_potion_sql = "SELECT potion_capacity_units FROM global_plan"
+        max_potion_sql = "SELECT SUM(potion_capacity_units) FROM global_plan"
         result = connection.execute(sqlalchemy.text(max_potion_sql))
         max_potion = result.fetchone()[0] * 50
-        potion_sql = "SELECT SUM(quantity) FROM potion_catalog_items"
+        potion_sql = "SELECT SUM(quantity) FROM potions"
         result = connection.execute(sqlalchemy.text(potion_sql))
         potions = result.fetchone()[0]
         available_potions = max_potion - potions
         
-        ml_inventory = [0 for i in range(4)]
+        ml_inventory = [0 for _ in range(4)]
         for i in range(4):
-            barrel_type = [j == i for j in range(4)]
+            barrel_type = [1 if j == i else 0 for j in range(4)]
             barrel_sql = "SELECT SUM(potion_ml) FROM barrels WHERE barrel_type = :barrel_type"
             result = connection.execute(sqlalchemy.text(barrel_sql), [{"barrel_type": potion_type_tostr(barrel_type)}])
             ml_inventory[i] = result.fetchone()[0]

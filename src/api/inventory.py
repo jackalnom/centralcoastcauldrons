@@ -44,13 +44,13 @@ def get_capacity_plan():
     """
     with db.engine.begin() as connection:
         gold_sql = "SELECT SUM(gold) FROM gold_ledger"
-        result = connection.execute(sqlalchemy.text(gold_sql))
-        gold = result.fetchone()[0]
+        result = connection.execute(sqlalchemy.text(gold_sql)).scalar_one()
+        gold = result
         inventory_sql = "SELECT * FROM global_inventory"
         result = connection.execute(sqlalchemy.text(inventory_sql))
         row_inventory = result.fetchone()._asdict()
         if row_inventory["potion_capacity_plan"] + row_inventory["ml_capacity_plan"] < (gold // 1000):
-            print(f"potion capacity: {row_inventory['potion_capacity_plan']} ml capacity: {row_inventory['ml_capacity_plan']} gold: {row_inventory['gold']}")
+            print(f"potion capacity: {row_inventory['potion_capacity_plan']} ml capacity: {row_inventory['ml_capacity_plan']} gold: {gold}")
             return {
                 "potion_capacity": row_inventory["potion_capacity_plan"],
                 "ml_capacity": row_inventory["ml_capacity_plan"],
@@ -76,9 +76,10 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     print(f"order_id: {order_id} potion_capacity: {capacity_purchase.potion_capacity} ml_capacity: {capacity_purchase.ml_capacity}")
 
     with db.engine.begin() as connection:   
-        capacity_update_sql = "UPDATE global_inventory SET potion_capacity_units = potion_capacity_units + :potion_capacity, ml_capacity_units = ml_capacity_units + :ml_capacity"
-        connection.execute(sqlalchemy.text(capacity_update_sql), 
-                           [{"potion_capacity": capacity_purchase.potion_capacity, 
+        capacity_insert_sql = "INSERT into global_plan (order_id, potion_capacity_units, ml_capacity_units) VALUES (:order_id, :potion_capacity, :ml_capacity)"
+        connection.execute(sqlalchemy.text(capacity_insert_sql), 
+                           [{"order_id": order_id,
+                             "potion_capacity": capacity_purchase.potion_capacity, 
                              "ml_capacity": capacity_purchase.ml_capacity}])
         gold_sql = "INSERT INTO gold_ledger (order_id, gold) VALUES (:order_id, :gold)"
         connection.execute(sqlalchemy.text(gold_sql),

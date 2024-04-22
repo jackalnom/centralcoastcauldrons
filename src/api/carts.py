@@ -105,9 +105,10 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
     print(f"cart_id: {cart_id} item_sku: {item_sku} quantity: {cart_item.quantity}")
-    sql_to_execute = f"INSERT INTO cart_items (cart_id, item_sku, quantity) VALUES ({cart_id}, '{item_sku}', {cart_item.quantity})"
+    cart_insert_sql = "INSERT INTO cart_items (cart_id, item_sku, quantity) VALUES (:cart_id, :item_sku, :quantity)"
+
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(sql_to_execute))
+        connection.execute(sqlalchemy.text(cart_insert_sql), [{"cart_id": cart_id, "item_sku": item_sku, "quantity": cart_item.quantity}])
     return "OK"
 
 
