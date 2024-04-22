@@ -107,6 +107,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # iterate through keys looking for all available colors
         inventory = dict(map.items())
+        print(inventory)
         gold = inventory["gold"]
         # check respective barrels and how much they have
         # iterate throug barrel catalog, see if we need any of those colors
@@ -117,9 +118,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 print(barrel.sku)
                 continue
             size = barrel_match.group(1)
-            color = barrel_match.group(2)
+            color = barrel_match.group(2).lower()
             # check if the number of ml we want for a given color is less than thresehold
-            if (inventory[color.lower()] < COLOR_THRESEHOLD.get(color.lower(), 0)):
+            if (inventory[color] < COLOR_THRESEHOLD.get(color.lower(), 0)):
                 # purchase barrel
                 if (barrel.price < gold and size.lower() != "mini"):
                     gold -= barrel.price
