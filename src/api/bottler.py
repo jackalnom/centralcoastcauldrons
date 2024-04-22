@@ -134,22 +134,23 @@ def get_bottle_plan():
             total_ml += inventory[idx]
         custom_created = total_ml // 100
 
-        # remove from max element if necessary
-        extra_ml = (total_ml - (custom_created * 100))
-        if (extra_ml):
-            inventory[max_ml_idx] -= extra_ml
-        # iterate through all available ml again and calculate "amount" per color
-        potion_type = [0, 0, 0, 0]
-        cur_sum = 0
-        for idx in range(len(inventory)):
-            potion_type[idx] = inventory[idx] // custom_created
-        print(total_ml, custom_created, inventory)
-        if ((cur_sum := sum(potion_type))!= 100):
-            potion_type[max_ml_idx] += (100 - cur_sum)
-        needs.append({
-                        "potion_type": potion_type,
-                        "quantity": custom_created,
-                    })
+        if custom_created > 0:
+            # remove from max element if necessary
+            extra_ml = (total_ml - (custom_created * 100))
+            if (extra_ml):
+                inventory[max_ml_idx] -= extra_ml
+            # iterate through all available ml again and calculate "amount" per color
+            potion_type = [0, 0, 0, 0]
+            cur_sum = 0
+            for idx in range(len(inventory)):
+                potion_type[idx] = inventory[idx] // custom_created
+            print(total_ml, custom_created, inventory)
+            if ((cur_sum := sum(potion_type))!= 100):
+                potion_type[max_ml_idx] += (100 - cur_sum)
+            needs.append({
+                            "potion_type": potion_type,
+                            "quantity": custom_created,
+                        })
          
         # if more ml is needed, add from max element
         # update db to reflect the ml that the goblin took
