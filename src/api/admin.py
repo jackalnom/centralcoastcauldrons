@@ -16,7 +16,7 @@ def reset():
     Reset the game state. Gold goes to 100, all potions are removed from
     inventory, and all barrels are removed from inventory. Carts are all reset.
     """
-    sql_string = "UPDATE global_inventory SET "
+    sql_string = "UPDATE global_inventory_temp SET "
     # update all columsn to zero, except GOLD, which will be set to 100
     with db.engine.begin() as connection:
         # For the time being, all attributes are integers, meaning we can select all keys and set them equal to zero
@@ -31,9 +31,9 @@ def reset():
         else:
             return "Error occured."
         # truncate all tables
-        connection.execute(sqlalchemy.text("TRUNCATE potions"))
-        connection.execute(sqlalchemy.text("TRUNCATE carts"))
-        connection.execute(sqlalchemy.text("TRUNCATE customers"))
+
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE customers CASCADE"))
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE potions CASCADE"))
 
     return "OK"
 
