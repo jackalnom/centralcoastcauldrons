@@ -30,6 +30,10 @@ def reset():
             connection.execute(sqlalchemy.text(sql_string))
         else:
             return "Error occured."
+        # truncate all tables
+        connection.execute(sqlalchemy.text("TRUNCATE potions"))
+        connection.execute(sqlalchemy.text("TRUNCATE carts"))
+        connection.execute(sqlalchemy.text("TRUNCATE customers"))
 
     return "OK"
 
