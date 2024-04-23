@@ -18,26 +18,41 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     print("CALLED post_deliver_bottles()")
-    red_deduction = red_amount = green_deduction = green_amount = blue_deduction = blue_amount = 0
+
+    red_deduction = green_deduction = blue_deduction = dark_deduction = 0
     for potion in potions_delivered:
-        potion_type = potion.potion_type
-        amount = potion.quantity
+        red = potion.potion_type[0]
+        green = potion.potion_type[1]
+        blue = potion.potion_type[2]
+        dark = potion.potion_type[3]
 
-        # check if red potion
-        if potion_type == [100, 0, 0, 0]:
-            red_deduction += 100 * amount
-            red_amount += amount
-        # check if green potion
-        elif potion_type == [0, 100, 0, 0]:
-            green_deduction += 100 * amount
-            green_amount += amount
-        # check if blue potion
-        elif potion_type == [0, 0, 100, 0]:
-            blue_deduction += 100 * amount
-            blue_amount += amount
-
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text("""UPDATE potions
+                                                        SET num_potions = num_potions + :quantity
+                                                        WHERE parts_red = :red
+                                                        AND parts_green = :green
+                                                        AND parts_blue = :blue
+                                                        AND parts_dark = :dark"""), 
+                                                        [{"quantity": potion.quantity, "red": red, 
+                                                          "green": green, 
+                                                          "blue": blue, 
+                                                          "dark": dark}])
+        red_deduction += red * potion.quantity
+        green_deduction += green * potion.quantity
+        blue_deduction += blue * potion.quantity
+        dark_deduction += dark * potion.quantity
+        
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = num_red_potions + {red_amount}, num_red_ml = num_red_ml - {red_deduction}, num_green_potions = num_green_potions + {green_amount}, num_green_ml = num_green_ml - {green_deduction}, num_blue_potions = num_blue_potions + {blue_amount}, num_blue_ml = num_blue_ml - {blue_deduction}"))
+        result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+                                                    SET num_red_ml = num_red_ml - :red, 
+                                                    num_green_ml = num_green_ml - :green, 
+                                                    num_blue_ml = num_blue_ml - :blue,
+                                                    num_dark_ml = num_dark_ml - :dark"""),
+                                                    [{"red": red_deduction, 
+                                                      "green": green_deduction,
+                                                      "blue": blue_deduction,
+                                                      "dark": dark_deduction}])
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
@@ -56,32 +71,54 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into red potions.
     print("CALLED get_bottle_plan()")
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml FROM global_inventory"))
-    row = result.fetchone()
-    num_green_bottles = row[0] // 100
-    num_red_bottles = row[1] // 100
-    num_blue_bottles = row[2] // 100
+        result = connection.execute(sqlalchemy.text("SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, potion_capacity FROM global_inventory"))
+    ml_row = result.fetchone()
 
-    print(f"num red bottles: {num_red_bottles}, num green bottles: {num_green_bottles}, num blue bottles: {num_blue_bottles}")
+    capacity = ml_row[4]
 
+    red_ml = ml_row[0]
+    green_ml = ml_row[1]
+    blue_ml = ml_row[2]
+    dark_ml = ml_row[3]
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions
+                                                    FROM potions 
+                                                    ORDER BY priority ASC"""))
+    potion_row_list = result.all()
+
+    print("potion_row_list: ", potion_row_list)
+
+    available_space = capacity
+    for row in potion_row_list:
+        available_space -= row[4]
+
+    # idea: I want to prioritize making special potions firs
+    temp_bottle_plan = []
+    for i in range(len(potion_row_list)):
+        temp_bottle_plan.append(0)
+
+    again = True
+    while available_space > 0 and again == True:
+        again = False
+        for i in range(len(potion_row_list)):
+            if red_ml >= potion_row_list[i][0] and green_ml >= potion_row_list[i][1] and blue_ml >= potion_row_list[i][2] and dark_ml >= potion_row_list[i][3]:
+                temp_bottle_plan[i] += 1
+
+                red_ml -= potion_row_list[i][0]
+                green_ml -= potion_row_list[i][1]
+                blue_ml -= potion_row_list[i][2]
+                dark_ml -= potion_row_list[i][3]
+
+                available_space -= 1
+                again = True
+    
     bottle_plan = []
-    if num_green_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [0, 100, 0, 0],
-            "quantity": num_green_bottles,
-        })
-    if num_red_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [100, 0, 0, 0],
-            "quantity": num_red_bottles,
-        })
-    if num_blue_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [0, 0, 100, 0],
-            "quantity": num_blue_bottles,
-        })
+    for i in range(len(potion_row_list)):
+        if temp_bottle_plan[i] > 0:
+            bottle_plan.append({"potion_type": [potion_row_list[i][0], potion_row_list[i][1], potion_row_list[i][2], potion_row_list[i][3]], "quantity": temp_bottle_plan[i]})
 
-
+    print("temp_bottle_plan: ", temp_bottle_plan) 
     print("bottle_plan: ", bottle_plan)
     return bottle_plan
 
