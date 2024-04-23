@@ -106,13 +106,20 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     print("CALLED create_cart()")
     """ """
-    temp_cart = Cart()
-    temp_cart.cart_id = len(carts_array)
-    temp_cart.customer = new_cart
 
-    carts_array.append(temp_cart)
-
-    return {"cart_id": temp_cart.cart_id}
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"""INSERT INTO carts (
+                                                        customer_name,
+                                                        character_class,
+                                                        level
+                                                    )  
+                                                    VALUES (:name, :class, :level)
+                                                    RETURNING id"""),
+                                                    [{"name": new_cart.customer_name, 
+                                                      "class": new_cart.character_class, 
+                                                      "level": new_cart.level}])
+        
+    return {"cart_id": result.fetchone().id}
 
 
 class CartItem(BaseModel):
