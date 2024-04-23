@@ -56,32 +56,54 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into red potions.
     print("CALLED get_bottle_plan()")
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml FROM global_inventory"))
-    row = result.fetchone()
-    num_green_bottles = row[0] // 100
-    num_red_bottles = row[1] // 100
-    num_blue_bottles = row[2] // 100
+        result = connection.execute(sqlalchemy.text("SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, potion_capacity FROM global_inventory"))
+    ml_row = result.fetchone()
 
-    print(f"num red bottles: {num_red_bottles}, num green bottles: {num_green_bottles}, num blue bottles: {num_blue_bottles}")
+    capacity = ml_row[4]
 
+    red_ml = ml_row[0]
+    green_ml = ml_row[1]
+    blue_ml = ml_row[2]
+    dark_ml = ml_row[3]
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions
+                                                    FROM potions 
+                                                    ORDER BY priority ASC"""))
+    potion_row_list = result.all()
+
+    print("potion_row_list: ", potion_row_list)
+
+    available_space = capacity
+    for row in potion_row_list:
+        available_space -= row[4]
+
+    # idea: I want to prioritize making special potions firs
+    temp_bottle_plan = []
+    for i in range(len(potion_row_list)):
+        temp_bottle_plan.append(0)
+
+    again = True
+    while available_space > 0 and again == True:
+        again = False
+        for i in range(len(potion_row_list)):
+            if red_ml >= potion_row_list[i][0] and green_ml >= potion_row_list[i][1] and blue_ml >= potion_row_list[i][2] and dark_ml >= potion_row_list[i][3]:
+                temp_bottle_plan[i] += 1
+
+                red_ml -= potion_row_list[i][0]
+                green_ml -= potion_row_list[i][1]
+                blue_ml -= potion_row_list[i][2]
+                dark_ml -= potion_row_list[i][3]
+
+                available_space -= 1
+                again = True
+    
     bottle_plan = []
-    if num_green_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [0, 100, 0, 0],
-            "quantity": num_green_bottles,
-        })
-    if num_red_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [100, 0, 0, 0],
-            "quantity": num_red_bottles,
-        })
-    if num_blue_bottles > 0:
-        bottle_plan.append({
-            "potion_type": [0, 0, 100, 0],
-            "quantity": num_blue_bottles,
-        })
+    for i in range(len(potion_row_list)):
+        if temp_bottle_plan[i] > 0:
+            bottle_plan.append({"potion_type": [potion_row_list[i][0], potion_row_list[i][1], potion_row_list[i][2], potion_row_list[i][3]], "quantity": temp_bottle_plan[i]})
 
-
+    print("temp_bottle_plan: ", temp_bottle_plan) 
     print("bottle_plan: ", bottle_plan)
     return bottle_plan
 
