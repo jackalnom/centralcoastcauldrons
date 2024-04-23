@@ -18,26 +18,41 @@ class PotionInventory(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     print("CALLED post_deliver_bottles()")
-    red_deduction = red_amount = green_deduction = green_amount = blue_deduction = blue_amount = 0
+
+    red_deduction = green_deduction = blue_deduction = dark_deduction = 0
     for potion in potions_delivered:
-        potion_type = potion.potion_type
-        amount = potion.quantity
+        red = potion.potion_type[0]
+        green = potion.potion_type[1]
+        blue = potion.potion_type[2]
+        dark = potion.potion_type[3]
 
-        # check if red potion
-        if potion_type == [100, 0, 0, 0]:
-            red_deduction += 100 * amount
-            red_amount += amount
-        # check if green potion
-        elif potion_type == [0, 100, 0, 0]:
-            green_deduction += 100 * amount
-            green_amount += amount
-        # check if blue potion
-        elif potion_type == [0, 0, 100, 0]:
-            blue_deduction += 100 * amount
-            blue_amount += amount
-
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text("""UPDATE potions
+                                                        SET num_potions = num_potions + :quantity
+                                                        WHERE parts_red = :red
+                                                        AND parts_green = :green
+                                                        AND parts_blue = :blue
+                                                        AND parts_dark = :dark"""), 
+                                                        [{"quantity": potion.quantity, "red": red, 
+                                                          "green": green, 
+                                                          "blue": blue, 
+                                                          "dark": dark}])
+        red_deduction += red * potion.quantity
+        green_deduction += green * potion.quantity
+        blue_deduction += blue * potion.quantity
+        dark_deduction += dark * potion.quantity
+        
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_potions = num_red_potions + {red_amount}, num_red_ml = num_red_ml - {red_deduction}, num_green_potions = num_green_potions + {green_amount}, num_green_ml = num_green_ml - {green_deduction}, num_blue_potions = num_blue_potions + {blue_amount}, num_blue_ml = num_blue_ml - {blue_deduction}"))
+        result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
+                                                    SET num_red_ml = num_red_ml - :red, 
+                                                    num_green_ml = num_green_ml - :green, 
+                                                    num_blue_ml = num_blue_ml - :blue,
+                                                    num_dark_ml = num_dark_ml - :dark"""),
+                                                    [{"red": red_deduction, 
+                                                      "green": green_deduction,
+                                                      "blue": blue_deduction,
+                                                      "dark": dark_deduction}])
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
