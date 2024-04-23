@@ -51,6 +51,11 @@ def get_capacity_plan():
     row = result.fetchone()
     pcap = row.potion_capacity
     mlcap = row.ml_capacity
+    gold = row.gold // 5
+
+    pcap_level = pcap // 50
+    mlcap_level = mlcap // 10000
+
     ml_total = row.num_red_ml + row.num_green_ml + row.num_blue_ml + row.num_dark_ml
         
     with db.engine.begin() as connection:
@@ -64,9 +69,12 @@ def get_capacity_plan():
 
     planned_potions = planned_ml = 0
 
-    if (ml_total > (mlcap - (0.20 * mlcap))) and (potions_total > (pcap - (0.20 * pcap))):
-        planned_potions = 1
-        planned_ml = 1
+    if (ml_total > (mlcap - (0.20 * mlcap))) and (potions_total > (pcap - (0.20 * pcap))) and gold >= 10000:
+        if pcap_level > mlcap_level + 2:
+            planned_ml = 1
+        else:
+            planned_potions = 1
+
     print("mlcap diff: ", mlcap-(0.20*mlcap), " pcap diff: ", pcap-(0.20*pcap))
 
     return {
@@ -85,5 +93,16 @@ def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
     Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
     capacity unit costs 1000 gold.
     """
+    potion_increase = capacity_purchase.potion_capacity * 50
+    ml_increase = capacity_purchase.ml_capacity * 10000
+    gold_deduction = (capacity_purchase.potion_capacity + capacity_purchase.ml_capacity) * 1000
 
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""
+                                                    UPDATE global_inventory
+                                                    SET gold = gold - :gold_deduction,
+                                                    potion_capacity = potion_capacity + :potion_increase,
+                                                    ml_capacity = ml_capacity + :ml_increase"""),
+                                                    [{"gold_deduction": gold_deduction, "potion_increase": potion_increase, "ml_increase": ml_increase}])
+    print(f"Successfully increased potion_capacity by {potion_increase} and ml_capacity by {ml_increase}.")
     return "OK"
