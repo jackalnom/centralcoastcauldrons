@@ -64,10 +64,10 @@ def get_capacity_plan():
 
     planned_potions = planned_ml = 0
 
-    if (ml_total > (mlcap - (0.05 * mlcap))) and (potions_total > (pcap - (0.05 * pcap))):
+    if (ml_total > (mlcap - (0.20 * mlcap))) and (potions_total > (pcap - (0.20 * pcap))):
         planned_potions = 1
         planned_ml = 1
-    print("mlcap diff: ", mlcap-(0.05*mlcap), " pcap diff: ", pcap-(0.05*pcap))
+    print("mlcap diff: ", mlcap-(0.20*mlcap), " pcap diff: ", pcap-(0.20*pcap))
 
     return {
         "potion_capacity": planned_potions,
