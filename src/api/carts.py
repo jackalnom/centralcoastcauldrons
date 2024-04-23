@@ -188,7 +188,14 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             
         total_num_potions += item.quantity
         total_gains += profit
-        
-    print(f"Cart {cart_id} successfully purchased {total_num_potions} potions and paid {total_gains} gold.")
+
+    # for logging
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT *
+                                                    FROM carts
+                                                    WHERE id = :cart_id"""),
+                                                    [{"cart_id": cart_id}])
+    cart = result.fetchone()
+    print(f"Cart {cart_id} successfully purchased {total_num_potions} potions and paid {total_gains} gold.\nCustomer Name: {cart.customer_name}, Customer Class: {cart.character_class}, Level: {cart.level}")
 
     return {"total_potions_bought": total_num_potions, "total_gold_paid": total_gains}
