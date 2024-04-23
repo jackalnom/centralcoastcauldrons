@@ -108,7 +108,7 @@ def get_bottle_plan():
             if (potions_produced > POTION_THRESEHOLD[idx]):
                 print(potion_type, inventory[idx], potions_produced)
                 # subtract by thresehold, this will be used to create custom potions
-                inventory[idx] = inventory[idx] - ((potions_produced * 100) - (POTION_THRESEHOLD[idx] * 100))
+                inventory[idx] = inventory[idx] - (POTION_THRESEHOLD[idx] * 100)
                 potions_produced = POTION_THRESEHOLD[idx] 
             else:
                 inventory[idx] = inventory[idx] - (potions_produced * 100)
