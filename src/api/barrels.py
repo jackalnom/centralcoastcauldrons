@@ -37,8 +37,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         elif barrel.potion_type == [0, 0, 0, 1]:
             num_dark_ml = barrel.ml_per_barrel * barrel.quantity
             price_of_delivery += barrel.quantity * barrel.price
-        print("type:", barrel.potion_type)
-    print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
+        # print("type:", barrel.potion_type)
+    # print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
@@ -61,47 +61,74 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")   # get inventory state to plan purchase of ingredients (ml)
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("CALLED get_wholesale_purchase_plan()")
+    print("Barrel Catalog: ", wholesale_catalog)
+
+    wholesale_catalog.sort(key=lambda x: x.sku)
     res = []
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory"))
+        # result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     row = result.fetchone()
-    num_green_p = row[0]
-    num_red_p = row[1]
-    num_blue_p = row[2]
-    gold = row[3]
+    num_red = row.num_red_ml
+    num_green = row.num_green_ml
+    num_blue = row.num_blue_ml
+    num_dark = row.num_dark_ml
+    gold = row.gold
+
+    ml_room = row.ml_capacity - (num_red + num_green + num_blue + num_dark)
+
+    # bootstrap = False
+    # if row.gold < 400:
+    #     gold = row.gold
+    #     bootstrap = True
+    # else:
+    #     gold = row.gold // 4
+
+
     for sale in wholesale_catalog:
-        if sale.sku == "SMALL_GREEN_BARREL":
-            quantity = 0
-            if num_green_p < 2 and gold >= sale.price:
+        quantity = 0
+        if sale.sku == "SMALL_RED_BARREL":
+            if num_red < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
+                quantity = 1
+            if quantity > 0:
+                res.append({
+                    "sku": sale.sku,
+                    "quantity": quantity
+                })
+                gold -= sale.price
+                ml_room -= quantity * sale.ml_per_barrel
+        elif sale.sku == "SMALL_GREEN_BARREL":
+            if num_green < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1 
             if quantity > 0:
                 res.append({
-                    "sku": "SMALL_GREEN_BARREL",
+                    "sku": sale.sku,
                     "quantity": quantity
                 })
                 gold -= sale.price
-        elif sale.sku == "SMALL_RED_BARREL":
-            quantity = 0
-            if num_red_p < 2 and gold >= sale.price:
-                quantity = 1
-            if quantity > 0:
-                res.append({
-                    "sku": "SMALL_RED_BARREL",
-                    "quantity": quantity
-                })
-                gold -= sale.price
+                ml_room -= quantity * sale.ml_per_barrel
         elif sale.sku == "SMALL_BLUE_BARREL":
-            quantity = 0
-            if num_blue_p < 2 and gold >= sale.price:
+            if num_blue < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1
             if quantity > 0:
                 res.append({
-                    "sku": "SMALL_BLUE_BARREL",
+                    "sku": sale.sku,
                     "quantity": quantity
                 }) 
                 gold -= sale.price
+                ml_room -= quantity * sale.ml_per_barrel
+        elif sale.sku == "LARGE_DARK_BARREL":
+            if num_dark < 500 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
+                quantity = 1
+            if quantity > 0:
+                res.append({
+                    "sku": sale.sku,
+                    "quantity": quantity
+                })
+                gold -= sale.price
+                ml_room -= quantity * sale.ml_per_barrel
 
-    print("Barrel Catalog: ", wholesale_catalog)
+    print("Sorted Barrel Catalog: ", wholesale_catalog)
     print("Barrel Purchase Plan:", res)
 
     return res
