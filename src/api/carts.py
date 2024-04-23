@@ -130,16 +130,36 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     print("CALLED set_item_quantity()")
     """ """
-    # get cart by cart_id
-    if len(carts_array) > cart_id:
-        cart = carts_array[cart_id]
-    else:
-        return "FAILED"
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"""SELECT id
+                                                    FROM potions
+                                                    WHERE sku = :item_sku"""),
+                                                    [{"item_sku": item_sku}])
+    potion_id = result.fetchone().id 
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"""INSERT INTO cart_items (
+                                                        cart_id,
+                                                        potion_id,
+                                                        quantity
+                                                    )  
+                                                    VALUES (:cart_id, :potion_id, :quantity)
+                                                    RETURNING id"""),
+                                                    [{"cart_id": cart_id, 
+                                                      "potion_id": potion_id, 
+                                                      "quantity": cart_item.quantity}])
+
+    # # get cart by cart_id
+    # if len(carts_array) > cart_id:
+    #     cart = carts_array[cart_id]
+    # else:
+    #     return "FAILED"
     
-    # add item with quantity to items list in cart
-    entry = (item_sku, cart_item.quantity)
-    cart.items.append(entry)
-    print(carts_array)
+    # # add item with quantity to items list in cart
+    # entry = (item_sku, cart_item.quantity)
+    # cart.items.append(entry)
+    # print(carts_array)
 
     return "OK"
 
