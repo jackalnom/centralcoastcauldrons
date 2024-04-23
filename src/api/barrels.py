@@ -122,7 +122,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             # check if the number of ml we want for a given color is less than thresehold
             if (inventory[color] < COLOR_THRESEHOLD.get(color, 0)):
                 # purchase barrel
-                if (barrel.price < gold and size.lower() != "mini"):
+                if (barrel.price <= gold and size.lower() != "mini"):
                     gold -= barrel.price
                     print(f"purchased {barrel.sku} at {barrel.price}")
                     purchased.append(
