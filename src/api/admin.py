@@ -25,6 +25,15 @@ def reset():
                                                     ml_capacity = 10000,
                                                     potion_capacity = 50,
                                                     gold = 100"""))
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""UPDATE potions 
+                                                    SET num_potions = 0"""))
+    
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""DELETE FROM cart_items"""))
+        
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""DELETE FROM carts"""))
 
     return "OK"
 
