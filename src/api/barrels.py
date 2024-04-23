@@ -87,7 +87,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     for sale in wholesale_catalog:
         quantity = 0
-        if sale.sku == "SMALL_RED_BARREL":
+        # sale.sku == "SMALL_RED_BARREL"
+        if sale.potion_type == [1, 0, 0, 0] and sale.ml_per_barrel == 500:
             if num_red < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1
             if quantity > 0:
@@ -97,7 +98,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 })
                 gold -= sale.price
                 ml_room -= quantity * sale.ml_per_barrel
-        elif sale.sku == "SMALL_GREEN_BARREL":
+        # sale.sku == "SMALL_GREEN_BARREL"
+        elif sale.potion_type == [0, 1, 0, 0] and sale.ml_per_barrel == 500:
             if num_green < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1 
             if quantity > 0:
@@ -107,7 +109,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 })
                 gold -= sale.price
                 ml_room -= quantity * sale.ml_per_barrel
-        elif sale.sku == "SMALL_BLUE_BARREL":
+        # sale.sku == "SMALL_BLUE_BARREL"
+        elif sale.potion_type == [0, 0, 1, 0] and sale.ml_per_barrel == 500:
             if num_blue < 100 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1
             if quantity > 0:
@@ -117,7 +120,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 }) 
                 gold -= sale.price
                 ml_room -= quantity * sale.ml_per_barrel
-        elif sale.sku == "LARGE_DARK_BARREL":
+        # sale.sku == "LARGE_DARK_BARREL"
+        elif sale.potion_type == [0, 0, 0, 1]:
             if num_dark < 500 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1
             if quantity > 0:
