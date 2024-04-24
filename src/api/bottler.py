@@ -38,7 +38,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         for delivery in potions_delivered:
             name = potion_type_name(delivery.potion_type)
             param_upsert.append({
-                "potion_sku": name,
+                "potion_sku": name.lower().replace(" ", '_'),
+                "name": name,
                 "red": delivery.potion_type[0], 
                 "green": delivery.potion_type[1],
                 "blue": delivery.potion_type[2],
