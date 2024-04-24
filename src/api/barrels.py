@@ -115,7 +115,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             # get the color of the barrel
             barrel_match = barrel_re.match(barrel.sku)
             if(not barrel_match):
-                print(barrel.sku)
+                print("no match", barrel.sku)
                 continue
             size = barrel_match.group(1)
             color = barrel_match.group(2).lower()

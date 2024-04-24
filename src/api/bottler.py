@@ -123,6 +123,7 @@ def get_bottle_plan():
             )
             potion_type[idx] = 0
 
+        print(inventory)
         # CUSTOM POTIONS
         # use remaining mls to create some wacky potion
         # calculate most custom potions we can make
@@ -134,6 +135,7 @@ def get_bottle_plan():
             total_ml += inventory[idx]
         custom_created = total_ml // 100
 
+        print("custom created", custom_created)
         if custom_created > 0:
             # remove from max element if necessary
             extra_ml = (total_ml - (custom_created * 100))
@@ -152,15 +154,17 @@ def get_bottle_plan():
                             "quantity": custom_created,
                         })
          
+        print(inventory)
         # if more ml is needed, add from max element
         # update db to reflect the ml that the goblin took
         connection.execute(global_table.update().values({
             "red_ml": inventory[0],
             "green_ml": inventory[1],
-            "red_ml": inventory[2],
+            "blue_ml": inventory[2],
             "dark_ml": inventory[3]
         }))
         # may be a mistake adding it to plan rather than when we recieve the potions.
+        print(inventory)
         print(needs)
         return needs 
 
