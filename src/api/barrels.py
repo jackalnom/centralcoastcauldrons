@@ -66,7 +66,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     wholesale_catalog.sort(key=lambda x: x.sku)
     res = []
     with db.engine.begin() as connection:
-        # result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions, gold FROM global_inventory"))
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
     row = result.fetchone()
     num_red = row.num_red_ml
@@ -122,7 +121,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 ml_room -= quantity * sale.ml_per_barrel
         # sale.sku == "LARGE_DARK_BARREL"
         elif sale.potion_type == [0, 0, 0, 1]:
-            if num_dark < 500 and gold >= sale.price and ml_room >= sale.ml_per_barrel:
+            if gold >= sale.price and ml_room >= sale.ml_per_barrel:
                 quantity = 1
             if quantity > 0:
                 res.append({
