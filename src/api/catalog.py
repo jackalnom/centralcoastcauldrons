@@ -43,7 +43,7 @@ def get_catalog():
         if potion["quantity"] <= 0:
             continue
         catalog.append({
-            "sku": potion["potion_sku"],
+            "sku": potion["potion_sku"].lower().replace(" ", '_'),
             "name": potion["potion_sku"],
             "quantity": potion["quantity"],
             "price": potion["price"],
