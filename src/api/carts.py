@@ -253,4 +253,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         #     "SET gold = gold + :gold_recv"
         # ), {"gold_recv": gold_recv})
 
-    return {"total_potions_bought": total_quantity, "total_gold_paid": cart_checkout.payment}
+    return {"total_potions_bought": total_quantity, "total_gold_paid": total}
