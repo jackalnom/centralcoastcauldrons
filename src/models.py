@@ -5,6 +5,10 @@ from src import database
 meta_potions = sqlalchemy.MetaData()
 potions_table = sqlalchemy.Table("potions", meta_potions, autoload_with=database.engine)
 
+# SQL table for Potions Ledger
+meta_potions_ledger = sqlalchemy.MetaData()
+potions_ledger_table = sqlalchemy.Table("potion_ledger", meta_potions_ledger, autoload_with=database.engine)
+
 # SQL table for Customer
 meta_customer = sqlalchemy.MetaData()
 customer_table = sqlalchemy.Table("customers", meta_customer, autoload_with=database.engine)

@@ -4,7 +4,7 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 from sqlalchemy import func
-from src.models import potions_table
+from src.models import potions_ledger_table
 
 router = APIRouter(
     prefix="/inventory",
@@ -19,14 +19,18 @@ def get_inventory():
     
     # query the db
     with db.engine.begin() as connection:
-        res = connection.execute(sqlalchemy.text("SELECT gold, red_ml, green_ml, blue_ml, dark_ml \
-                                           FROM global_inventory_temp"))
-        inventory = res.first()
-        res = connection.execute(func.sum(potions_table.c.quantity))
+        res = connection.execute(sqlalchemy.text("SELECT attribute, SUM(change) AS total " + \
+            "FROM inventory_ledger " + \
+            "WHERE attribute IN ('gold', 'red_ml', 'green_ml', 'blue_ml', 'dark_ml') " + \
+            "GROUP BY attribute"))
+        for row in res:
+            if gold == 0 and row[0] == 'gold':
+                gold = row[1]
+            else:
+                num_ml += row[1]
+        res = connection.execute(func.coalesce(func.sum(potions_ledger_table.c.change), 0))
 
         num_potions = res.scalar_one_or_none()
-        gold = inventory[0]
-        num_ml = sum(inventory[1:])
 
         return {
             "number_of_potions": num_potions if num_potions else 0,
