@@ -82,7 +82,7 @@ def get_bottle_plan():
     dark_ml = ml_row[3]
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions
+        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions,
                                                     FROM potions 
                                                     ORDER BY priority ASC"""))
     potion_row_list = result.all()
@@ -102,7 +102,7 @@ def get_bottle_plan():
     while available_space > 0 and again == True:
         again = False
         for i in range(len(potion_row_list)):
-            if red_ml >= potion_row_list[i][0] and green_ml >= potion_row_list[i][1] and blue_ml >= potion_row_list[i][2] and dark_ml >= potion_row_list[i][3]:
+            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and potion_row_list[i].num_potions < capacity // 5:
                 temp_bottle_plan[i] += 1
 
                 red_ml -= potion_row_list[i][0]
