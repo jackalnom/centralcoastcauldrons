@@ -82,7 +82,7 @@ def get_bottle_plan():
     dark_ml = ml_row[3]
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions
+        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions, sku
                                                     FROM potions 
                                                     ORDER BY priority ASC"""))
     potion_row_list = result.all()
@@ -93,7 +93,13 @@ def get_bottle_plan():
     for row in potion_row_list:
         available_space -= row[4]
 
-    # idea: I want to prioritize making special potions firs
+    num_per_type = {}
+    for row in potion_row_list:
+        num_per_type[potion_row_list[i].sku] = potion_row_list[i].num_potions
+
+    # idea: I want to prioritize making special potions first
+    # Notes:
+    # - Paladins like purple potions
     temp_bottle_plan = []
     for i in range(len(potion_row_list)):
         temp_bottle_plan.append(0)
@@ -102,7 +108,7 @@ def get_bottle_plan():
     while available_space > 0 and again == True:
         again = False
         for i in range(len(potion_row_list)):
-            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and potion_row_list[i].num_potions < capacity // 5:
+            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 5):
                 temp_bottle_plan[i] += 1
 
                 red_ml -= potion_row_list[i][0]
