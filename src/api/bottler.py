@@ -82,7 +82,7 @@ def get_bottle_plan():
     dark_ml = ml_row[3]
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions,
+        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions
                                                     FROM potions 
                                                     ORDER BY priority ASC"""))
     potion_row_list = result.all()
