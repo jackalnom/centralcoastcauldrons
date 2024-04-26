@@ -8,7 +8,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
 from src import database as db
 from src.helper import sku_to_db_col
-from src.models import potions_table, global_table
+from src.models import potions_table, global_table, potions_ledger_table
 
 class Base(DeclarativeBase):
     pass
@@ -182,9 +182,11 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     with db.engine.begin() as connection:
         # retrieve all potions in cart
         res = connection.execute(sqlalchemy.text(
-            "SELECT item_sku, carts.quantity, potions.price, potions.quantity FROM carts " +\
-            "JOIN potions ON potions.potion_sku = item_sku " +\
-            "WHERE customer_id = :cart_id "
+            "SELECT carts.item_sku, carts.quantity, potions.price, COALESCE(SUM(ledger.change), 0) FROM carts " +\
+            "JOIN potion_ledger AS ledger ON ledger.potion_sku = item_sku " +\
+            "JOIN potions ON potions.potion_sku = item_sku " + \
+            "WHERE customer_id = :cart_id " +\
+            "GROUP BY item_sku, carts.quantity, potions.price "
         ), values)
         cart = res.all()
         print(cart)
@@ -197,20 +199,20 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             # quantity x price
             total += purchase[1] * purchase[2]
             update_val.append({
-                "b_potion_sku": purchase[0],
-                "quantity": purchase[3] - purchase[1]
+                "potion_sku": purchase[0],
+                "change": -1 * purchase[1]
             })
         if total_quantity > 0:
             # bulk update all potion quantities
             # ASSUMING no maliscious requests are made :(
-            connection.execute(sqlalchemy.update(potions_table).where(
-                potions_table.c.potion_sku == sqlalchemy.bindparam("b_potion_sku")
-            ), update_val)
+            # connection.execute(sqlalchemy.update(potions_table).where(
+            #     potions_table.c.potion_sku == sqlalchemy.bindparam("b_potion_sku")
+            # ), update_val)
+            connection.execute(sqlalchemy.insert(potions_ledger_table).values(update_val))
 
             # update gold?? better way to do this?? same time as last sql??
-            connection.execute(sqlalchemy.update(global_table).values({
-                "gold": global_table.c.gold + total
-            }))
+            connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change) " +\
+                                               "VALUES ('gold', :change)"), {"change": total})
         
 
         # # update potion via sku
