@@ -95,7 +95,7 @@ def get_bottle_plan():
 
     num_per_type = {}
     for row in potion_row_list:
-        num_per_type[potion_row_list[i].sku] = potion_row_list[i].num_potions
+        num_per_type[row.sku] = row.num_potions
 
     # idea: I want to prioritize making special potions first
     # Notes:
@@ -108,7 +108,7 @@ def get_bottle_plan():
     while available_space > 0 and again == True:
         again = False
         for i in range(len(potion_row_list)):
-            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 5):
+            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 5:
                 temp_bottle_plan[i] += 1
 
                 red_ml -= potion_row_list[i][0]
