@@ -51,7 +51,15 @@ def get_capacity_plan():
     row = result.fetchone()
     pcap = row.potion_capacity
     mlcap = row.ml_capacity
-    gold = row.gold // 5
+    gold = row.gold
+
+    do_ml = row.increase_ml_capacity
+    do_potion = row.increase_potion_capacity
+
+    if gold >= 4000:
+        gold = gold // 4
+    else:
+        gold = 0
 
     pcap_level = pcap // 50
     mlcap_level = mlcap // 10000
@@ -69,11 +77,12 @@ def get_capacity_plan():
 
     planned_potions = planned_ml = 0
 
-    if (ml_total > (mlcap - (0.20 * mlcap))) and (potions_total > (pcap - (0.20 * pcap))) and gold >= 10000:
-        if pcap_level > mlcap_level + 2:
-            planned_ml = 1
-        else:
-            planned_potions = 1
+    if gold >= 1000 and ml_total > (mlcap - (0.20 * mlcap)) and do_ml and mlcap_level <= pcap_level:
+        planned_ml = 1
+        gold -= 1000
+
+    if gold >= 1000 and potions_total > (pcap - (0.20 * pcap)) and do_potion:
+        planned_potions = 1
 
     print("mlcap diff: ", mlcap-(0.20*mlcap), " pcap diff: ", pcap-(0.20*pcap))
 
