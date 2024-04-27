@@ -74,12 +74,12 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text("SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, potion_capacity FROM global_inventory"))
     ml_row = result.fetchone()
 
-    capacity = ml_row[4]
+    capacity = ml_row.potion_capacity
 
-    red_ml = ml_row[0]
-    green_ml = ml_row[1]
-    blue_ml = ml_row[2]
-    dark_ml = ml_row[3]
+    red_ml = ml_row.num_red_ml
+    green_ml = ml_row.num_green_ml
+    blue_ml = ml_row.num_blue_ml
+    dark_ml = ml_row.num_dark_ml
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions, sku
@@ -108,7 +108,7 @@ def get_bottle_plan():
     while available_space > 0 and again == True:
         again = False
         for i in range(len(potion_row_list)):
-            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 5):
+            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 4):
                 temp_bottle_plan[i] += 1
 
                 red_ml -= potion_row_list[i][0]
@@ -117,6 +117,7 @@ def get_bottle_plan():
                 dark_ml -= potion_row_list[i][3]
 
                 available_space -= 1
+                num_per_type[potion_row_list[i].sku] += 1
                 again = True
     
     bottle_plan = []
