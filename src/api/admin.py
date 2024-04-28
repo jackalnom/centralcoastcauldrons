@@ -31,10 +31,11 @@ def reset():
         # set gold to 100 and add attributes to inventory
         connection.execute(sqlalchemy.text("INSERT INTO inventory (attribute) "+\
                            "VALUES ('gold'), ('red_ml'), ('green_ml'), ('blue_ml'), ('dark_ml')"))
-        connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change) "+\
-                                           "VALUES (:attribute, :change)"), {
+        connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change, reason) "+\
+                                           "VALUES (:attribute, :change, :reason)"), {
                                                "attribute": "gold",
-                                               "change": 100
+                                               "change": 100,
+                                               "reason": "admin reset"
                                            })
 
 

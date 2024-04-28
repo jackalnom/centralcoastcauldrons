@@ -8,7 +8,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
 from src import database as db
 from src.helper import sku_to_db_col
-from src.models import potions_table, global_table, potions_ledger_table
+from src.models import potions_table, potions_ledger_table
 
 class Base(DeclarativeBase):
     pass
