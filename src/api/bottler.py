@@ -39,7 +39,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         # if potion is already in db, simply update value, else insert
         for delivery in potions_delivered:
             name = potion_type_name(delivery.potion_type)
-            sku = name.lower().replace(" ", '_')
+            sku = name.lower().replace(" ", '_')[:19]
             param_upsert.append({
                 "potion_sku": sku,
                 "name": name,
@@ -47,11 +47,11 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 "green": delivery.potion_type[1],
                 "blue": delivery.potion_type[2],
                 "dark": delivery.potion_type[3],
-                "quantity": delivery.quantity
                 })
             potion_changes.append({
                 "potion_sku": sku,
-                "change": delivery.quantity
+                "change": delivery.quantity,
+                "reason": "potion delivery"
             })
 
             # iterate through red, green, blue and dark in order to get 
@@ -59,7 +59,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 if delivery.potion_type[idx] != 0:
                     barrel_changes.append({
                         "attribute": idx_to_color(idx) + "_ml",
-                        "change": -1 * delivery.potion_type[idx] * delivery.quantity
+                        "change": -1 * delivery.potion_type[idx] * delivery.quantity,
+                        "reason": "potion delivery"
                     })
 
 
@@ -169,7 +170,7 @@ def get_bottle_plan():
         # calculate most custom potions we can make
         total_ml = extra_ml = 0
         max_ml_idx = 0
-        for idx in range(1, len(inventory)):
+        for idx in range(len(inventory)):
             if  inventory[max_ml_idx] < inventory[idx]:
                 max_ml_idx = idx 
             total_ml += inventory[idx]

@@ -200,7 +200,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             total += purchase[1] * purchase[2]
             update_val.append({
                 "potion_sku": purchase[0],
-                "change": -1 * purchase[1]
+                "change": -1 * purchase[1],
+                "reason": str(cart_id) + " checked out."
             })
         if total_quantity > 0:
             # bulk update all potion quantities
@@ -211,8 +212,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             connection.execute(sqlalchemy.insert(potions_ledger_table).values(update_val))
 
             # update gold?? better way to do this?? same time as last sql??
-            connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change) " +\
-                                               "VALUES ('gold', :change)"), {"change": total})
+            connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change, reason) " +\
+                                               "VALUES ('gold', :change, :reason)"), {"change": total, "reason": str(cart_id) + " checked out."})
         
 
         # # update potion via sku

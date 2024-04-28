@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from src.api import auth
 from src import database as db
 import sqlalchemy
+from sqlalchemy import Insert, Update
+from src.models import potions_ledger_table, inventory_ledger_table
 
 router = APIRouter(
     prefix="/admin",
@@ -16,24 +18,26 @@ def reset():
     Reset the game state. Gold goes to 100, all potions are removed from
     inventory, and all barrels are removed from inventory. Carts are all reset.
     """
-    sql_string = "UPDATE global_inventory_temp SET "
-    # update all columsn to zero, except GOLD, which will be set to 100
     with db.engine.begin() as connection:
-        # For the time being, all attributes are integers, meaning we can select all keys and set them equal to zero
-        res = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory_temp "))
-
-        if (res):
-            for key in res.keys():
-                if (key not in ['id', 'gold']):
-                    sql_string += key + " = 0,"
-            sql_string += "gold = 100"
-            connection.execute(sqlalchemy.text(sql_string))
-        else:
-            return "Error occured."
-        # truncate all tables
-
+        # clear out attribute tables
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE inventory CASCADE"))
         connection.execute(sqlalchemy.text("TRUNCATE TABLE customers CASCADE"))
         connection.execute(sqlalchemy.text("TRUNCATE TABLE potions CASCADE"))
+        # connection.execute(sqlalchemy.text("TRUNCATE TABLE inventory_ledger"))
+        # connection.execute(sqlalchemy.text("TRUNCATE TABLE potion_ledger"))
+
+   
+        
+        # set gold to 100 and add attributes to inventory
+        connection.execute(sqlalchemy.text("INSERT INTO inventory (attribute) "+\
+                           "VALUES ('gold'), ('red_ml'), ('green_ml'), ('blue_ml'), ('dark_ml')"))
+        connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change) "+\
+                                           "VALUES (:attribute, :change)"), {
+                                               "attribute": "gold",
+                                               "change": 100
+                                           })
+
+
 
     return "OK"
 

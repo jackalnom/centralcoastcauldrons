@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from src.models import inventory_ledger_table
 import re
 
 # GLOBAL regex
@@ -36,6 +37,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     mls_delivered = 0 
     total_cost = 0
     gold = 0
+    change_vals = []
     if (len(barrels_delivered) == 0):
         raise("No barrels sent in API")
     with db.engine.begin() as connection:
@@ -65,13 +67,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
              # update gold
             total_cost += cost
             barrel_type = f"{match.group(2).lower()}_ml"
-            print(barrel_type)
-            # update ML for db
-            connection.execute(sqlalchemy.text(f"""
-            INSERT INTO inventory_ledger (attribute, change)
-            VALUES (:attribute, :change)
-            """), {"attribute": barrel_type, "change": mls_delivered})
+            change_vals.append(
+            {"attribute": barrel_type, "change": mls_delivered, "reason": "barrel delivery"}
+            )
             print("Recieved: ", barrel_type, " AMOUNT: ", mls_delivered)
+
+        # update ML for db
+        stmt = sqlalchemy.Insert(inventory_ledger_table).values(change_vals)
+        connection.execute(stmt)
 
         # update gold that was recieved
 
@@ -109,14 +112,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for row in result:
             inventory[row.attribute.strip()] = row.total
 
-        print(inventory)
-        result = connection.execute(sqlalchemy.text(f"""
-            SELECT attribute, SUM(change) AS total
-            FROM inventory_ledger
-            GROUP BY attribute
-        """))
-
-        print(result.all())
+      
         gold = inventory["gold"]
         total_cost = 0
         # check respective barrels and how much they have
