@@ -6,9 +6,9 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 from src.api import catalog
-from src.helper import potion_type_name, get_potion_type
+from src.helper import potion_type_name,  idx_to_color
 import re
-from src.models import potions_table, global_table
+from src.models import potions_table, inventory_ledger_table, potions_ledger_table
 
 # RED, GREEN, BLUE, DARK
 POTION_THRESEHOLD = [3, 3, 2, 1]
@@ -29,6 +29,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     # parsing all delivered potion to be accepted by param binding
     param_upsert = []
+    potion_changes = []
+    barrel_changes = []
     # keep track of all potion_types delivered and parse as JSON
     if (len(potions_delivered) == 0):
         return "OK"
@@ -37,8 +39,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         # if potion is already in db, simply update value, else insert
         for delivery in potions_delivered:
             name = potion_type_name(delivery.potion_type)
+            sku = name.lower().replace(" ", '_')
             param_upsert.append({
-                "potion_sku": name.lower().replace(" ", '_'),
+                "potion_sku": sku,
                 "name": name,
                 "red": delivery.potion_type[0], 
                 "green": delivery.potion_type[1],
@@ -46,23 +49,47 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                 "dark": delivery.potion_type[3],
                 "quantity": delivery.quantity
                 })
+            potion_changes.append({
+                "potion_sku": sku,
+                "change": delivery.quantity
+            })
+
+            # iterate through red, green, blue and dark in order to get 
+            for idx in range(len(delivery.potion_type)):
+                if delivery.potion_type[idx] != 0:
+                    barrel_changes.append({
+                        "attribute": idx_to_color(idx) + "_ml",
+                        "change": -1 * delivery.potion_type[idx] * delivery.quantity
+                    })
+
 
         # upsertion
-        stmt = Insert(potions_table).values(param_upsert)
-        upsert_stmt = stmt.on_conflict_do_update(
-            index_elements=["potion_sku"],
-            set_=dict({
-                "potion_sku": stmt.excluded.potion_sku,
-                "red": stmt.excluded.red,
-                "green": stmt.excluded.green,
-                "blue": stmt.excluded.blue,
-                "dark": stmt.excluded.dark,
-                "quantity": potions_table.c.quantity + stmt.excluded.quantity
-            })
-        )
+        stmt = Insert(potions_table).values(param_upsert).on_conflict_do_nothing()
+        # upsert_stmt = stmt.on_conflict_do_update(
+        #     index_elements=["potion_sku"],
+        #     set_=dict({
+        #         "potion_sku": stmt.excluded.potion_sku,
+        #         "red": stmt.excluded.red,
+        #         "green": stmt.excluded.green,
+        #         "blue": stmt.excluded.blue,
+        #         "dark": stmt.excluded.dark,
+        #         "quantity": potions_table.c.quantity + stmt.excluded.quantity
+        #     })
+        # )
 
         # update db
-        connection.execute(upsert_stmt)
+        # insert into db if potion_sku doesn't exist
+        connection.execute(stmt)
+
+        # insert into potion ledger the new changes
+        stmt = Insert(potions_ledger_table).values(potion_changes)
+        connection.execute(stmt)
+
+        # insert into inventoryledger the new changes
+        stmt = Insert(inventory_ledger_table).values(barrel_changes)
+        connection.execute(stmt)
+
+
 
 
 
@@ -77,19 +104,29 @@ def get_bottle_plan():
     """
     # keep track of our needs
     inventory = [0, 0, 0, 0]
+    change_inventory = [0, 0, 0, 0]
     needs = []
 
     # regex for bottles
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""
-            SELECT red_ml, green_ml, blue_ml, dark_ml
-            FROM global_inventory_temp
+            SELECT attribute, SUM(change) as total
+            FROM inventory_ledger
+            GROUP BY attribute
         """))
         # Each bottle has a quantity of what proportion of red, blue, and
         # green potion to add.
         # Expressed in integers from 1 to 100 that must sum up to 100.
-
-        inventory = list(result.first())
+        for row in result:
+            # optimizes once ml for a given color has been checked
+            if not inventory[0] and row.attribute == 'red_ml':
+                inventory[0] = row.total
+            elif not inventory[1] and row.attribute == 'green_ml':
+                inventory[1] = row.total
+            elif not inventory[2] and row.attribute == 'blue_ml':
+                inventory[2] = row.total
+            elif not inventory[3] and row.attribute == 'dark_ml':
+                inventory[3] = row.total
 
 
         print("inventory ", inventory)
@@ -111,8 +148,10 @@ def get_bottle_plan():
                 # subtract by thresehold, this will be used to create custom potions
                 inventory[idx] = inventory[idx] - (POTION_THRESEHOLD[idx] * 100)
                 potions_produced = POTION_THRESEHOLD[idx] 
+                change_inventory[idx] = POTION_THRESEHOLD[idx] * 100
             else:
                 inventory[idx] = inventory[idx] - (potions_produced * 100)
+                change_inventory[idx] = potions_produced * 100
 
 
 
@@ -147,9 +186,11 @@ def get_bottle_plan():
             cur_sum = 0
             for idx in range(len(inventory)):
                 potion_type[idx] = inventory[idx] // custom_created
+                change_inventory[idx] += potion_type[idx] * custom_created
             print(total_ml, custom_created, inventory)
             if ((cur_sum := sum(potion_type))!= 100):
                 potion_type[max_ml_idx] += (100 - cur_sum)
+                change_inventory[max_ml_idx] += ((100 - cur_sum) * custom_created) 
             needs.append({
                             "potion_type": potion_type,
                             "quantity": custom_created,
@@ -158,14 +199,14 @@ def get_bottle_plan():
         print(inventory)
         # if more ml is needed, add from max element
         # update db to reflect the ml that the goblin took
-        connection.execute(global_table.update().values({
-            "red_ml": inventory[0],
-            "green_ml": inventory[1],
-            "blue_ml": inventory[2],
-            "dark_ml": inventory[3]
-        }))
-        # may be a mistake adding it to plan rather than when we recieve the potions.
-        print(inventory)
+        # connection.execute(global_table.update().values({
+        #     "red_ml": inventory[0],
+        #     "green_ml": inventory[1],
+        #     "blue_ml": inventory[2],
+        #     "dark_ml": inventory[3]
+        # }))
+     
+        print(inventory, change_inventory)
         print(needs)
         return needs 
 

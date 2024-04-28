@@ -21,3 +21,7 @@ carts_table = sqlalchemy.Table("carts", meta_cart, autoload_with=database.engine
 # SQL table for Global
 meta_global = sqlalchemy.MetaData()
 global_table = sqlalchemy.Table("global_inventory_temp", meta_global, autoload_with=database.engine)
+
+# SQL table for inventory ledger
+meta_inventory_ledger = sqlalchemy.MetaData()
+inventory_ledger_table = sqlalchemy.Table("inventory_ledger", meta_inventory_ledger, autoload_with=database.engine)

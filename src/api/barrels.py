@@ -44,9 +44,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             FROM inventory_ledger
             WHERE attribute = 'gold'
         """))
+
         if (not (gold := result.first()[0])):
             print("Server Error")
-            raise("/deliver/{order_id} error with DB")
+            return "NO"
         
         # check if potion exists???
         for barrel in barrels_delivered:
@@ -63,7 +64,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
              # update gold
             total_cost += cost
-            barrel_type = f"{match.group(2)}_ml"
+            barrel_type = f"{match.group(2).lower()}_ml"
             print(barrel_type)
             # update ML for db
             connection.execute(sqlalchemy.text(f"""
@@ -103,13 +104,19 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = connection.execute(sqlalchemy.text(f"""
             SELECT attribute, SUM(change) AS total
             FROM inventory_ledger
-            WHERE attribute IN ('gold', 'red_ml', 'green_ml', 'blue_ml', 'dark_ml')
             GROUP BY attribute
         """))
         for row in result:
-            inventory[row.attribute] = row.total
+            inventory[row.attribute.strip()] = row.total
 
         print(inventory)
+        result = connection.execute(sqlalchemy.text(f"""
+            SELECT attribute, SUM(change) AS total
+            FROM inventory_ledger
+            GROUP BY attribute
+        """))
+
+        print(result.all())
         gold = inventory["gold"]
         total_cost = 0
         # check respective barrels and how much they have
@@ -123,7 +130,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             size = barrel_match.group(1)
             color = barrel_match.group(2).lower() + "_ml"
             # check if the number of ml we want for a given color is less than thresehold
-            if (inventory[color] < COLOR_THRESEHOLD.get(color, 0)):
+            if (inventory.get(color, 0) < COLOR_THRESEHOLD.get(color, 0)):
                 # purchase barrel
                 if (barrel.price <= (gold - total_cost) and size.lower() != "mini"):
                     total_cost += barrel.price
@@ -135,7 +142,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         }
                     )
                     # add to "demo" inventory
-                    inventory[color] += barrel.ml_per_barrel
+                    inventory[color] = inventory.get(color, 0) + barrel.ml_per_barrel
                 else:
                     print("Insufficient gold", barrel, gold)
                     continue;

@@ -63,3 +63,13 @@ def potion_type_name(potion_type: list[int]):
 
 
     
+def idx_to_color(idx: int):
+    if idx == 0:
+        return 'red'
+    elif idx == 1:
+        return 'green'
+    elif idx == 2:
+        return 'blue'
+    elif idx == 3:
+        return 'dark'
+    raise ValueError("Incorrect idx range passed (0-3).")
