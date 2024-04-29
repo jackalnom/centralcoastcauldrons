@@ -126,7 +126,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(red_memory)):
             print("in red loop")
             red_bar = red_memory[i]
-            if red_bar.price <= red_bud and red_bar.ml_per_barrel <= ml_room:
+            if red_bar.price <= red_bud and red_bar.ml_per_barrel <= ml_room and red_bar.quantity > 0:
                 if red_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[red_bar.sku] += 1
                 else:
@@ -145,7 +145,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(green_memory)):
             print("in green loop")
             green_bar = green_memory[i]
-            if green_bar.price <= green_bud and green_bar.ml_per_barrel <= ml_room:
+            if green_bar.price <= green_bud and green_bar.ml_per_barrel <= ml_room and green_bar.quantity > 0:
                 if green_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[green_bar.sku] += 1
                 else:
@@ -164,7 +164,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(blue_memory)):
             print("in blue loop")
             blue_bar = blue_memory[i]
-            if blue_bar.price <= blue_bud and blue_bar.ml_per_barrel <= ml_room:
+            if blue_bar.price <= blue_bud and blue_bar.ml_per_barrel <= ml_room and blue_bar.quantity > 0:
                 if blue_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[blue_bar.sku] += 1
                 else:
@@ -183,7 +183,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(dark_memory)):
             print("in dark loop")
             dark_bar = dark_memory[i]
-            if dark_bar.price <= dark_bud and dark_bar.ml_per_barrel <= ml_room:
+            if dark_bar.price <= dark_bud and dark_bar.ml_per_barrel <= ml_room and dark_bar.quantity > 0:
                 if dark_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[dark_bar.sku] += 1
                 else:
@@ -214,3 +214,126 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     return purchase_plan
 
+"""
+For testing purchase plan:
+
+[
+  {
+    "sku": "MEDIUM_RED_BARREL",
+    "ml_per_barrel": 2500,
+    "potion_type": [
+      1, 0, 0, 0
+    ],
+    "price": 250,
+    "quantity": 10
+  },
+  {
+    "sku": "SMALL_RED_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [
+      1, 0, 0, 0
+    ],
+    "price": 100,
+    "quantity": 10
+  },
+  {
+    "sku": "MINI_GREEN_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [
+      0, 1, 0, 0
+    ],
+    "price": 60,
+    "quantity": 1
+  },
+  {
+    "sku": "MEDIUM_GREEN_BARREL",
+    "ml_per_barrel": 2500,
+    "potion_type": [
+      0, 1, 0, 0
+    ],
+    "price": 250,
+    "quantity": 10
+  },
+  {
+    "sku": "SMALL_GREEN_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [
+      0, 1, 0, 0
+    ],
+    "price": 100,
+    "quantity": 10
+  },
+  {
+    "sku": "MEDIUM_BLUE_BARREL",
+    "ml_per_barrel": 2500,
+    "potion_type": [
+      0, 0, 1, 0
+    ],
+    "price": 300,
+    "quantity": 10
+  },
+  {
+    "sku": "SMALL_BLUE_BARREL",
+    "ml_per_barrel": 500,
+    "potion_type": [
+      0, 0, 1, 0 
+    ],
+    "price": 120,
+    "quantity": 10
+  },
+  {
+    "sku": "MINI_RED_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [
+      1, 0, 0, 0
+    ],
+    "price": 60,
+    "quantity": 10
+  },
+  {
+    "sku": "MINI_BLUE_BARREL",
+    "ml_per_barrel": 200,
+    "potion_type": [
+      0, 0, 1, 0
+    ],
+    "price": 60,
+    "quantity": 1
+  },
+  {
+    "sku": "LARGE_DARK_BARREL",
+    "ml_per_barrel": 10000,
+    "potion_type": [
+      0, 0, 0, 1
+    ],
+    "price": 750,
+    "quantity": 10
+  },
+  {
+    "sku": "LARGE_BLUE_BARREL",
+    "ml_per_barrel": 10000,
+    "potion_type": [
+      0, 0, 1, 0
+    ],
+    "price": 600,
+    "quantity": 30
+  },
+  {
+    "sku": "LARGE_GREEN_BARREL",
+    "ml_per_barrel": 10000,
+    "potion_type": [
+      0, 1, 0, 0 
+    ],
+    "price": 400,
+    "quantity": 30
+  },
+  {
+    "sku": "LARGE_RED_BARREL",
+    "ml_per_barrel": 10000,
+    "potion_type": [
+      1, 0, 0, 0
+    ],
+    "price": 500,
+    "quantity": 30
+  }
+]
+"""
