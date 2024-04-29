@@ -81,13 +81,13 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     # unpack what is in the catalog
     for sale in wholesale_catalog:
-        if sale.potion_type == [1, 0, 0, 0]:
+        if sale.potion_type == [1, 0, 0, 0] and sale.price >= 100:
             red_memory.append(sale)
-        elif sale.potion_type == [0, 1, 0, 0]:
+        elif sale.potion_type == [0, 1, 0, 0] and sale.price >= 100:
             green_memory.append(sale)
-        elif sale.potion_type == [0, 0, 1, 0]:
+        elif sale.potion_type == [0, 0, 1, 0] and sale.price >= 100:
             blue_memory.append(sale)
-        elif sale.potion_type == [0, 0, 0, 1]:
+        elif sale.potion_type == [0, 0, 0, 1] and sale.price >= 100:
             dark_memory.append(sale)
 
     dark_in_cat = True
