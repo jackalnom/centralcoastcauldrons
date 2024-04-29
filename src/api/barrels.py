@@ -91,6 +91,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             dark_memory.append(sale)
 
     dark_in_cat = True
+    bootstrap = False
     if row.gold > 2000:
         budget = (gold * 7) // 10   # budget = 70% of gold
         if dark_memory == []:   # if there are no dark barrels in catalog
@@ -98,6 +99,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             budget = budget // 3
         budget = budget // 4        # can spend 25% of budget at a time
     else:
+        bootstrap = True
         budget = gold
     
     red_bud = green_bud = blue_bud = dark_bud = budget  # all colors have certain budget
@@ -119,6 +121,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     temp_barrel_wishlist = {}
     while (red_bud > 0 or green_bud > 0 or blue_bud > 0 or dark_bud > 0) and ml_room > 0 and cont:
         cont = False
+        print(f"red bud: {red_bud}, green bud: {green_bud}, blue bud: {blue_bud}, dark bud: {dark_bud}")
         # select a red barrel
         for i in range(len(red_memory)):
             print("in red loop")
@@ -129,6 +132,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 else:
                     temp_barrel_wishlist[red_bar.sku] = 1
                 red_bud -= red_bar.price
+                if bootstrap:
+                    green_bud -= red_bar.price
+                    blue_bud -= red_bar.price
+                    dark_bud -= red_bar.price
                 budget -= red_bar.price     # precautionary step
                 ml_room -= red_bar.ml_per_barrel
                 red_memory[i].quantity -= 1
@@ -139,12 +146,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(green_memory)):
             print("in green loop")
             green_bar = green_memory[i]
-            if green_bar.price <= green_bud and green_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
+            if green_bar.price <= green_bud and green_bar.ml_per_barrel <= ml_room and budget >= green_bar.price:
                 if green_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[green_bar.sku] += 1
                 else:
                     temp_barrel_wishlist[green_bar.sku] = 1
                 green_bud -= green_bar.price
+                if bootstrap:
+                    red_bud -= green_bar.price
+                    blue_bud -= green_bar.price
+                    dark_bud -= green_bar.price
                 budget -= green_bar.price     # precautionary step
                 ml_room -= green_bar.ml_per_barrel
                 green_memory[i].quantity -= 1
@@ -155,12 +166,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(blue_memory)):
             print("in blue loop")
             blue_bar = blue_memory[i]
-            if blue_bar.price <= blue_bud and blue_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
+            if blue_bar.price <= blue_bud and blue_bar.ml_per_barrel <= ml_room and budget >= blue_bar.price:
                 if blue_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[blue_bar.sku] += 1
                 else:
                     temp_barrel_wishlist[blue_bar.sku] = 1
                 blue_bud -= blue_bar.price
+                if bootstrap:
+                    red_bud -= blue_bar.price
+                    green_bud -= blue_bar.price
+                    dark_bud -= blue_bar.price
                 budget -= blue_bar.price     # precautionary step
                 ml_room -= blue_bar.ml_per_barrel
                 blue_memory[i].quantity -= 1
@@ -171,12 +186,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         for i in range(len(dark_memory)):
             print("in dark loop")
             dark_bar = dark_memory[i]
-            if dark_bar.price <= dark_bud and dark_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
+            if dark_bar.price <= dark_bud and dark_bar.ml_per_barrel <= ml_room and budget >= dark_bar.price:
                 if dark_bar.sku in temp_barrel_wishlist:
                     temp_barrel_wishlist[dark_bar.sku] += 1
                 else:
                     temp_barrel_wishlist[dark_bar.sku] = 1
                 dark_bud -= dark_bar.price
+                if bootstrap:
+                    red_bud -= dark_bar.price
+                    green_bud -= dark_bar.price
+                    blue_bud -= dark_bar.price
                 budget -= dark_bar.price     # precautionary step
                 ml_room -= dark_bar.ml_per_barrel
                 dark_memory[i].quantity -= 1
