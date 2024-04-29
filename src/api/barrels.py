@@ -110,6 +110,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     blue_memory.sort(key=lambda x: x.price, reverse=True)
     dark_memory.sort(key=lambda x: x.price, reverse=True)
 
+    print(f"budget for each color: {budget}, is dark budget: {dark_in_cat}")
+    print(f"red mem: {red_memory}\ngreen mem: {green_memory}\nblue mem: {blue_memory}\ndark mem: {dark_memory}")
+
     # create wishlist
     # barrel in memory: (sku, price)
     cont = True
@@ -118,6 +121,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         cont = False
         # select a red barrel
         for i in range(len(red_memory)):
+            print("in red loop")
             red_bar = red_memory[i]
             if red_bar.price <= red_bud and red_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
                 if red_bar.sku in temp_barrel_wishlist:
@@ -133,6 +137,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # select a green barrel
         for i in range(len(green_memory)):
+            print("in green loop")
             green_bar = green_memory[i]
             if green_bar.price <= green_bud and green_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
                 if green_bar.sku in temp_barrel_wishlist:
@@ -148,6 +153,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # select a blue barrel
         for i in range(len(blue_memory)):
+            print("in blue loop")
             blue_bar = blue_memory[i]
             if blue_bar.price <= blue_bud and blue_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
                 if blue_bar.sku in temp_barrel_wishlist:
@@ -163,6 +169,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
         # select a dark barrel
         for i in range(len(dark_memory)):
+            print("in dark loop")
             dark_bar = dark_memory[i]
             if dark_bar.price <= dark_bud and dark_bar.ml_per_barrel <= ml_room and budget >= red_bar.price:
                 if dark_bar.sku in temp_barrel_wishlist:
@@ -176,6 +183,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 cont = True
                 break
     
+    print("temp_barrel_wishlist: ", temp_barrel_wishlist)
     keys, values = temp_barrel_wishlist.keys(), temp_barrel_wishlist.values()
     keys = list(keys)
     values = list(values)
