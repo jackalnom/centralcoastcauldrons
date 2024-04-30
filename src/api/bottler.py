@@ -174,7 +174,7 @@ def get_bottle_plan():
             if  inventory[max_ml_idx] < inventory[idx]:
                 max_ml_idx = idx 
             total_ml += inventory[idx]
-        custom_created = total_ml // 100
+        custom_created = (total_ml // 100) - 1
 
         print("custom created", custom_created)
         if custom_created > 0:
@@ -197,7 +197,6 @@ def get_bottle_plan():
                             "quantity": custom_created,
                         })
          
-        print(inventory)
         # if more ml is needed, add from max element
         # update db to reflect the ml that the goblin took
         # connection.execute(global_table.update().values({

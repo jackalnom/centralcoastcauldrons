@@ -8,7 +8,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
 from src import database as db
 from src.helper import sku_to_db_col
-from src.models import potions_table, potions_ledger_table
+from src.models import potions_table, potions_ledger_table, customer_table
 
 class Base(DeclarativeBase):
     pass
@@ -83,6 +83,14 @@ def search_orders(
     Your results must be paginated, the max results you can return at any
     time is 5 total line items.
     """
+
+    # get all customers, customers and completed_customers table, less overhead with parsing?
+    # alternative could be adding attribute - completed? to be fair, if we are searching for the name, we might
+    # as well check the attribute, the only time this overhead would be apparent is when grabbing all users.
+    customers = None
+    with db.engine.begin() as connection:
+        res = connection.execute(sqlalchemy.text("SELECT * FROM customers"))
+        customers = res.all()
 
     return {
         "previous": "",
@@ -209,7 +217,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             # connection.execute(sqlalchemy.update(potions_table).where(
             #     potions_table.c.potion_sku == sqlalchemy.bindparam("b_potion_sku")
             # ), update_val)
+            # update cart to reflect completed checkout
+            connection.execute(sqlalchemy.update(customer_table).where({"id": cart_id}).values(completed=1))
             connection.execute(sqlalchemy.insert(potions_ledger_table).values(update_val))
+          
 
             # update gold?? better way to do this?? same time as last sql??
             connection.execute(sqlalchemy.text("INSERT INTO inventory_ledger (attribute, change, reason) " +\
