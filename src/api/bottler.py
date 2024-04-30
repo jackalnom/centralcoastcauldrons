@@ -9,9 +9,10 @@ from src.api import catalog
 from src.helper import potion_type_name,  idx_to_color
 import re
 from src.models import potions_table, inventory_ledger_table, potions_ledger_table
+import math, random
 
 # RED, GREEN, BLUE, DARK
-POTION_THRESEHOLD = [3, 3, 2, 1]
+POTION_THRESEHOLD = [0.5, 0.5, 0.5, 0.5]
 
 
 router = APIRouter(
@@ -136,23 +137,17 @@ def get_bottle_plan():
         # DEFAULT POTIONS - fully red, green, blue or dark
         potion_type = [0, 0, 0, 0]
         for idx in range(len(inventory)):
-            potions_produced = inventory[idx] // 100
-            potion_type[idx] = 100
+            potions_produced = (inventory[idx] // 100)
 
             # check potion thresehold
             if (potions_produced == 0):
                 continue;
+            if potions_produced > 5:
+                 potions_produced = math.floor(potions_produced * POTION_THRESEHOLD[idx])
+            
+            potion_type[idx] = 100
 
-            # calculating any ml leftover
-            if (potions_produced > POTION_THRESEHOLD[idx]):
-                print(potion_type, inventory[idx], potions_produced)
-                # subtract by thresehold, this will be used to create custom potions
-                inventory[idx] = inventory[idx] - (POTION_THRESEHOLD[idx] * 100)
-                potions_produced = POTION_THRESEHOLD[idx] 
-                change_inventory[idx] = POTION_THRESEHOLD[idx] * 100
-            else:
-                inventory[idx] = inventory[idx] - (potions_produced * 100)
-                change_inventory[idx] = potions_produced * 100
+            inventory[idx] -= potions_produced * 100
 
 
 
@@ -168,47 +163,94 @@ def get_bottle_plan():
         # CUSTOM POTIONS
         # use remaining mls to create some wacky potion
         # calculate most custom potions we can make
-        total_ml = extra_ml = 0
-        max_ml_idx = 0
-        for idx in range(len(inventory)):
-            if  inventory[max_ml_idx] < inventory[idx]:
-                max_ml_idx = idx 
-            total_ml += inventory[idx]
-        custom_created = (total_ml // 100) - 1
+        create_custom_potions(inventory, needs)
+        
 
-        print("custom created", custom_created)
-        if custom_created > 0:
-            # remove from max element if necessary
-            extra_ml = (total_ml - (custom_created * 100))
-            if (extra_ml):
-                inventory[max_ml_idx] -= extra_ml
-            # iterate through all available ml again and calculate "amount" per color
-            potion_type = [0, 0, 0, 0]
-            cur_sum = 0
-            for idx in range(len(inventory)):
-                potion_type[idx] = inventory[idx] // custom_created
-                change_inventory[idx] += potion_type[idx] * custom_created
-            print(total_ml, custom_created, inventory)
-            if ((cur_sum := sum(potion_type))!= 100):
-                potion_type[max_ml_idx] += (100 - cur_sum)
-                change_inventory[max_ml_idx] += ((100 - cur_sum) * custom_created) 
-            needs.append({
-                            "potion_type": potion_type,
-                            "quantity": custom_created,
-                        })
+        # let custom potions be 
+
+        # print("custom created", custom_created)
+        # if custom_created > 0:
+        #     # remove from max element if necessary
+        #     extra_ml = (total_ml - (custom_created * 100))
+        #     if (extra_ml):
+        #         inventory[max_ml_idx] -= extra_ml
+        #     # iterate through all available ml again and calculate "amount" per color
+        #     potion_type = [0, 0, 0, 0]
+        #     cur_sum = 0
+        #     for idx in range(len(inventory)):
+        #         potion_type[idx] = inventory[idx] // custom_created
+        #         change_inventory[idx] += potion_type[idx] * custom_created
+        #     print(total_ml, custom_created, inventory)
+        #     if ((cur_sum := sum(potion_type))!= 100):
+        #         potion_type[max_ml_idx] += (100 - cur_sum)
+        #         change_inventory[max_ml_idx] += ((100 - cur_sum) * custom_created) 
+
+        #     needs.append({
+        #                     "potion_type": potion_type,
+        #                     "quantity": custom_created,
+        #                 })
          
-        # if more ml is needed, add from max element
-        # update db to reflect the ml that the goblin took
-        # connection.execute(global_table.update().values({
-        #     "red_ml": inventory[0],
-        #     "green_ml": inventory[1],
-        #     "blue_ml": inventory[2],
-        #     "dark_ml": inventory[3]
-        # }))
-     
-        print(inventory, change_inventory)
-        print(needs)
+
+
+        print("Final Inventory:", inventory)
+        print("Needs:", needs)
         return needs 
+
+def create_custom_potions(inventory: list[int], needs: list[dict], ratio: list[int] = None):
+    # iterate until no more complete potions can be created
+    inventory_check = 0
+    while (inventory_check < 3):
+        inventory_check = 0
+        # iterate every potion, getting ratios of 50 and 25
+        for i in random.sample(range(0, 4), 4):
+            if inventory[i] < 50:
+                inventory_check += 1
+                continue
+            potion_type = [0, 0, 0, 0]
+            potion_type[i] = 50
+            for j in range(0, 4):
+                if j == i:
+                    continue
+                if inventory[j] < 50:
+                    continue
+                potion_type[j] = 50
+                inventory[j] -= 50
+                
+                needs.append({
+                            "potion_type": potion_type.copy(),
+                            "quantity": 1,
+                        })
+            for j in range(0, 4):
+                buddy = j + 1
+                if j == i:
+                    continue
+                if buddy == i:
+                    # check if we can loop back
+                    if buddy + 1 > 3:
+                        if 0 != i:
+                            buddy = 0
+                        else:
+                            continue
+                    else:
+                        buddy += 1
+                if inventory[j] < 25 or inventory[buddy] < 25:
+                    continue
+
+                # adding potion to needs
+                potion_type[j] = 25
+                potion_type[buddy] = 25
+                inventory[j] -= 25
+                inventory[buddy] -= 25
+                inventory[i] -= 50
+                # needs improvement, quantity should be summed
+                needs.append({
+                            "potion_type": potion_type.copy(),
+                            "quantity": 1,
+                        })
+
+                if inventory[i] < 50:
+                    break
+
 
 if __name__ == "__main__":
     print(get_bottle_plan())
