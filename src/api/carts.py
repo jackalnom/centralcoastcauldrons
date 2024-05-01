@@ -133,7 +133,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(f"""SELECT id
-                                                    FROM potions
+                                                    FROM potions_catalog
                                                     WHERE sku = :item_sku"""),
                                                     [{"item_sku": item_sku}])
     potion_id = result.fetchone().id 
@@ -161,33 +161,65 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     print("CALLED checkout()")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(f"""SELECT *
+        result = connection.execute(sqlalchemy.text("""SELECT sku, id, price
+                                                    FROM potions_catalog"""))
+    potion_skus = {}
+    for row in result:
+        potion_skus[row.id] = [row.sku, row.price]
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT *
                                                     FROM cart_items
                                                     WHERE cart_id = :cart_id"""),
                                                     [{"cart_id": cart_id}])
-    
+        
     total_num_potions = total_gains = 0
     for item in result:
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("""UPDATE potions 
-                                                        SET num_potions = num_potions - :potions_deducted
-                                                        WHERE id = :potion_id"""),
-                                                        [{"potions_deducted": item.quantity, "potion_id": item.potion_id}])
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("""SELECT price
-                                                        FROM potions
-                                                        WHERE id = :potion_id"""),
-                                                        [{"potion_id": item.potion_id}])
-        price = result.fetchone().price
-        profit = price * item.quantity
+        total_num_potions += item.quantity
+        total_gains += potion_skus[item.potion_id][1] * item.quantity
+
+        quantity = -1 * item.quantity
 
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                                        SET gold = gold + :profit"""),
-                                                        [{"profit": profit}])
-            
-        total_num_potions += item.quantity
-        total_gains += profit
+            result = connection.execute(sqlalchemy.text("""INSERT INTO potions_inventory (
+                                                                order_id,
+                                                                sku,
+                                                                num_potions
+                                                        )
+                                                        VALUES (:order_id, 
+                                                                :sku, 
+                                                                :num_potions)
+                                                        """),
+                                                        [{"order_id": cart_id,
+                                                        "sku": potion_skus[item.potion_id][0],
+                                                        "num_potions": quantity}])
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""INSERT INTO ledgerized_inventory (
+                                                        order_id,
+                                                        order_type,
+                                                        gold,
+                                                        num_red_ml,
+                                                        num_green_ml,
+                                                        num_blue_ml,
+                                                        num_dark_ml
+                                                    )
+                                                    VALUES (:order_id,
+                                                            :order_type, 
+                                                            :gold, 
+                                                            :red_ml, 
+                                                            :green_ml, 
+                                                            :blue_ml, 
+                                                            :dark_ml)
+                                                    """),
+                                                    [{"order_id": cart_id,
+                                                      "order_type": "customer",
+                                                      "gold": total_gains,
+                                                      "red_ml": 0,
+                                                      "green_ml": 0,
+                                                      "blue_ml": 0,
+                                                      "dark_ml": 0}])
+
 
     # for logging
     with db.engine.begin() as connection:
