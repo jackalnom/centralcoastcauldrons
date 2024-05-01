@@ -27,18 +27,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     for barrel in barrels_delivered:
         if barrel.potion_type == [1, 0, 0, 0]:
             num_red_ml = barrel.ml_per_barrel * barrel.quantity
-            price_of_delivery += barrel.quantity * barrel.price
+            price_of_delivery -= barrel.quantity * barrel.price
         if barrel.potion_type == [0, 1, 0, 0]:
             num_green_ml = barrel.ml_per_barrel * barrel.quantity
-            price_of_delivery += barrel.quantity * barrel.price
+            price_of_delivery -= barrel.quantity * barrel.price
         elif barrel.potion_type == [0, 0, 1, 0]:
             num_blue_ml = barrel.ml_per_barrel * barrel.quantity
-            price_of_delivery += barrel.quantity * barrel.price
+            price_of_delivery -= barrel.quantity * barrel.price
         elif barrel.potion_type == [0, 0, 0, 1]:
             num_dark_ml = barrel.ml_per_barrel * barrel.quantity
-            price_of_delivery += barrel.quantity * barrel.price
-        # print("type:", barrel.potion_type)
-    # print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
+            price_of_delivery -= barrel.quantity * barrel.price
 
     order_type = "barrel"
     with db.engine.begin() as connection:
