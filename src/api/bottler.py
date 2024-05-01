@@ -146,18 +146,19 @@ def get_bottle_plan():
 
     print("potion_inventory:", potion_inventory)
 
-    available_space = potion_cap
-    num_per_type = {}
-    for row in potion_inventory:
-        available_space -= row.num_potions
-        num_per_type[row.sku] = row.num_potions
-
     # idea: I want to prioritize making special potions first
     # Notes:
     # - Paladins like purple potions
     temp_bottle_plan = []
+    num_per_type = {}
     for potion in potion_catalog:
         temp_bottle_plan.append(0)
+        num_per_type[potion.sku] = 0
+
+    available_space = potion_cap
+    for row in potion_inventory:
+        available_space -= row.num_potions
+        num_per_type[row.sku] += row.num_potions
 
     again = True
     while available_space > 0 and again == True:
