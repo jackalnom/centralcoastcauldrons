@@ -70,60 +70,79 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
     print("CALLED get_bottle_plan()")
+
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, potion_capacity FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(li.gold) as gold, 
+                                                    SUM(li.num_red_ml) as red_ml, 
+                                                    SUM(li.num_green_ml) as green_ml, 
+                                                    SUM(li.num_blue_ml) as blue_ml, 
+                                                    SUM(li.num_dark_ml) as dark_ml
+                                                    FROM ledgerized_inventory as li"""))
     ml_row = result.fetchone()
 
-    capacity = ml_row.potion_capacity
+    red_ml = ml_row.red_ml
+    green_ml = ml_row.green_ml
+    blue_ml = ml_row.blue_ml
+    dark_ml = ml_row.dark_ml
 
-    red_ml = ml_row.num_red_ml
-    green_ml = ml_row.num_green_ml
-    blue_ml = ml_row.num_blue_ml
-    dark_ml = ml_row.num_dark_ml
+    print(f"red_ml: {red_ml}, green_ml: {green_ml}, blue_ml: {blue_ml}, dark_ml: {dark_ml}")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT parts_red, parts_green, parts_blue, parts_dark, num_potions, sku
-                                                    FROM potions 
+        result = connection.execute(sqlalchemy.text("""SELECT potion_capacity
+                                                    FROM shop_states"""))
+    row = result.fetchone()
+
+    potion_cap = row.potion_capacity
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT sku, parts_red, parts_green, parts_blue, parts_dark
+                                                    FROM potions_catalog 
                                                     ORDER BY priority ASC"""))
-    potion_row_list = result.all()
+    potion_catalog = result.all()
 
-    print("potion_row_list: ", potion_row_list)
+    print("potion_catalog: ", potion_catalog)
 
-    available_space = capacity
-    for row in potion_row_list:
-        available_space -= row[4]
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT pi.sku as sku, SUM(num_potions) as num_potions
+                                                    FROM potions_inventory as pi
+                                                    GROUP BY pi.sku"""))
+    potion_inventory = result.fetchall()
 
+    print("potion_inventory:", potion_inventory)
+
+    available_space = potion_cap
     num_per_type = {}
-    for row in potion_row_list:
+    for row in potion_inventory:
+        available_space -= row.num_potions
         num_per_type[row.sku] = row.num_potions
 
     # idea: I want to prioritize making special potions first
     # Notes:
     # - Paladins like purple potions
     temp_bottle_plan = []
-    for i in range(len(potion_row_list)):
+    for potion in potion_catalog:
         temp_bottle_plan.append(0)
 
     again = True
     while available_space > 0 and again == True:
         again = False
-        for i in range(len(potion_row_list)):
-            if red_ml >= potion_row_list[i].parts_red and green_ml >= potion_row_list[i].parts_green and blue_ml >= potion_row_list[i].parts_blue and dark_ml >= potion_row_list[i].parts_dark and num_per_type[potion_row_list[i].sku] < (capacity // 4):
+        for i in range(len(potion_catalog)):
+            if red_ml >= potion_catalog[i].parts_red and green_ml >= potion_catalog[i].parts_green and blue_ml >= potion_catalog[i].parts_blue and dark_ml >= potion_catalog[i].parts_dark and num_per_type[potion_catalog[i].sku] < (potion_cap // 4):
                 temp_bottle_plan[i] += 1
 
-                red_ml -= potion_row_list[i][0]
-                green_ml -= potion_row_list[i][1]
-                blue_ml -= potion_row_list[i][2]
-                dark_ml -= potion_row_list[i][3]
+                red_ml -= potion_catalog[i].parts_red
+                green_ml -= potion_catalog[i].parts_green
+                blue_ml -= potion_catalog[i].parts_blue
+                dark_ml -= potion_catalog[i].parts_dark
 
                 available_space -= 1
-                num_per_type[potion_row_list[i].sku] += 1
+                num_per_type[potion_catalog[i].sku] += 1
                 again = True
     
     bottle_plan = []
-    for i in range(len(potion_row_list)):
+    for i in range(len(potion_catalog)):
         if temp_bottle_plan[i] > 0:
-            bottle_plan.append({"potion_type": [potion_row_list[i][0], potion_row_list[i][1], potion_row_list[i][2], potion_row_list[i][3]], "quantity": temp_bottle_plan[i]})
+            bottle_plan.append({"potion_type": [potion_catalog[i].parts_red, potion_catalog[i].parts_green, potion_catalog[i].parts_blue, potion_catalog[i].parts_dark], "quantity": temp_bottle_plan[i]})
 
     print("temp_bottle_plan: ", temp_bottle_plan) 
     print("bottle_plan: ", bottle_plan)

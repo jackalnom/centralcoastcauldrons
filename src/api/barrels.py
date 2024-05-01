@@ -88,11 +88,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     dark_ml = row.dark_ml
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT 
-                                                    ml_capacity, 
-                                                    potion_capacity, 
-                                                    increase_ml_cap, 
-                                                    increase_potion_cap
+        result = connection.execute(sqlalchemy.text("""SELECT ml_capacity
                                                     FROM shop_states"""))
     row = result.fetchone()
     ml_cap = row.ml_capacity
