@@ -10,10 +10,27 @@ def get_catalog():
     Each unique item combination must have only a single price.
     """
     print("CALLED get_catalog()")
+    # with db.engine.begin() as connection:
+    #     result = connection.execute(sqlalchemy.text("""SELECT potions_catalog.sku as sku, price, parts_red, parts_green, parts_blue, parts_dark, num_potions
+    #                                                 FROM potions_catalog
+    #                                                 LEFT JOIN potions_inventory ON potions_catalog.sku = potions_inventory.sku
+    #                                                 WHERE num_potions IS NOT null
+    #                                                 ORDER BY num_potions DESC
+    #                                                 LIMIT 6"""))
+        
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT potions_catalog.sku, price, parts_red, parts_green, parts_blue, parts_dark, num_potions
+        result = connection.execute(sqlalchemy.text("""SELECT sku, price, parts_red, parts_green, parts_blue, parts_dark
                                                     FROM potions_catalog
-                                                    LEFT JOIN potions_inventory ON potions_catalog.sku = potions_inventory.sku"""))
+                                                    """))
+    potion_skus = {}
+    for row in result:
+        potion_skus[row.sku] = (row.price, [row.parts_red, row.parts_green, row.parts_blue, row.parts_dark])
+        
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT sku as sku, SUM(num_potions) as num_potions
+                                                    FROM potions_inventory
+                                                    GROUP BY sku
+                                                    """))
 
     # initialize catalog
     catalog = []
@@ -28,8 +45,8 @@ def get_catalog():
                 "sku": row.sku,
                 "name": row.sku,
                 "quantity": row.num_potions,
-                "price": row.price,
-                "potion_type": [row.parts_red, row.parts_green, row.parts_blue, row.parts_dark]
+                "price": potion_skus[row.sku][0],
+                "potion_type": potion_skus[row.sku][1]
             })
 
     
