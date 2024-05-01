@@ -11,11 +11,9 @@ def get_catalog():
     """
     print("CALLED get_catalog()")
     with db.engine.begin() as connection:
-        # result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_red_potions, num_blue_potions FROM global_inventory"))
-        result = connection.execute(sqlalchemy.text("""SELECT * 
-                                                    FROM potions 
-                                                    WHERE num_potions > 0 
-                                                    ORDER BY num_potions DESC"""))
+        result = connection.execute(sqlalchemy.text("""SELECT potions_catalog.sku, price, parts_red, parts_green, parts_blue, parts_dark, num_potions
+                                                    FROM potions_catalog
+                                                    LEFT JOIN potions_inventory ON potions_catalog.sku = potions_inventory.sku"""))
 
     # initialize catalog
     catalog = []
@@ -25,13 +23,15 @@ def get_catalog():
         row = result.fetchone()
         if row == None:
             break
-        catalog.append({
-            "sku": row.sku,
-            "name": row.sku,
-            "quantity": row.num_potions,
-            "price": row.price,
-            "potion_type": [row.parts_red, row.parts_green, row.parts_blue, row.parts_dark]
-        })
+        if row.num_potions and row.num_potions > 0:
+            catalog.append({
+                "sku": row.sku,
+                "name": row.sku,
+                "quantity": row.num_potions,
+                "price": row.price,
+                "potion_type": [row.parts_red, row.parts_green, row.parts_blue, row.parts_dark]
+            })
+
     
     print(f"catalog: {catalog}")
 
