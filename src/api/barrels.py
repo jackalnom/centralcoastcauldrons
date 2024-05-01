@@ -80,19 +80,27 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     dark_memory = []
 
     # unpack what is in the catalog
+    min_price = 100
+    max_price = 10000   # drastically large to allow for prices of any type
+
+    bootstrap = True
+    if gold > 2000:
+        max_price = 150 # try to force barrels sold to be small barrels to increase variety
+        bootstrap = False
+
     for sale in wholesale_catalog:
-        if sale.potion_type == [1, 0, 0, 0] and sale.price >= 100:
+        if sale.potion_type == [1, 0, 0, 0] and max_price >= sale.price and sale.price >= min_price:
             red_memory.append(sale)
-        elif sale.potion_type == [0, 1, 0, 0] and sale.price >= 100:
+        elif sale.potion_type == [0, 1, 0, 0] and max_price >= sale.price and sale.price >= min_price:
             green_memory.append(sale)
-        elif sale.potion_type == [0, 0, 1, 0] and sale.price >= 100:
+        elif sale.potion_type == [0, 0, 1, 0] and max_price >= sale.price and sale.price >= min_price:
             blue_memory.append(sale)
-        elif sale.potion_type == [0, 0, 0, 1] and sale.price >= 100:
+        elif sale.potion_type == [0, 0, 0, 1] and max_price >= sale.price and sale.price >= min_price:
             dark_memory.append(sale)
 
     dark_in_cat = True
-    bootstrap = False
-    if row.gold > 2000:
+    if gold > 2000:
+        bootstrap = False
         budget = (gold * 7) // 10   # budget = 70% of gold
         if dark_memory == []:   # if there are no dark barrels in catalog
             dark_in_cat = False
