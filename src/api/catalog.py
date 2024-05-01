@@ -10,13 +10,6 @@ def get_catalog():
     Each unique item combination must have only a single price.
     """
     print("CALLED get_catalog()")
-    # with db.engine.begin() as connection:
-    #     result = connection.execute(sqlalchemy.text("""SELECT potions_catalog.sku as sku, price, parts_red, parts_green, parts_blue, parts_dark, num_potions
-    #                                                 FROM potions_catalog
-    #                                                 LEFT JOIN potions_inventory ON potions_catalog.sku = potions_inventory.sku
-    #                                                 WHERE num_potions IS NOT null
-    #                                                 ORDER BY num_potions DESC
-    #                                                 LIMIT 6"""))
         
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT sku, price, parts_red, parts_green, parts_blue, parts_dark
