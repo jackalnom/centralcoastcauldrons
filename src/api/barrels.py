@@ -41,17 +41,27 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     # print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                                    SET num_red_ml = num_red_ml + :num_red_ml, 
-                                                    num_green_ml = num_green_ml + :num_green_ml, 
-                                                    num_blue_ml = num_blue_ml + :num_blue_ml, 
-                                                    num_dark_ml = num_dark_ml + :num_dark_ml, 
-                                                    gold = gold - :price_of_delivery"""), 
-                                                    [{"num_red_ml": num_red_ml,
-                                                      "num_green_ml": num_green_ml,
-                                                      "num_blue_ml": num_blue_ml,
-                                                      "num_dark_ml": num_dark_ml,
-                                                      "price_of_delivery": price_of_delivery}])
+        result = connection.execute(sqlalchemy.text("""INSERT INTO ledgerized_inventory (
+                                                            order_id,
+                                                            gold,
+                                                            num_red_ml,
+                                                            num_green_ml,
+                                                            num_blue_ml,
+                                                            num_dark_ml
+                                                        )
+                                                        VALUES (:order_id, 
+                                                                :gold, 
+                                                                :red_ml, 
+                                                                :green_ml, 
+                                                                :blue_ml, 
+                                                                :dark_ml)
+                                                    """),
+                                                    [{"order_id": order_id,
+                                                      "gold": price_of_delivery,
+                                                      "red_ml": num_red_ml,
+                                                      "green_ml": num_green_ml,
+                                                      "blue_ml": num_blue_ml,
+                                                      "dark_ml": num_dark_ml}])
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
     return "OK"
@@ -64,15 +74,30 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print("Barrel Catalog: ", wholesale_catalog)
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(li.gold) as gold, 
+                                                    SUM(li.num_red_ml) as red_ml, 
+                                                    SUM(li.num_green_ml) as green_ml, 
+                                                    SUM(li.num_blue_ml) as blue_ml, 
+                                                    SUM(li.num_dark_ml) as dark_ml
+                                                    FROM ledgerized_inventory as li"""))
     row = result.fetchone()
-    num_red = row.num_red_ml
-    num_green = row.num_green_ml
-    num_blue = row.num_blue_ml
-    num_dark = row.num_dark_ml
     gold = row.gold
+    red_ml = row.red_ml
+    green_ml = row.green_ml
+    blue_ml = row.blue_ml
+    dark_ml = row.dark_ml
 
-    ml_room = row.ml_capacity - (num_red + num_green + num_blue + num_dark)
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT 
+                                                    ml_capacity, 
+                                                    potion_capacity, 
+                                                    increase_ml_cap, 
+                                                    increase_potion_cap
+                                                    FROM shop_states"""))
+    row = result.fetchone()
+    ml_cap = row.ml_capacity
+
+    ml_room = ml_cap - (red_ml + green_ml + blue_ml + dark_ml)
 
     red_memory = []
     green_memory = []
