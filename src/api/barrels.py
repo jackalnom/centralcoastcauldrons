@@ -40,23 +40,27 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         # print("type:", barrel.potion_type)
     # print(f"red: {num_red_ml}, green: {num_green_ml}, blue: {num_blue_ml}, dark: {num_dark_ml}")
 
+    order_type = "barrel"
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""INSERT INTO ledgerized_inventory (
-                                                            order_id,
-                                                            gold,
-                                                            num_red_ml,
-                                                            num_green_ml,
-                                                            num_blue_ml,
-                                                            num_dark_ml
-                                                        )
-                                                        VALUES (:order_id, 
-                                                                :gold, 
-                                                                :red_ml, 
-                                                                :green_ml, 
-                                                                :blue_ml, 
-                                                                :dark_ml)
+                                                        order_id,
+                                                        order_type,
+                                                        gold,
+                                                        num_red_ml,
+                                                        num_green_ml,
+                                                        num_blue_ml,
+                                                        num_dark_ml
+                                                    )
+                                                    VALUES (:order_id,
+                                                            :order_type, 
+                                                            :gold, 
+                                                            :red_ml, 
+                                                            :green_ml, 
+                                                            :blue_ml, 
+                                                            :dark_ml)
                                                     """),
                                                     [{"order_id": order_id,
+                                                      "order_type": order_type,
                                                       "gold": price_of_delivery,
                                                       "red_ml": num_red_ml,
                                                       "green_ml": num_green_ml,

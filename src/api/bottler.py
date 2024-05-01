@@ -19,40 +19,76 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
     print("CALLED post_deliver_bottles()")
 
+    if potions_delivered == []:
+        return "OK"
+
     red_deduction = green_deduction = blue_deduction = dark_deduction = 0
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT sku, parts_red, parts_green, parts_blue, parts_dark
+                                                    FROM potions_catalog 
+                                                    ORDER BY priority ASC"""))
+    potion_catalog = result.all()
+
     for potion in potions_delivered:
         red = potion.potion_type[0]
         green = potion.potion_type[1]
         blue = potion.potion_type[2]
         dark = potion.potion_type[3]
 
+        temp_sku = ""
+        for p in potion_catalog:
+            if p.parts_red == red and p.parts_green == green and p.parts_blue == blue and p.parts_dark == dark:
+                temp_sku = p.sku
+                break
+        if temp_sku == "":
+            raise Exception("potion not in catalog")
+
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("""UPDATE potions
-                                                        SET num_potions = num_potions + :quantity
-                                                        WHERE parts_red = :red
-                                                        AND parts_green = :green
-                                                        AND parts_blue = :blue
-                                                        AND parts_dark = :dark"""), 
-                                                        [{"quantity": potion.quantity, "red": red, 
-                                                          "green": green, 
-                                                          "blue": blue, 
-                                                          "dark": dark}])
-        red_deduction += red * potion.quantity
-        green_deduction += green * potion.quantity
-        blue_deduction += blue * potion.quantity
-        dark_deduction += dark * potion.quantity
+            result = connection.execute(sqlalchemy.text("""INSERT INTO potions_inventory (
+                                                                order_id,
+                                                                sku,
+                                                                num_potions
+                                                        )
+                                                        VALUES (:order_id, 
+                                                                :sku, 
+                                                                :num_potions)
+                                                        """),
+                                                        [{"order_id": order_id,
+                                                        "sku": temp_sku,
+                                                        "num_potions": potion.quantity}])
         
-    
+        red_deduction -= red * potion.quantity
+        green_deduction -= green * potion.quantity
+        blue_deduction -= blue * potion.quantity
+        dark_deduction -= dark * potion.quantity
+        
+    order_type = "bottle"
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""UPDATE global_inventory 
-                                                    SET num_red_ml = num_red_ml - :red, 
-                                                    num_green_ml = num_green_ml - :green, 
-                                                    num_blue_ml = num_blue_ml - :blue,
-                                                    num_dark_ml = num_dark_ml - :dark"""),
-                                                    [{"red": red_deduction, 
-                                                      "green": green_deduction,
-                                                      "blue": blue_deduction,
-                                                      "dark": dark_deduction}])
+        result = connection.execute(sqlalchemy.text("""INSERT INTO ledgerized_inventory (
+                                                        order_id,
+                                                        order_type,
+                                                        gold,
+                                                        num_red_ml,
+                                                        num_green_ml,
+                                                        num_blue_ml,
+                                                        num_dark_ml
+                                                    )
+                                                    VALUES (:order_id,
+                                                            :order_type, 
+                                                            :gold, 
+                                                            :red_ml, 
+                                                            :green_ml, 
+                                                            :blue_ml, 
+                                                            :dark_ml)
+                                                    """),
+                                                    [{"order_id": order_id,
+                                                      "order_type": order_type,
+                                                      "gold": 0,
+                                                      "red_ml": red_deduction,
+                                                      "green_ml": green_deduction,
+                                                      "blue_ml": blue_deduction,
+                                                      "dark_ml": dark_deduction}])
 
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
