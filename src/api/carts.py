@@ -14,7 +14,7 @@ router = APIRouter(
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
     item_sku = "item_sku"
-    line_item_total = "line_item_total"
+    line_item_total = "gold"
     timestamp = "timestamp"
 
 class search_sort_order(str, Enum):
@@ -70,6 +70,37 @@ def search_orders(
     Your results must be paginated, the max results you can return at any
     time is 5 total line items.
     """
+
+    col = ""
+    if sort_col == "customer_name":
+        col = "customer_name"
+    elif sort_col == "item_sku":
+        col = "potions_catalog.sku"
+    elif sort_col == "line_item_total":
+        col = "cart_items.cost"
+    elif sort_col == "timestamp":
+        col = "cart_items.created_at"
+
+    potion_sku = potion_sku.capitalize()
+    print(customer_name, potion_sku, sort_col, sort_order)
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(f"""SELECT cart_items.id as line_item_id, 
+                                                              potions_catalog.sku as item_sku,
+                                                              customer_name, 
+                                                              cart_items.quantity as quantity, 
+                                                              cart_items.cost as gold,
+                                                              cart_items.created_at as timestamp
+                                                    FROM carts
+                                                    JOIN cart_items ON carts.id = cart_items.cart_id
+                                                    JOIN potions_catalog on potions_catalog.id = cart_items.potion_id
+                                                    WHERE carts.customer_name like :name AND potions_catalog.sku like :sku
+                                                    """),
+                                                    {"name": '%'+customer_name+'%',
+                                                     "sku": '%'+potion_sku+'%',})
+    print(result.fetchone())
+    for row in result:
+        print(f"id: {row.line_item_id}, sku: {row.item_sku}, name: {row.customer_name}, quantity: {row.quantity}, gold: {row.gold}")
 
     return {
         "previous": "",
