@@ -29,9 +29,10 @@ Part of the challenge in these interactions is you are responsible for keeping t
 Customers of various types have different seasonality on when they show up. For example, some customers are more likely to shop on certain days of the week and at certain times of day. Customers each have their own class which has a huge impact on what types of potions that customer is looking for. The amount a customer is willing to spend on a given potion depends on both the customers own level of wealth and how precisely the potions available in a store match their own preference.
 
 Lastly, customers are more likely to shop in a store in the first place that has a good reputation. You can see your shop's reputation with a particular class at [Potion Exchange](https://potion-exchange.vercel.app/). Reputation is based on three different factors:
-1. Value: Value is calculated as the delta between the utility the customer gets from a potion (which is increased by getting as close to possible to that customer's preference) and how much the store charges. The highest value is achieved by offering cheap potions that exactly match a customer's preference.
-2. Reliability: Reliability is based upon not having errors in the checkout process. Your site being down or offering up potions for sale you don't have in inventory are examples of errors that will hurt reliability.
-3. Recognition: Recognition is based upon the number of total successful purchasing trips that customers of that class have had. The more you serve a particular class, the more others of that class will trust to come to you.
+1. Value: Value is based upon selling the cheapest potions to a given class compared to competitors. 
+2. Quality: Quality is based upon selling potions that most closely match a customer's preferences.
+3. Reliability: Reliability is based upon not having errors in the checkout process. Your site being down or offering up potions for sale you don't have in inventory are examples of errors that will hurt reliability.
+4. Recognition: Recognition is based upon the number of total successful purchasing trips that customers of that class have had. The more you serve a particular class, the more others of that class will trust to come to you.
 
 For more information please reference the [API Spec](APISpec.md)
 
