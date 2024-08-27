@@ -125,7 +125,7 @@ If you haven’t already, make sure the audit inventory endpoint correctly refle
 
 ## Version 4 - Ledgers
 
-In the fourth version of central coast cauldrons, you will ledgerize your database. Rather than updating inventory values (gold, ml, and potion amounts) directly, you will instead just record changes to values. When calculating the amount of inventory you have, you will instead SUM up your ledger on-the-fly. By doing so, you gain several new advantages:
+In the fourth version of central coast cauldrons, you will ledgerize your database. Rather than updating inventory values (gold, ml, and potion amounts) directly, you will instead just record changes to values in the form of an append-only log. When calculating the amount of inventory you have, you will instead SUM up your ledger on-the-fly. By doing so, you gain several new advantages:
 * You can gain a history of changes made over time
 * You can see what your historical inventory levels were at any point in time
 * You can reconcile what events caused discrepencies in your inventory levels and undo those events independently of other events
