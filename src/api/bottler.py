@@ -21,6 +21,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
+    #added below
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return "OK"
 
 @router.post("/plan")
@@ -35,6 +39,10 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
 
+    #added below
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return [
             {
                 "potion_type": [100, 0, 0, 0],
