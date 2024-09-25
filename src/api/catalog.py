@@ -12,6 +12,10 @@ def get_catalog():
     Each unique item combination must have only a single price.
     """
 
+    #added below
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return [
             {
                 "sku": "RED_POTION_0",
