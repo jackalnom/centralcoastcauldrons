@@ -160,7 +160,7 @@ Gets the plan for bottling potions.
 [
     {
         "potion_type": [r, g, b, d],
-        "quantity": "integer"
+        "quantity": "integer"  /* Between 1 and 10000 */
     }
 ]
 ```
