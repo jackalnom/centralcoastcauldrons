@@ -159,7 +159,7 @@ Gets the plan for bottling potions.
 ```json
 [
     {
-        "potion_type": [r, g, b, d],
+        "potion_type": [r, g, b, d], /* r, g, b, d are integers that add up to exactly 100 */
         "quantity": "integer"  /* Between 1 and 10000 */
     }
 ]
