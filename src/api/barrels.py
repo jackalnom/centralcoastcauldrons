@@ -41,11 +41,11 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #CHANGE sql_to_execute
     #added below
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        result = connection.execute(sqlalchemy.text(SELECT "GREEN_POTION_O" FROM wholesale_catalog))
         
     return [
         {
-            "sku": "SMALL_RED_BARREL",
+            "sku": "SMALL_GREEN_BARREL",
             "quantity": 1,
         }
     ]
