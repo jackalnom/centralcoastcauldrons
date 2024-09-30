@@ -46,12 +46,12 @@ def get_bottle_plan():
     with db.engine.begin() as connection:
         greenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory "))
 
-    if():
+    if(greenml >= 100):
         #potion type: red, green, blue, dark  
         return [
                 {
                     "potion_type": [0, 100, 0, 0],
-                    "quantity": 5,
+                    "quantity": 1,
                 }
             ]
 
