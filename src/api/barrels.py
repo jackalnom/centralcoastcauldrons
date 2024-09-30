@@ -23,12 +23,23 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
-    #added below
-    #CHANGE SQL_TO_EXECUTE
+    #500ml for small barrels (from logs)
+    totalml = barrels_delivered * 500
+    #100 gold for small barrels (from logs)
+    totalgold = barrels_delivered * 100
+
+    #add how many ml you just bought
+    updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
+    #take away how much gold you just spent
+    updategold = f"UPDATE global_inventory SET gold = (gold - {totalgold})"
+
+    #buy 500ml barrels
+    #use update
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        resultml = connection.execute(sqlalchemy.text(updateml))
+        resultgold = connection.execute(sqlalchemy.text(updategold))
         
     return "OK"
 
@@ -38,10 +49,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    #CHANGE sql_to_execute
-    #added below
+    #sql statements as strings
+    greenpotionqry = "SELECT num_green_potions FROM global_inventory"
+    goldqry = "SELECT gold FROM global_inventory"
+    mlqry = "SELECT num_green_ml FROM global_inventory"
+
+    #still need to do the >= 10 stuff idk
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(SELECT "GREEN_POTION_O" FROM wholesale_catalog))
+        greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
+        goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
+        mlamt = connection.execute(sqlalchemy.text(mlqry)).scalar()
         
     return [
         {
