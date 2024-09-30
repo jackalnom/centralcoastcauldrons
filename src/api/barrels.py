@@ -54,16 +54,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     goldqry = "SELECT gold FROM global_inventory"
     mlqry = "SELECT num_green_ml FROM global_inventory"
 
-    #still need to do the >= 10 stuff idk
     with db.engine.begin() as connection:
         greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
         goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
         mlamt = connection.execute(sqlalchemy.text(mlqry)).scalar()
+
+    #if we have less than 10 potions, buy some
+    if(greenpotion < 10):
+        return [{"sku": "SMALL_GREEN_BARREL",
+            "quantity": 1}]
         
     return [
         {
-            "sku": "SMALL_GREEN_BARREL",
-            "quantity": 1,
+            "sku": "",
+            "quantity": 0,
         }
     ]
 
