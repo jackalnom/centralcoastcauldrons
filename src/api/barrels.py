@@ -26,9 +26,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     #500ml for small barrels (from logs)
-    totalml = barrels_delivered * 500
+    totalml = len(barrels_delivered) * (barrels_delivered[0].ml_per_bottle)
     #100 gold for small barrels (from logs)
-    totalgold = barrels_delivered * 100
+    totalgold = len(barrels_delivered) * (barrels_delivered[0].price)
 
     #add how many ml you just bought
     updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
@@ -60,14 +60,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         mlamt = connection.execute(sqlalchemy.text(mlqry)).scalar()
 
     #if we have less than 10 potions, buy some
-    if(greenpotion < 10):
+    if(greenpotion < 10 and goldamt >= 100):
         return [{"sku": "SMALL_GREEN_BARREL",
             "quantity": 1}]
         
-    return [
-        {
-            "sku": "",
-            "quantity": 0,
-        }
-    ]
-
+    return []

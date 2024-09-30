@@ -25,6 +25,9 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         
+        #len(potions_delivered)
+        
+        #
     return "OK"
 
 @router.post("/plan")
@@ -37,18 +40,20 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
-    # Initial logic: bottle all barrels into red potions.
+    # Initial logic: bottle all barrels into green potions.
 
     #added below
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-        
-    return [
-            {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
-            }
-        ]
+        greenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory "))
+
+    if():
+        #potion type: red, green, blue, dark  
+        return [
+                {
+                    "potion_type": [0, 100, 0, 0],
+                    "quantity": 5,
+                }
+            ]
 
 if __name__ == "__main__":
     print(get_bottle_plan())
