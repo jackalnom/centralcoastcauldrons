@@ -30,16 +30,16 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     #100 gold for small barrels (from logs)
     totalgold = len(barrels_delivered) * (barrels_delivered[0].price)
 
-    #add how many ml you just bought
-    updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
-    #take away how much gold you just spent
-    updategold = f"UPDATE global_inventory SET gold = (gold - {totalgold})"
-
-    #buy 500ml barrels
-    #use update
-    with db.engine.begin() as connection:
-        resultml = connection.execute(sqlalchemy.text(updateml))
-        resultgold = connection.execute(sqlalchemy.text(updategold))
+    #if we have enough gold, go through with the purchase
+    if(totalgold > barrels_delivered[0].price):
+        #add how many ml you just bought
+        updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
+        #take away how much gold you just spent
+        updategold = f"UPDATE global_inventory SET gold = (gold - {totalgold})"
+        #buy 500ml barrels
+        with db.engine.begin() as connection:
+            resultml = connection.execute(sqlalchemy.text(updateml)).scalar()
+            resultgold = connection.execute(sqlalchemy.text(updategold)).scalar()
         
     return "OK"
 
