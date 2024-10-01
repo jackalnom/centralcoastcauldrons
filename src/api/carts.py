@@ -57,7 +57,10 @@ def search_orders(
 
     #added below
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
+        sqlpotion = "SELECT num_green_potion FROM global_inventory"
+        
+        num_potions = connection.execute(sqlalchemy.text(sqlpotion)).scalar()
         
     return {
         "previous": "",
@@ -121,7 +124,6 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
-    #added below
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
         
