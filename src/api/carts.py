@@ -12,6 +12,10 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+#create cartLineItem table....?
+# CartLineItem
+# cart_id | potion_id | quantity
+
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
     item_sku = "item_sku"

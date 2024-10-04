@@ -25,23 +25,28 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
-    #500ml for small barrels (from logs)
-    totalml = len(barrels_delivered) * (barrels_delivered[0].ml_per_bottle)
-    #100 gold for small barrels (from logs)
-    totalgold = len(barrels_delivered) * (barrels_delivered[0].price)
+    with db.engine.begin() as connection:
+        currentgold = "SELECT gold FROM global_inventory"
 
-    #if we have enough gold, go through with the purchase
-    if(totalgold > barrels_delivered[0].price):
-        #add how many ml you just bought
-        updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
-        #take away how much gold you just spent
-        updategold = f"UPDATE global_inventory SET gold = (gold - {totalgold})"
-        #buy 500ml barrels
-        with db.engine.begin() as connection:
-            resultml = connection.execute(sqlalchemy.text(updateml)).scalar()
-            resultgold = connection.execute(sqlalchemy.text(updategold)).scalar()
+        #500ml for small barrels (from logs)
+        totalml = barrels_delivered[0].quantity * (barrels_delivered[0].ml_per_bottle)
+        #100 gold for small barrels (from logs)
+        totalprice = barrels_delivered[0].quantity * (barrels_delivered[0].price)
+
+        #if we have enough gold, go through with the purchase
+        if(currentgold >= totalprice):
+            #add how many ml you just bought
+            updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
+            #take away how much gold you just spent
+            updategold = f"UPDATE global_inventory SET gold = (gold - {totalprice})"
+            #buy 500ml barrels
+
+            connection.execute(sqlalchemy.text(updateml)).scalar()
+            connection.execute(sqlalchemy.text(updategold)).scalar()
         
-    return "OK"
+            return "OK"
+        
+        return "Not enough gold!"
 
 # Gets called once a day
 @router.post("/plan")
