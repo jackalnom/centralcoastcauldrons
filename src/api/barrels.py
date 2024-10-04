@@ -26,27 +26,30 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        currentgold = "SELECT gold FROM global_inventory"
-
+        currentgoldsql = "SELECT gold FROM global_inventory"
+        currentgold = connection.execute(sqlalchemy.text(currentgoldsql)).scalar_one()
         #500ml for small barrels (from logs)
-        totalml = barrels_delivered[0].quantity * (barrels_delivered[0].ml_per_bottle)
+        totalml = barrels_delivered[0].quantity * (barrels_delivered[0].ml_per_barrel)
         #100 gold for small barrels (from logs)
         totalprice = barrels_delivered[0].quantity * (barrels_delivered[0].price)
 
         #if we have enough gold, go through with the purchase
-        if(currentgold >= totalprice):
-            #add how many ml you just bought
-            updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
-            #take away how much gold you just spent
-            updategold = f"UPDATE global_inventory SET gold = (gold - {totalprice})"
-            #buy 500ml barrels
+        if(currentgold < totalprice):
+            print(f"DANGER DANGER THIS SHOULD NEVER HAPPEN, currentgold {currentgold}, buying {totalprice}")
+            return "ERROR"
 
-            connection.execute(sqlalchemy.text(updateml)).scalar()
-            connection.execute(sqlalchemy.text(updategold)).scalar()
+        print(f"updating inventory from barrels delivered, adding {totalml} ml, subtracting {totalprice} gold")
+        #add how many ml you just bought
+        updateml = f"UPDATE global_inventory SET num_green_ml = (num_green_ml + {totalml})"
+        #take away how much gold you just spent
+        updategold = f"UPDATE global_inventory SET gold = (gold - {totalprice})"
+        #buy 500ml barrels
+
+        connection.execute(sqlalchemy.text(updateml))
+        connection.execute(sqlalchemy.text(updategold))
         
-            return "OK"
-        
-        return "Not enough gold!"
+    
+        return "OK"
 
 # Gets called once a day
 @router.post("/plan")
