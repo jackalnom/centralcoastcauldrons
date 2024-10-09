@@ -27,17 +27,41 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 #for each potion delivered, add potions_delivered.quantity[0] to num_green_potions
 #for each potion delivered, subtract potions_delivered.quantity[0] * 100 from num_green_ml 
     with db.engine.begin() as connection:
+        numredml = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory ")).scalar()
         numgreenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory ")).scalar()
-
-        if(numgreenml >= 100):
-            changemltopotions = len(potions_delivered) * 100
-            numpotions = len(potions_delivered) * potions_delivered.quantity[0]
+        numblueml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory ")).scalar()
+        # test change
+        
+        if(numredml >= 100):
+            changeredmltopotions = len(potions_delivered) * 100
+            rednumpotions = len(potions_delivered) * potions_delivered.quantity[0]
             
-            sqlmltopotions = f"UPDATE global_inventory SET num_green_ml = (num_green_ml - {changemltopotions})"
-            sqlnumpotions = "UPDATE global_inventory SET num_green_potions = (num_green_potions + potions_delivered.quantity[0])"
+            sqlredmltopotions = f"UPDATE global_inventory SET num_red_ml = (num_red_ml - {changeredmltopotions})"
+            sqlrednumpotions = "UPDATE global_inventory SET num_red_potions = (num_red_potions + potions_delivered.quantity[0])"
+            # this instead? -> sqlrednumpotions = f"UPDATE global_inventory SET num_red_potions = (num_red_potions + {rednumpotions})"
 
-            connection.execute(sqlalchemy.text(sqlmltopotions)).scalar()
-            connection.execute(sqlalchemy.text(sqlnumpotions)).scalar()
+            connection.execute(sqlalchemy.text(sqlredmltopotions)).scalar()
+            connection.execute(sqlalchemy.text(sqlrednumpotions)).scalar()
+
+        elif(numgreenml >= 100):
+            changegreenmltopotions = len(potions_delivered) * 100
+            greennumpotions = len(potions_delivered) * potions_delivered.quantity[0]
+            
+            sqlgreenmltopotions = f"UPDATE global_inventory SET num_green_ml = (num_green_ml - {changegreenmltopotions})"
+            sqlgreennumpotions = "UPDATE global_inventory SET num_green_potions = (num_green_potions + potions_delivered.quantity[0])"
+
+            connection.execute(sqlalchemy.text(sqlgreenmltopotions)).scalar()
+            connection.execute(sqlalchemy.text(sqlgreennumpotions)).scalar()
+
+        elif(numblueml >= 100):
+            changebluemltopotions = len(potions_delivered) * 100
+            bluenumpotions = len(potions_delivered) * potions_delivered.quantity[0]
+            
+            sqlbluemltopotions = f"UPDATE global_inventory SET num_blue_ml = (num_blue_ml - {changebluemltopotions})"
+            sqlbluenumpotions = "UPDATE global_inventory SET num_blue_potions = (num_blue_potions + potions_delivered.quantity[0])"
+
+            connection.execute(sqlalchemy.text(sqlbluemltopotions)).scalar()
+            connection.execute(sqlalchemy.text(sqlbluenumpotions)).scalar()
 
     return "OK"
 
@@ -54,19 +78,37 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into green potions.
 
     with db.engine.begin() as connection:
+        redml = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory ")).scalar()
         greenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory ")).scalar()
+        blueml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory ")).scalar()
 
     #if we have enough green ml to make 1 bottle, make 1 green bottle
-    if(greenml >= 100):
+    if(redml >= 100):
         #potion type: red, green, blue, dark  
         return [
                 {
-                    "potion_type": [0, 100, 0, 0],
+                    "potion_type": [1, 0, 0, 0],
                     "quantity": 1,
                 }
             ]
     
-    return[]
+    elif(greenml >= 100):
+        return [
+                {
+                    "potion_type": [0, 1, 0, 0],
+                    "quantity": 1,
+                }
+            ]
+    if(blueml >= 100):
+        return [
+                {
+                    "potion_type": [0, 0, 1, 0],
+                    "quantity": 1,
+                }
+            ]
+    
+    else:
+        return "Not enough ml to make a single bottle! :()"
 
 if __name__ == "__main__":
     print(get_bottle_plan())
