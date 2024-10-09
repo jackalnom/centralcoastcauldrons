@@ -1,3 +1,6 @@
+import sqlalchemy
+from src import database as db
+
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
@@ -8,6 +11,10 @@ router = APIRouter(
     tags=["cart"],
     dependencies=[Depends(auth.get_api_key)],
 )
+
+#create cartLineItem table....?
+# CartLineItem
+# cart_id | potion_id | quantity
 
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
@@ -52,6 +59,13 @@ def search_orders(
     time is 5 total line items.
     """
 
+    #added below
+    with db.engine.begin() as connection:
+        
+        sqlpotion = "SELECT num_green_potion FROM global_inventory"
+        
+        num_potions = connection.execute(sqlalchemy.text(sqlpotion)).scalar()
+        
     return {
         "previous": "",
         "next": "",
@@ -79,6 +93,10 @@ def post_visits(visit_id: int, customers: list[Customer]):
     """
     print(customers)
 
+    #added below
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return "OK"
 
 
@@ -96,6 +114,10 @@ class CartItem(BaseModel):
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
 
+    #added below
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return "OK"
 
 
@@ -106,4 +128,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
 
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute))
+        
     return {"total_potions_bought": 1, "total_gold_paid": 50}
