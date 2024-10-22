@@ -38,7 +38,7 @@ def get_catalog():
                 "sku": "RED_POTION_0",
                 "name": "red potion",
                 "quantity": 1,
-                "price": 100,
+                "price": 40,
                 "potion_type": [1, 0, 0, 0],
             })
 
@@ -48,7 +48,7 @@ def get_catalog():
                 "sku": "GREEN_POTION_0",
                 "name": "green potion",
                 "quantity": 1,
-                "price": 100,
+                "price": 40,
                 "potion_type": [0, 1, 0, 0],
             })
 
@@ -58,17 +58,8 @@ def get_catalog():
                 "sku": "BLUE_POTION_0",
                 "name": "blue potion",
                 "quantity": 1,
-                "price": 100,
+                "price": 40,
                 "potion_type": [0, 0, 1, 0],
             })
 
-    if not catalog:
-        return [
-                {
-                    "sku": "",
-                    "name": "",
-                    "quantity": 0,
-                    "price": 0,
-                    "potion_type": [0, 0, 0, 0],
-                }
-            ]
+    return catalog

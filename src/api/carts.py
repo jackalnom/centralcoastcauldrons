@@ -12,7 +12,8 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-#create cartLineItem table....?
+#i did this:
+#create cartLineItem table
 # CartLineItem
 # cart_id | potion_id | quantity
 
@@ -22,9 +23,18 @@ class search_sort_options(str, Enum):
     line_item_total = "line_item_total"
     timestamp = "timestamp"
 
+#don't need to do this yet
 class search_sort_order(str, Enum):
     asc = "asc"
     desc = "desc"   
+
+#
+##
+#add dictionary for the carts
+carts = {}
+cart_key = 0
+##
+#
 
 @router.get("/search/", tags=["search"])
 def search_orders(
@@ -86,6 +96,7 @@ class Customer(BaseModel):
     character_class: str
     level: int
 
+#dont need to do visits yet
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
     """
@@ -94,16 +105,24 @@ def post_visits(visit_id: int, customers: list[Customer]):
     print(customers)
 
     #added below
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+    #with db.engine.begin() as connection:
+    #    result = connection.execute(sqlalchemy.text(sql_to_execute))
         
     return "OK"
 
 
+
 @router.post("/")
 def create_cart(new_cart: Customer):
-    """ """
-    return {"cart_id": 1}
+    """Create a new cart!"""
+
+
+    #start id at 0, increment
+    global cart_key
+    carts[cart_key] = {}
+    cart_key +=1
+
+    return {"cart_id": cart_key - 1}
 
 
 class CartItem(BaseModel):
@@ -112,11 +131,19 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
-    """ """
+    """Set the quantity of an item in the cart"""
+#don't need sql rn in this function
 
-    #added below
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
+    #with db.engine.begin() as connection:
+    #    result = connection.execute(sqlalchemy.text(sql_to_execute))
+
+#item sku is [0]
+#quantity is [1]
+
+    if cart_id not in carts:
+        return "Error! Cart not found."
+
+    carts[cart_id] = {item_sku, cart_item.quantity} 
         
     return "OK"
 
@@ -126,9 +153,43 @@ class CartCheckout(BaseModel):
 
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
-    """ """
+    """Checkout cart!"""
+
+    if cart_id not in carts:
+        return "Error! Cart not found."
+
+    total_gold_paid = 0
+
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_to_execute))
-        
-    return {"total_potions_bought": 1, "total_gold_paid": 50}
+    #item sku is [0]
+    #quantity is [1]
+        #item_sku = carts[cart_id][0]
+
+        for item_sku, quantity in carts[cart_id].items():
+            mlamt = quantity * 100 #100 ml per potion
+            goldamt = quantity * 100 #40 is the gold price
+            totalgoldpaid += goldamt
+
+        #subtract ml from inventory
+        if(carts[cart_id][0] == "RED_POTION_0"):
+            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml =  num_red_ml - {mlamt}"))
+
+        if(carts[cart_id][0] == "GREEN_POTION_0"):
+            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml =  num_green_ml - {mlamt}"))
+
+        if(carts[cart_id][0] == "BLUE_POTION_0"):
+            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_blue_ml =  num_blue_ml - {mlamt}"))
+
+        #add gold based on how many potions bought 
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold =  gold + {goldperquantity}"))
+
+       
+       #notes
+        #newgoldsql = 
+        #newgold = connection.execute(sqlalchemy.text(newgoldsql)).scalar()
+
+#decrement amt of potions, increment gold (in sql statement)
+      #the only place in carts where i need sql rn 
+
+    return {"total_potions_bought": carts[cart_id][1], "total_gold_paid": goldperquantity}

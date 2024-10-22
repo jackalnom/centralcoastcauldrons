@@ -31,7 +31,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         numgreenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory ")).scalar()
         numblueml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory ")).scalar()
         # test change
-        
+
+#iterate through the potions deleiverd list, for every potion the if logic happens
+# for every potion, have the if statements checking qhich color, then updating the according ml adn potion count
+#
         if(numredml >= 100):
             changeredmltopotions = len(potions_delivered) * 100
             rednumpotions = len(potions_delivered) * potions_delivered.quantity[0]
@@ -78,6 +81,7 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into green potions.
 
     with db.engine.begin() as connection:
+        #combine these selects
         redml = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory ")).scalar()
         greenml = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory ")).scalar()
         blueml = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory ")).scalar()

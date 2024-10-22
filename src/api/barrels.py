@@ -42,6 +42,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             totalml = barrel.quantity * barrel.ml_per_barrel
             totalprice = barrel.quantity * barrel.price
 
+#delete this chunk to check the gold
             #check if there is enough gold to go through with the purchase
             if currentgold < totalprice:
                 print(f"Error: Not enough funds. currentgold = {currentgold}, totalprice = {totalprice}")
@@ -77,6 +78,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     #sql queries to return number of potions, and gold amount
+    #combine
     redpotionqry = "SELECT num_red_potions FROM global_inventory"
     greenpotionqry = "SELECT num_green_potions FROM global_inventory"
     bluepotionqry = "SELECT num_blue_potions FROM global_inventory"
@@ -89,6 +91,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
 
     purchase_plan = []
+
+#have 1 for loop to the catalog
+#then have all the if statements go under it
 
     #check if we need red potions (if we have less than 10)
     if redpotion < 10 and goldamt >= 100:

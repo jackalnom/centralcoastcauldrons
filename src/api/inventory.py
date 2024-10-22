@@ -8,12 +8,12 @@ router = APIRouter(
     tags=["inventory"],
     dependencies=[Depends(auth.get_api_key)],
 )
-#this is a chaneg ayya
 
 @router.get("/audit")
 def get_inventory():
     """ """
-    
+    #return total number potions and ml, add the differnt color amounts together 
+    #need sql
     return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
 
 # Gets called once a day
