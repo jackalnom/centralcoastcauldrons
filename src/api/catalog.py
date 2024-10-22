@@ -13,21 +13,24 @@ def get_catalog():
     """
 
     with db.engine.begin() as connection:
-
-        
         sqlpotionamt = "SELECT num_red_potions, num_green_potions, num_blue_potions FROM global_inventory"
         sqlmlamt = "SELECT num_red_ml, num_green_ml, num_blue_ml FROM global_inventory"
 
-        potionamt = connection.execute(sqlalchemy.text(sqlpotionamt))
-        mlamt = connection.execute(sqlalchemy.text(sqlmlamt))
+        potionamt = connection.execute(sqlalchemy.text(sqlpotionamt)).fetchone()
+        mlamt = connection.execute(sqlalchemy.text(sqlmlamt)).fetchone()
 
-        red_potions = potionamt[0]
-        green_potions = potionamt[1]
-        blue_potions = potionamt[2]
+        red_potions, green_potions, blue_potions = 0, 0, 0
+        red_ml, green_ml, blue_ml = 0, 0, 0
 
-        red_ml = mlamt[0]
-        green_ml = mlamt[1]
-        blue_ml = mlamt[2]
+        if potionamt is not None:
+            red_potions = potionamt[0]
+            green_potions = potionamt[1]
+            blue_potions = potionamt[2]
+
+        if mlamt is not None:
+            red_ml = mlamt[0]
+            green_ml = mlamt[1]
+            blue_ml = mlamt[2]
 
         #catalog list to be returned
         catalog = []

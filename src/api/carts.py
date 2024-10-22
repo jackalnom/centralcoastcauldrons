@@ -168,21 +168,21 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
         for item_sku, quantity in carts[cart_id].items():
             mlamt = quantity * 100 #100 ml per potion
-            goldamt = quantity * 100 #40 is the gold price
+            goldamt = quantity * 40 #40 is the gold price
             totalgoldpaid += goldamt
 
         #subtract ml from inventory
-        if(carts[cart_id][0] == "RED_POTION_0"):
+        if(item_sku == "RED_POTION_0"):
             connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml =  num_red_ml - {mlamt}"))
 
-        if(carts[cart_id][0] == "GREEN_POTION_0"):
+        elif(item_sku == "GREEN_POTION_0"):
             connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml =  num_green_ml - {mlamt}"))
 
-        if(carts[cart_id][0] == "BLUE_POTION_0"):
+        elif(item_sku == "BLUE_POTION_0"):
             connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_blue_ml =  num_blue_ml - {mlamt}"))
 
         #add gold based on how many potions bought 
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold =  gold + {goldperquantity}"))
+        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold =  gold + {goldamt}"))
 
        
        #notes
@@ -192,4 +192,4 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 #decrement amt of potions, increment gold (in sql statement)
       #the only place in carts where i need sql rn 
 
-    return {"total_potions_bought": carts[cart_id][1], "total_gold_paid": goldperquantity}
+    return {"total_potions_bought": quantity, "total_gold_paid": total_gold_paid}
