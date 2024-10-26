@@ -32,43 +32,23 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        currentgoldsql = "SELECT gold FROM global_inventory"
-        currentgold = connection.execute(sqlalchemy.text(currentgoldsql)).scalar_one()
-        
-        #loop through the delivered barrels
+        currentgold = connection.exectute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar_one()
+
         for barrel in barrels_delivered:
-            #based on quantity, calculate price and ml
-                #(500ml and 100 gold per barrel)
-            totalml = barrel.quantity * barrel.ml_per_barrel
+            totalml = barrel.quantity * barrel.ml_per_bottle
             totalprice = barrel.quantity * barrel.price
 
-#delete this chunk to check the gold
-            #check if there is enough gold to go through with the purchase
             if currentgold < totalprice:
-                print(f"Error: Not enough funds. currentgold = {currentgold}, totalprice = {totalprice}")
-                return "ERROR"
+                print(f"ERROR: Not enough gold! Current gold: {currentgold}, price: {totalprice}")
+                return "ERROR!"
             
-            #check which potion type the barrel is
-            #  red: potion_type[0] == 1
-            if barrel.potion_type[0] == 1:
-                updateml = f"UPDATE global_inventory SET num_red_ml = num_red_ml + {totalml}"
-            #  green: potion_type[1] == 1
-            elif barrel.potion_type[1] == 1:
-                updateml = f"UPDATE global_inventory SET num_green_ml = num_green_ml + {totalml}"
-            #  blue: potion_type[2] == 1
-            elif barrel.potion_type[2] == 1:
-                updateml = f"UPDATE global_inventory SET num_blue_ml = num_blue_ml + {totalml}"
-            else:
-                return "Error: Invalid potion type."
-            
-            #subtract the gold needed for the purchase
-            updategold = f"UPDATE global_inventory SET gold = gold - {totalprice}"
+            update_ml = f"UPDATE global_inventory SET {barrel.sku}_ml = {barrel.sku}_ml + {totalml}"
+            update_gold = f"UPDATE global_inventory SET gold = gold - {totalprice}"
 
-            #update the gold and ml used up
-            connection.execute(sqlalchemy.text(updateml))
-            connection.execute(sqlalchemy.text(updategold))
+            connection.execute(sqlalchemy.text(update_ml))
+            connection.execute(sqlalchemy.text(update_gold))
 
-        return "OK"
+    return "OK"
 
 
 # Gets called once a day
