@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+import sqlalchemy
+from src import database as db
 from src.api import auth
 import math
 
@@ -14,7 +16,17 @@ def get_inventory():
     """ """
     #return total number potions and ml, add the differnt color amounts together 
     #need sql
-    return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
+
+    sqltotalpotions = "SELECT inventory FROM potions_mixes ORDER BY name"
+    sqltotalml = "SELECT red_ml, green_ml, blue_ml, dark_ml FROM global_inventory"
+    sqlcurrentgold = "SELECT gold FROM global_inventory"
+
+    with db.engine.begin() as connection:
+        totalpotions = connection.exectute(sqlalchemy.text(sqltotalpotions))
+        totalml = connection.exectute(sqlalchemy.text(sqltotalml))
+        currentgold = connection.exectute(sqlalchemy.text(sqlcurrentgold))
+
+    return {"number_of_potions": totalpotions, "ml_in_barrels": totalml, "gold": currentgold}
 
 # Gets called once a day
 @router.post("/plan")
