@@ -18,11 +18,11 @@ class PotionInventory(BaseModel):
 
 @router.post("/deliver/{order_id}")
 def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int):
-    """ """
+    """Deliver bottles!"""
     print(f"potions delivered: {potions_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        # Initialize totals for ingredients needed
+        #set the base colors needed to 0
         total_red_needed = 0
         total_green_needed = 0
         total_blue_needed = 0
@@ -32,7 +32,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             #select the amounts of red, green, blue, and dark needed for the specific potion
             potion_data = connection.execute(sqlalchemy.text("""SELECT red_amt, green_amt, blue_amt, dark_amt 
                                                              FROM potion_mixes 
-                                                             WHERE id = potion_id"""), {"potion_id": potion.potion_type}).fetch_one()
+                                                             WHERE id = {potion.potion_type}""")).fetch_one()
                                                                         #parameter binding potion_id is potion.potion_type ^
 
             #if the potion data is not valid, error message

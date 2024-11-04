@@ -62,38 +62,80 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     redpotionqry = "SELECT num_red_potions FROM global_inventory"
     greenpotionqry = "SELECT num_green_potions FROM global_inventory"
     bluepotionqry = "SELECT num_blue_potions FROM global_inventory"
+    darkpotionqry = "SELECT num_dark_potions FROM global_inventory"
+    purplepotionqry = "SELECT num_purple_potions FROM global_inventory"
+    tealpotionqry = "SELECT num_teal_potions FROM global_inventory"
+    slospecialpotionqry = "SELECT num_slospecial_potions FROM global_inventory"
     goldqry = "SELECT gold FROM global_inventory"
+
+    print(f"""redpotionqry: {redpotionqry} greenpotionsqry: {greenpotionqry} 
+          bluepotionqry: {bluepotionqry} darkpotionqry: {darkpotionqry} 
+          purplepotionqry: {purplepotionqry} tealpotionqry: {tealpotionqry}
+          slospecialpotionqry: {slospecialpotionqry} goldqry: {goldqry}""")
 
     with db.engine.begin() as connection:
         redpotion = connection.execute(sqlalchemy.text(redpotionqry)).scalar()
         greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
         bluepotion = connection.execute(sqlalchemy.text(bluepotionqry)).scalar()
+        darkpotion = connection.execute(sqlalchemy.text(darkpotionqry)).scalar()
+        purplepotion = connection.execute(sqlalchemy.text(purplepotionqry)).scalar()
+        tealpotion =connection.execute(sqlalchemy.text(tealpotionqry)).scalar()
+        slospecialpotion = connection.execute(sqlalchemy.text(slospecialpotionqry)).scalar()
+
         goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
+
+        print(f"""redpotion: {redpotion} greenpotions: {greenpotion} 
+          bluepotion: {bluepotion} darkpotion: {darkpotion} 
+          purplepotion: {purplepotion} tealpotion: {tealpotion}
+          slospecialpotion: {slospecialpotion} gold: {goldamt}""")
 
     purchase_plan = []
 
 #have 1 for loop to the catalog
 #then have all the if statements go under it
 
-    #check if we need red potions (if we have less than 10)
-    if redpotion < 10 and goldamt >= 100:
-        for barrel in wholesale_catalog:
-            if barrel.potion_type[0] == 1:
-                purchase_plan.append({"sku": "SMALL_RED_BARREL", 
-                                      "quantity": 1})
+    while goldamt >= 100:
+        #check if we need red potions (if we have less than 10)
+        if redpotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[0] == 1:
+                    purchase_plan.append({"sku": "SMALL_RED_BARREL", 
+                                        "quantity": 1})
 
-    #check if we need green potions (if we have less than 10)
-    if greenpotion < 10 and goldamt >= 100:
-        for barrel in wholesale_catalog:
-            if barrel.potion_type[1] == 1:
-                purchase_plan.append({"sku": "SMALL_GREEN_BARREL", 
-                                      "quantity": 1})
+        if greenpotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[1] == 1:
+                    purchase_plan.append({"sku": "SMALL_GREEN_BARREL", 
+                                        "quantity": 1})
 
-    #check if we need blue potions (if we have less than 10)
-    if bluepotion < 10 and goldamt >= 100:
-        for barrel in wholesale_catalog:
-            if barrel.potion_type[2] == 1:
-                purchase_plan.append({"sku": "SMALL_BLUE_BARREL", 
-                                      "quantity": 1})
+        if bluepotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[2] == 1:
+                    purchase_plan.append({"sku": "SMALL_BLUE_BARREL", 
+                                        "quantity": 1})
+                    
+        if darkpotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[2] == 1:
+                    purchase_plan.append({"sku": "SMALL_DARK_BARREL", 
+                                        "quantity": 1})
+                    
+        if purplepotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[2] == 1:
+                    purchase_plan.append({"sku": "SMALL_PURPLE_BARREL", 
+                                        "quantity": 1})
+                    
+        if tealpotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[2] == 1:
+                    purchase_plan.append({"sku": "SMALL_TEAL_BARREL", 
+                                        "quantity": 1})
+                    
+        if slospecialpotion < 10 and goldamt >= 100:
+            for barrel in wholesale_catalog:
+                if barrel.potion_type[2] == 1:
+                    purchase_plan.append({"sku": "SMALL_SLOSPECIAL_BARREL", 
+                                        "quantity": 1})
 
     return purchase_plan
