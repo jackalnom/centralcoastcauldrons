@@ -32,10 +32,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        currentgold = connection.exectute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar_one()
+        currentgold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar_one()
 
         for barrel in barrels_delivered:
-            totalml = barrel.quantity * barrel.ml_per_bottle
+            totalml = barrel.quantity * barrel.ml_per_barrel
             totalprice = barrel.quantity * barrel.price
 
             if currentgold < totalprice:
