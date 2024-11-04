@@ -13,7 +13,10 @@ def get_catalog():
     """
 
     with db.engine.begin() as connection:
-        sqlpotionamt = "SELECT num_red_potions, num_green_potions, num_blue_potions, num_dark_potions FROM global_inventory"
+        sqlpotionamt = """SELECT 
+                        num_red_potions, num_green_potions, num_blue_potions, num_dark_potions,
+                        num_purple_potions, num_teal_potions, num_slospecial_potions 
+                        FROM global_inventory"""
         sqlmlamt = "SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml FROM global_inventory"
 
         potionamt = connection.execute(sqlalchemy.text(sqlpotionamt)).fetchone()
@@ -48,7 +51,7 @@ def get_catalog():
             catalog.append({
                 "sku": "RED_POTION_0",
                 "name": "red potion",
-                "quantity": 1,
+                "quantity": potionamt[0],
                 "price": 20,
                 "potion_type": [1, 0, 0, 0],
             })
@@ -58,7 +61,7 @@ def get_catalog():
             catalog.append({
                 "sku": "GREEN_POTION_0",
                 "name": "green potion",
-                "quantity": 1,
+                "quantity": potionamt[1],
                 "price": 20,
                 "potion_type": [0, 1, 0, 0],
             })
@@ -68,7 +71,7 @@ def get_catalog():
             catalog.append({
                 "sku": "BLUE_POTION_0",
                 "name": "blue potion",
-                "quantity": 1,
+                "quantity": potionamt[2],
                 "price": 20,
                 "potion_type": [0, 0, 1, 0],
             })
@@ -78,7 +81,7 @@ def get_catalog():
             catalog.append({
                 "sku": "DARK_POTION_0",
                 "name": "dark potion",
-                "quantity": 1,
+                "quantity": potionamt[3],
                 "price": 20,
                 "potion_type": [0, 0, 0, 1],
             })
@@ -88,7 +91,7 @@ def get_catalog():
             catalog.append({
                 "sku": "PURPLE_POTION_0",
                 "name": "purple potion",
-                "quantity": 1,
+                "quantity": potionamt[4],
                 "price": 40,
                 "potion_type": [0.5, 0, 0.5, 0],
             })
@@ -98,7 +101,7 @@ def get_catalog():
             catalog.append({
                 "sku": "TEAL_POTION_0",
                 "name": "teal potion",
-                "quantity": 1,
+                "quantity": potionamt[5],
                 "price": 40,
                 "potion_type": [0, 0.5, 0.5, 0],
             })
@@ -108,7 +111,7 @@ def get_catalog():
             catalog.append({
                 "sku": "SLOSPECIAL_POTION_0",
                 "name": "slo special potion",
-                "quantity": 1,
+                "quantity": potionamt[6],
                 "price": 50,
                 "potion_type": [0.25, 0.25, 0.25, 0.25],
             })
