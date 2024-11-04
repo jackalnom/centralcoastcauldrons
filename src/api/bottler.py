@@ -30,10 +30,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
         for potion in potions_delivered:
             #select the amounts of red, green, blue, and dark needed for the specific potion
-            potion_data = connection.execute(sqlalchemy.text("""SELECT red_amt, green_amt, blue_amt, dark_amt 
+            potion_id = potion.potion_type.fetch_one()
+            potion_data = connection.execute(sqlalchemy.text(f"""SELECT red_amt, green_amt, blue_amt, dark_amt 
                                                              FROM potion_mixes 
-                                                             WHERE id = {potion.potion_type}""")).fetch_one()
-                                                                        #parameter binding potion_id is potion.potion_type ^
+                                                             WHERE id = {potion_id}""")).fetch_one()
 
             #if the potion data is not valid, error message
             if not potion_data:
