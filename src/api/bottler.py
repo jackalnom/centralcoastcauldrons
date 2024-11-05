@@ -28,18 +28,20 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         total_blue_needed = 0
         total_dark_needed = 0
 
+        counter = 0
+
+        #potions_delivered is a list of PotionInventory objects, PotionInventory has a list of int
         for potion in potions_delivered:
             #select the amounts of red, green, blue, and dark needed for the specific potion
-            potion_id = potion.potion_type.fetch_one()
             potion_data = connection.execute(sqlalchemy.text(f"""SELECT red_amt, green_amt, blue_amt, dark_amt 
-                                                             FROM potion_mixes 
-                                                             WHERE id = {potion_id}""")).fetch_one()
+                                                        FROM potion_mixes 
+                                                        WHERE id = {potion.potion_type[counter]}""")).fetchone()
+            counter + 1
 
             #if the potion data is not valid, error message
             if not potion_data:
                 print(f"ERROR: Not a valid potion mixture ID: {potion.potion_type}")
-                return "ERROR"
-        
+                return "ERROR! potion data not valid"
             #put the recipe in potion_data
             red_amt, green_amt, blue_amt, dark_amt = potion_data
 
@@ -57,9 +59,12 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         ml_inventory = connection.execute(sqlalchemy.text(check_ml_sql)).fetchone()
 
         #if there is not enough mls of each color required for the specific potion type, error message
-        if(ml_inventory[0] < total_red_needed or ml_inventory[1] < total_green_needed or ml_inventory[2] < total_blue_needed or ml_inventory[3] < total_dark_needed):
+        if(ml_inventory[0] < total_red_needed 
+           or ml_inventory[1] < total_green_needed 
+           or ml_inventory[2] < total_blue_needed 
+           or ml_inventory[3] < total_dark_needed):
             print(f"ERROR: Not enough ml to make {potion.quantity} of potion {potion.potion_type}")
-            return "ERROR!"
+            return "ERROR! not enough ml"
         
         #otherwise, update the inventory because you have enough ml to go through with the bottling
         update_inventory_sql = f"""UPDATE global_inventory 
