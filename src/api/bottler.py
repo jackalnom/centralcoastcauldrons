@@ -102,26 +102,26 @@ def get_bottle_plan():
 
         #if there is enough base case potions, add to plan
         if(redml >= 100): #red potion
-            potion_plan.append([{"potion_type": [1, 0, 0, 0], "quantity": 1, "cost": 20}])
+            potion_plan.append([{"potion_type": [1, 0, 0, 0]}])
         
         if(greenml >= 100): #green potion
-            potion_plan.append([{"potion_type": [0, 1, 0, 0], "quantity": 1, "cost": 20}])
+            potion_plan.append([{"potion_type": [0, 1, 0, 0]}])
         
         if(blueml >= 100): #blue potion
-            potion_plan.append([{"potion_type": [0, 0, 1, 0], "quantity": 1, "cost": 20}])
+            potion_plan.append([{"potion_type": [0, 0, 1, 0]}])
         
         if(darkml >= 100): #dark potion
-            potion_plan.append([{"potion_type": [0, 0, 0, 1], "quantity": 1, "cost": 20}])
+            potion_plan.append([{"potion_type": [0, 0, 0, 1]}])
         
         #if there is enough special potions, add to plan
         if(blueml >= 50 and redml >= 50): #purple potion
-            potion_plan.append([{"potion_type": [0.5, 0, 0.5, 0], "quantity": 1, "cost": 40}])
+            potion_plan.append([{"potion_type": [0.5, 0, 0.5, 0]}])
 
         if(blueml >= 50 and greenml >= 50): #teal potion
-            potion_plan.append([{"potion_type": [0, 0.5, 0.5, 0], "quantity": 1, "cost": 40}])
+            potion_plan.append([{"potion_type": [0, 0.5, 0.5, 0]}])
 
         if(redml >= 25 and greenml >= 25 and blueml >= 25 and darkml >= 25): #slo special potion
-            potion_plan.append([{"potion_type": [0.25, 0.25, 0.25, 0.25], "quantity": 1, "cost": 50}])
+            potion_plan.append([{"potion_type": [0.25, 0.25, 0.25, 0.25]}])
         
         if potion_plan:
             return potion_plan

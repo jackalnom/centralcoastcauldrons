@@ -171,15 +171,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             goldamt = quantity * 40 #40 is the gold price
             totalgoldpaid += goldamt
 
-        #subtract ml from inventory
-        if(item_sku == "RED_POTION_0"):
-            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml =  num_red_ml - {mlamt}"))
+            #subtract ml from inventory
+            if(item_sku == "RED_POTION_0"):
+                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml =  num_red_ml - {mlamt}"))
 
-        elif(item_sku == "GREEN_POTION_0"):
-            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml =  num_green_ml - {mlamt}"))
+            elif(item_sku == "GREEN_POTION_0"):
+                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml =  num_green_ml - {mlamt}"))
 
-        elif(item_sku == "BLUE_POTION_0"):
-            connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_blue_ml =  num_blue_ml - {mlamt}"))
+            elif(item_sku == "BLUE_POTION_0"):
+                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_blue_ml =  num_blue_ml - {mlamt}"))
 
         #add gold based on how many potions bought 
         connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold =  gold + {goldamt}"))
