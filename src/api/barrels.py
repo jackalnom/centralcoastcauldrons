@@ -13,11 +13,9 @@ router = APIRouter(
 
 class Barrel(BaseModel):
     sku: str
-
     ml_per_barrel: int
     potion_type: list[int] #[red, green, blue, dark]
     price: int
-
     quantity: int
 
 
@@ -33,7 +31,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        currentgold = connection.execute(sqlalchemy.text("SELECT num_gold FROM gold_ledgers")).scalar_one()
+        currentgold = connection.execute(sqlalchemy.text("SELECT SUM(gold_change) FROM gold_ledgers")).scalar_one()
 
         for barrel in barrels_delivered:
             totalml = barrel.quantity * barrel.ml_per_barrel
@@ -42,13 +40,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             if currentgold < totalprice:
                 print(f"ERROR: Not enough gold! Current gold: {currentgold}, price: {totalprice}")
                 return "ERROR!"
-            
-            update_ml = f"INSERT INTO ml_ledgers (num_{barrel.sku}_ml)"
-            #update_ml = f"UPDATE global_inventory SET {barrel.sku}_ml = {barrel.sku}_ml + {totalml}"
-            update_gold = f"UPDATE global_inventory SET gold = gold - {totalprice}"
 
-            connection.execute(sqlalchemy.text(update_ml))
-            connection.execute(sqlalchemy.text(update_gold))
+            updateml = f"INSERT INTO ml_ledgers (num_{barrel.sku}_ml) VALUES ({totalml})"
+            connection.execute(sqlalchemy.text(updateml))
+
+            updategold = f"INSERT INTO gold_ledgers (gold_change) VALUES (-{totalprice})"
+            connection.execute(sqlalchemy.text(updategold))
+
+            currentgold -= totalprice
 
     return "OK"
 
@@ -79,17 +78,26 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     purchase_plan = []
 
-    #check if we need to buy red barrels (if we have less than 100 red ml)
-    if redml < 100 and goldamt >= 100:
-        purchase_plan.append({"sku": "SMALL_RED_BARREL", "quantity": 1})
+    for barrel in wholesale_catalog:
+        #check if we need to buy red barrels (if we have less than 500 red ml)
+        if barrel.potion_type[0] == 1 and redml < 500 and goldamt >= barrel.price:
+            purchase_plan.append({"sku": barrel.sku, "quantity": 1})
+            goldamt -= barrel.price
+            redml += barrel.ml_per_barrel
 
-    if greenml < 100 and goldamt >= 100:
-        purchase_plan.append({"sku": "SMALL_GREEN_BARREL", "quantity": 1})
+        if barrel.potion_type[1] == 1 and greenml < 500 and goldamt >= barrel.price:
+            purchase_plan.append({"sku": barrel.sku, "quantity": 1})
+            goldamt -= barrel.price
+            redml += barrel.ml_per_barrel
 
-    if blueml < 100 and goldamt >= 100:
-        purchase_plan.append({"sku": "SMALL_BLUE_BARREL", "quantity": 1})
-                
-    if darkml < 100 and goldamt >= 100:
-        purchase_plan.append({"sku": "SMALL_DARK_BARREL", "quantity": 1})
+        if barrel.potion_type[2] == 1 and blueml < 500 and goldamt >= barrel.price:
+            purchase_plan.append({"sku": barrel.sku, "quantity": 1})
+            goldamt -= barrel.price
+            redml += barrel.ml_per_barrel
+                    
+        if barrel.potion_type[3] == 1 and darkml < 500 and goldamt >= barrel.price:
+            purchase_plan.append({"sku": barrel.sku, "quantity": 1})
+            goldamt -= barrel.price
+            redml += barrel.ml_per_barrel
 
     return purchase_plan
