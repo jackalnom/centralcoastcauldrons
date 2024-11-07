@@ -11,12 +11,22 @@ def get_catalog():
     """
     Each unique item combination must have only a single price.
     """
+    #select all columns from potions ledger, where quantity > 0, then for each potion in sqlqueryresult, assign variables for each column in the table, potion.potion_id (in the for you can call column names), group by columns
+    #item_sku needs to be called from cart_items
+    #add a yellow, red and green
+
+
+    sqlpotionamt = "SELECT potion_sku, potion_change FROM potion_ledgers WHERE quantity > 0"
+    sqlmlamt = "SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml FROM ml_ledgers"
+
+    #for potion in 
 
     with db.engine.begin() as connection:
         sqlpotionamt = """SELECT 
                         num_red_potions, num_green_potions, num_blue_potions, num_dark_potions,
                         num_purple_potions, num_teal_potions, num_slospecial_potions 
                         FROM global_inventory"""
+        #CHANGE ^ because getting rid of global_inventory
         sqlmlamt = "SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml FROM global_inventory"
 
         potionamt = connection.execute(sqlalchemy.text(sqlpotionamt)).fetchone()
@@ -53,7 +63,7 @@ def get_catalog():
                 "name": "red potion",
                 "quantity": potionamt[0],
                 "price": 20,
-                "potion_type": [1, 0, 0, 0],
+                "potion_type": [100, 0, 0, 0],
             })
 
         #green
@@ -63,7 +73,7 @@ def get_catalog():
                 "name": "green potion",
                 "quantity": potionamt[1],
                 "price": 20,
-                "potion_type": [0, 1, 0, 0],
+                "potion_type": [0, 100, 0, 0],
             })
 
         #blue
@@ -73,7 +83,7 @@ def get_catalog():
                 "name": "blue potion",
                 "quantity": potionamt[2],
                 "price": 20,
-                "potion_type": [0, 0, 1, 0],
+                "potion_type": [0, 0, 100, 0],
             })
 
         #dark
@@ -83,7 +93,7 @@ def get_catalog():
                 "name": "dark potion",
                 "quantity": potionamt[3],
                 "price": 20,
-                "potion_type": [0, 0, 0, 1],
+                "potion_type": [0, 0, 0, 100],
             })
 
         #purple
@@ -93,7 +103,7 @@ def get_catalog():
                 "name": "purple potion",
                 "quantity": potionamt[4],
                 "price": 40,
-                "potion_type": [0.5, 0, 0.5, 0],
+                "potion_type": [50, 0, 50, 0],
             })
 
         #teal
@@ -103,7 +113,7 @@ def get_catalog():
                 "name": "teal potion",
                 "quantity": potionamt[5],
                 "price": 40,
-                "potion_type": [0, 0.5, 0.5, 0],
+                "potion_type": [0, 50, 50, 0],
             })
 
         #slo special
@@ -113,7 +123,7 @@ def get_catalog():
                 "name": "slo special potion",
                 "quantity": potionamt[6],
                 "price": 50,
-                "potion_type": [0.25, 0.25, 0.25, 0.25],
+                "potion_type": [25, 25, 25, 25],
             })
 
     return catalog

@@ -32,7 +32,6 @@ class search_sort_order(str, Enum):
 ##
 #add dictionary for the carts
 carts = {}
-cart_key = 0
 ##
 #
 
@@ -111,18 +110,20 @@ def post_visits(visit_id: int, customers: list[Customer]):
     return "OK"
 
 
-
 @router.post("/")
 def create_cart(new_cart: Customer):
     """Create a new cart!"""
 
+    #result: insert into, store the info passed in new_cart into cart table, like name, class, level
+    #return result.cart_id
 
-    #start id at 0, increment
-    global cart_key
-    carts[cart_key] = {}
-    cart_key +=1
+    with db.engine.begin() as connection:
+        sqlcartsinsert = f"""INSERT INTO carts (customer_name, customer_class, level) 
+                     VALUES {new_cart.customer_name}, {new_cart.customer_class}, {new_cart.level}"""
+        
+        result = connection.execute(sqlalchemy.text(sqlcartsinsert))
 
-    return {"cart_id": cart_key - 1}
+    return {"cart_id": result.cart_id}
 
 
 class CartItem(BaseModel):
@@ -160,11 +161,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
 
     total_gold_paid = 0
 
-
     with db.engine.begin() as connection:
     #item sku is [0]
     #quantity is [1]
         #item_sku = carts[cart_id][0]
+
+    #decrement amt of potions, increment gold (in sql statement)
+        
+
+
 
         for item_sku, quantity in carts[cart_id].items():
             mlamt = quantity * 100 #100 ml per potion

@@ -87,6 +87,52 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
+    ########
+    # correct select statement????
+    # #sql queries to return number of potions, and gold amount
+    # redpotionqry = "SELECT SUM(quantity) AS num_red_potions FROM potion_ledgers WHERE potion_sku = 1"
+    # greenpotionqry = "SELECT SUM(quantity) AS num_green_potions FROM potion_ledgers WHERE potion_sku = 2"
+    # bluepotionqry = "SELECT SUM(quantity) AS num_blue_potions FROM potion_ledgers WHERE potion_sku = 3"
+    # darkpotionqry = "SELECT SUM(quantity) AS num_dark_potions FROM potion_ledgers WHERE potion_sku = 4"
+    # purplepotionqry = "SELECT SUM(quantity) AS num_purple_potions FROM potion_ledgers WHERE potion_sku = 5"
+    # tealpotionqry = "SELECT SUM(quantity) AS num_teal_potions FROM potion_ledgers WHERE potion_sku = 6"
+    # yellowpotionqry = "SELECT SUM(quantity) AS num_yellow_potions FROM potion_ledgers WHERE potion_sku = 7"
+    # slospecialpotionqry = "SELECT SUM(quantity) AS num_slospecial_potions FROM potion_ledgers WHERE potion_sku = 8"
+    # goldqry = "SELECT SUM(gold_change) AS num_gold FROM gold_ledgers"
+
+    # with db.engine.begin() as connection:
+    #     redpotion = connection.execute(sqlalchemy.text(redpotionqry)).scalar()
+    #     greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
+    #     bluepotion = connection.execute(sqlalchemy.text(bluepotionqry)).scalar()
+    #     darkpotion = connection.execute(sqlalchemy.text(darkpotionqry)).scalar()
+    #     purplepotion = connection.execute(sqlalchemy.text(purplepotionqry)).scalar()
+    #     tealpotion = connection.execute(sqlalchemy.text(tealpotionqry)).scalar()
+    #     yellowpotion = connection.execute(sqlalchemy.text(yellowpotionqry)).scalar()
+    #     slospecialpotion = connection.execute(sqlalchemy.text(slospecialpotionqry)).scalar()
+
+    #     goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
+
+    # print(f"""redpotion: {redpotion} greenpotions: {greenpotion} 
+    #     bluepotion: {bluepotion} darkpotion: {darkpotion} 
+    #     purplepotion: {purplepotion} tealpotion: {tealpotion} yellowpotion: {yellowpotion}
+    #     slospecialpotion: {slospecialpotion} gold: {goldamt}""")
+    ########
+
+    # #collect current amount of ml of each base color, and gold
+    # redmlqry = "SELECT SUM(num_red_ml) AS current_red_ml FROM ml_ledgers"
+    # greenmlqry = "SELECT SUM(num_green_ml) AS current_green_ml FROM ml_ledgers"
+    # bluemlqry = "SELECT SUM(num_blue_ml) AS current_blue_ml FROM ml_ledgers"
+    # darkmlqry = "SELECT SUM(num_dark_ml) AS current_dark_ml FROM ml_ledgers"
+
+    # goldqry = "SELECT SUM(gold_change) AS num_gold FROM gold_ledgers"
+
+    # with db.engine.begin() as connection:
+    #     redml = connection.execute(sqlalchemy.text(redmlqry)).scalar()
+    #     greenml = connection.execute(sqlalchemy.text(greenmlqry)).scalar()
+    #     blueml = connection.execute(sqlalchemy.text(bluemlqry)).scalar()
+    #     darkml = connection.execute(sqlalchemy.text(darkmlqry)).scalar()
+
+    #     goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
 
     # Each bottle has a quantity of what proportion of red, blue, green, and dark potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.

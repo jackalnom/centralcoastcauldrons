@@ -25,6 +25,7 @@ class Barrel(BaseModel):
 #  red: potion_type[0] == 1
 #  green: potion_type[1] == 1
 #  blue: potion_type[2] == 1
+#  dark: potion_type[3] == 1
 
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
@@ -32,7 +33,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     with db.engine.begin() as connection:
-        currentgold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory")).scalar_one()
+        currentgold = connection.execute(sqlalchemy.text("SELECT num_gold FROM gold_ledgers")).scalar_one()
 
         for barrel in barrels_delivered:
             totalml = barrel.quantity * barrel.ml_per_barrel
@@ -42,7 +43,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                 print(f"ERROR: Not enough gold! Current gold: {currentgold}, price: {totalprice}")
                 return "ERROR!"
             
-            update_ml = f"UPDATE global_inventory SET {barrel.sku}_ml = {barrel.sku}_ml + {totalml}"
+            update_ml = f"INSERT INTO ml_ledgers (num_{barrel.sku}_ml)"
+            #update_ml = f"UPDATE global_inventory SET {barrel.sku}_ml = {barrel.sku}_ml + {totalml}"
             update_gold = f"UPDATE global_inventory SET gold = gold - {totalprice}"
 
             connection.execute(sqlalchemy.text(update_ml))
@@ -57,85 +59,37 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """Planning to purchase barrels"""
     print(wholesale_catalog)
 
-    #sql queries to return number of potions, and gold amount
-    #combine
-    redpotionqry = "SELECT num_red_potions FROM global_inventory"
-    greenpotionqry = "SELECT num_green_potions FROM global_inventory"
-    bluepotionqry = "SELECT num_blue_potions FROM global_inventory"
-    darkpotionqry = "SELECT num_dark_potions FROM global_inventory"
-    purplepotionqry = "SELECT num_purple_potions FROM global_inventory"
-    tealpotionqry = "SELECT num_teal_potions FROM global_inventory"
-    slospecialpotionqry = "SELECT num_slospecial_potions FROM global_inventory"
-    goldqry = "SELECT gold FROM global_inventory"
+    #collect current amount of ml of each base color, and gold
+    redmlqry = "SELECT SUM(num_red_ml) AS current_red_ml FROM ml_ledgers"
+    greenmlqry = "SELECT SUM(num_green_ml) AS current_green_ml FROM ml_ledgers"
+    bluemlqry = "SELECT SUM(num_blue_ml) AS current_blue_ml FROM ml_ledgers"
+    darkmlqry = "SELECT SUM(num_dark_ml) AS current_dark_ml FROM ml_ledgers"
 
-    print(f"""redpotionqry: {redpotionqry} greenpotionsqry: {greenpotionqry} 
-          bluepotionqry: {bluepotionqry} darkpotionqry: {darkpotionqry} 
-          purplepotionqry: {purplepotionqry} tealpotionqry: {tealpotionqry}
-          slospecialpotionqry: {slospecialpotionqry} goldqry: {goldqry}""")
+    goldqry = "SELECT SUM(gold_change) AS num_gold FROM gold_ledgers"
 
     with db.engine.begin() as connection:
-        redpotion = connection.execute(sqlalchemy.text(redpotionqry)).scalar()
-        greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
-        bluepotion = connection.execute(sqlalchemy.text(bluepotionqry)).scalar()
-        darkpotion = connection.execute(sqlalchemy.text(darkpotionqry)).scalar()
-        purplepotion = connection.execute(sqlalchemy.text(purplepotionqry)).scalar()
-        tealpotion =connection.execute(sqlalchemy.text(tealpotionqry)).scalar()
-        slospecialpotion = connection.execute(sqlalchemy.text(slospecialpotionqry)).scalar()
+        redml = connection.execute(sqlalchemy.text(redmlqry)).scalar()
+        greenml = connection.execute(sqlalchemy.text(greenmlqry)).scalar()
+        blueml = connection.execute(sqlalchemy.text(bluemlqry)).scalar()
+        darkml = connection.execute(sqlalchemy.text(darkmlqry)).scalar()
 
         goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
 
-        print(f"""redpotion: {redpotion} greenpotions: {greenpotion} 
-          bluepotion: {bluepotion} darkpotion: {darkpotion} 
-          purplepotion: {purplepotion} tealpotion: {tealpotion}
-          slospecialpotion: {slospecialpotion} gold: {goldamt}""")
+    print(f"""redml: {redml} greenml: {greenml} blueml: {blueml} darkml: {darkml} gold: {goldamt}""")
 
     purchase_plan = []
 
-#have 1 for loop to the catalog
-#then have all the if statements go under it
+    #check if we need to buy red barrels (if we have less than 100 red ml)
+    if redml < 100 and goldamt >= 100:
+        purchase_plan.append({"sku": "SMALL_RED_BARREL", "quantity": 1})
 
-    while goldamt >= 100:
-        #check if we need red potions (if we have less than 10)
-        if redpotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[0] == 1:
-                    purchase_plan.append({"sku": "SMALL_RED_BARREL", 
-                                        "quantity": 1})
+    if greenml < 100 and goldamt >= 100:
+        purchase_plan.append({"sku": "SMALL_GREEN_BARREL", "quantity": 1})
 
-        if greenpotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[1] == 1:
-                    purchase_plan.append({"sku": "SMALL_GREEN_BARREL", 
-                                        "quantity": 1})
-
-        if bluepotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[2] == 1:
-                    purchase_plan.append({"sku": "SMALL_BLUE_BARREL", 
-                                        "quantity": 1})
-                    
-        if darkpotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[2] == 1:
-                    purchase_plan.append({"sku": "SMALL_DARK_BARREL", 
-                                        "quantity": 1})
-                    
-        if purplepotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[2] == 1:
-                    purchase_plan.append({"sku": "SMALL_PURPLE_BARREL", 
-                                        "quantity": 1})
-                    
-        if tealpotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[2] == 1:
-                    purchase_plan.append({"sku": "SMALL_TEAL_BARREL", 
-                                        "quantity": 1})
-                    
-        if slospecialpotion < 10 and goldamt >= 100:
-            for barrel in wholesale_catalog:
-                if barrel.potion_type[2] == 1:
-                    purchase_plan.append({"sku": "SMALL_SLOSPECIAL_BARREL", 
-                                        "quantity": 1})
+    if blueml < 100 and goldamt >= 100:
+        purchase_plan.append({"sku": "SMALL_BLUE_BARREL", "quantity": 1})
+                
+    if darkml < 100 and goldamt >= 100:
+        purchase_plan.append({"sku": "SMALL_DARK_BARREL", "quantity": 1})
 
     return purchase_plan
