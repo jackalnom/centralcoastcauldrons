@@ -87,87 +87,46 @@ def get_bottle_plan():
     """
     Go from barrel to bottle.
     """
-    ########
-    # correct select statement????
-    # #sql queries to return number of potions, and gold amount
-    # redpotionqry = "SELECT SUM(quantity) AS num_red_potions FROM potion_ledgers WHERE potion_sku = 1"
-    # greenpotionqry = "SELECT SUM(quantity) AS num_green_potions FROM potion_ledgers WHERE potion_sku = 2"
-    # bluepotionqry = "SELECT SUM(quantity) AS num_blue_potions FROM potion_ledgers WHERE potion_sku = 3"
-    # darkpotionqry = "SELECT SUM(quantity) AS num_dark_potions FROM potion_ledgers WHERE potion_sku = 4"
-    # purplepotionqry = "SELECT SUM(quantity) AS num_purple_potions FROM potion_ledgers WHERE potion_sku = 5"
-    # tealpotionqry = "SELECT SUM(quantity) AS num_teal_potions FROM potion_ledgers WHERE potion_sku = 6"
-    # yellowpotionqry = "SELECT SUM(quantity) AS num_yellow_potions FROM potion_ledgers WHERE potion_sku = 7"
-    # slospecialpotionqry = "SELECT SUM(quantity) AS num_slospecial_potions FROM potion_ledgers WHERE potion_sku = 8"
-    # goldqry = "SELECT SUM(gold_change) AS num_gold FROM gold_ledgers"
 
-    # with db.engine.begin() as connection:
-    #     redpotion = connection.execute(sqlalchemy.text(redpotionqry)).scalar()
-    #     greenpotion = connection.execute(sqlalchemy.text(greenpotionqry)).scalar()
-    #     bluepotion = connection.execute(sqlalchemy.text(bluepotionqry)).scalar()
-    #     darkpotion = connection.execute(sqlalchemy.text(darkpotionqry)).scalar()
-    #     purplepotion = connection.execute(sqlalchemy.text(purplepotionqry)).scalar()
-    #     tealpotion = connection.execute(sqlalchemy.text(tealpotionqry)).scalar()
-    #     yellowpotion = connection.execute(sqlalchemy.text(yellowpotionqry)).scalar()
-    #     slospecialpotion = connection.execute(sqlalchemy.text(slospecialpotionqry)).scalar()
+    #collect current amount of ml of each base color
+    redmlqry = "SELECT SUM(num_red_ml) AS current_red_ml FROM ml_ledgers"
+    greenmlqry = "SELECT SUM(num_green_ml) AS current_green_ml FROM ml_ledgers"
+    bluemlqry = "SELECT SUM(num_blue_ml) AS current_blue_ml FROM ml_ledgers"
+    darkmlqry = "SELECT SUM(num_dark_ml) AS current_dark_ml FROM ml_ledgers"
 
-    #     goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
-
-    # print(f"""redpotion: {redpotion} greenpotions: {greenpotion} 
-    #     bluepotion: {bluepotion} darkpotion: {darkpotion} 
-    #     purplepotion: {purplepotion} tealpotion: {tealpotion} yellowpotion: {yellowpotion}
-    #     slospecialpotion: {slospecialpotion} gold: {goldamt}""")
-    ########
-
-    # #collect current amount of ml of each base color, and gold
-    # redmlqry = "SELECT SUM(num_red_ml) AS current_red_ml FROM ml_ledgers"
-    # greenmlqry = "SELECT SUM(num_green_ml) AS current_green_ml FROM ml_ledgers"
-    # bluemlqry = "SELECT SUM(num_blue_ml) AS current_blue_ml FROM ml_ledgers"
-    # darkmlqry = "SELECT SUM(num_dark_ml) AS current_dark_ml FROM ml_ledgers"
-
-    # goldqry = "SELECT SUM(gold_change) AS num_gold FROM gold_ledgers"
-
-    # with db.engine.begin() as connection:
-    #     redml = connection.execute(sqlalchemy.text(redmlqry)).scalar()
-    #     greenml = connection.execute(sqlalchemy.text(greenmlqry)).scalar()
-    #     blueml = connection.execute(sqlalchemy.text(bluemlqry)).scalar()
-    #     darkml = connection.execute(sqlalchemy.text(darkmlqry)).scalar()
-
-    #     goldamt = connection.execute(sqlalchemy.text(goldqry)).scalar()
-
-    # Each bottle has a quantity of what proportion of red, blue, green, and dark potion to add.
-    # Expressed in integers from 1 to 100 that must sum up to 100.
+    #list to hold plan of (multiple) potion(s)
+    potion_plan = []
 
     with db.engine.begin() as connection:
-        #combine these selects
-        inventory = connection.execute(sqlalchemy.text("SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml, gold FROM global_inventory")).fetchone()
-        
-        redml, greenml, blueml, darkml, gold = inventory
+        redml = connection.execute(sqlalchemy.text(redmlqry)).scalar()
+        greenml = connection.execute(sqlalchemy.text(greenmlqry)).scalar()
+        blueml = connection.execute(sqlalchemy.text(bluemlqry)).scalar()
+        darkml = connection.execute(sqlalchemy.text(darkmlqry)).scalar()
 
-        #list to hold plan of (multiple) potion(s)
-        potion_plan = []
+        print(f"""redml: {redml} greenml: {greenml} blueml: {blueml} darkml: {darkml}""")
 
-        #if there is enough base case potions, add to plan
+        #if there is enough base color ml, add to potion recipe plan
         if(redml >= 100): #red potion
-            potion_plan.append([{"potion_type": [1, 0, 0, 0]}])
+            potion_plan.append([{"potion_type": [100, 0, 0, 0]}])
         
         if(greenml >= 100): #green potion
-            potion_plan.append([{"potion_type": [0, 1, 0, 0]}])
+            potion_plan.append([{"potion_type": [0, 100, 0, 0]}])
         
         if(blueml >= 100): #blue potion
-            potion_plan.append([{"potion_type": [0, 0, 1, 0]}])
+            potion_plan.append([{"potion_type": [0, 0, 100, 0]}])
         
         if(darkml >= 100): #dark potion
-            potion_plan.append([{"potion_type": [0, 0, 0, 1]}])
+            potion_plan.append([{"potion_type": [0, 0, 0, 100]}])
         
         #if there is enough special potions, add to plan
         if(blueml >= 50 and redml >= 50): #purple potion
-            potion_plan.append([{"potion_type": [0.5, 0, 0.5, 0]}])
+            potion_plan.append([{"potion_type": [50, 0, 50, 0]}])
 
         if(blueml >= 50 and greenml >= 50): #teal potion
-            potion_plan.append([{"potion_type": [0, 0.5, 0.5, 0]}])
+            potion_plan.append([{"potion_type": [0, 50, 50, 0]}])
 
         if(redml >= 25 and greenml >= 25 and blueml >= 25 and darkml >= 25): #slo special potion
-            potion_plan.append([{"potion_type": [0.25, 0.25, 0.25, 0.25]}])
+            potion_plan.append([{"potion_type": [25, 25, 25, 25]}])
         
         if potion_plan:
             return potion_plan
