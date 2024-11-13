@@ -35,7 +35,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             #select the amounts of red, green, blue, and dark needed for the specific potion
             potion_data = connection.execute(sqlalchemy.text(f"""SELECT red_amt, green_amt, blue_amt, dark_amt 
                                                         FROM potion_mixes 
-                                                        WHERE id = {potion.potion_type[counter]}""")).fetchone()
+                                                        WHERE potion_id = {potion.potion_type[counter]}""")).fetchone()
             counter + 1
 
             #if the potion data is not valid, error message
@@ -77,7 +77,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         #update quantity of the special types
         update_potion_mix_inventory_sql = f"""UPDATE potion_mixes
                                         SET inventory = inventory + {potion.potion.quantity}
-                                        WHERE id = {potion.potion_type}"""
+                                        WHERE potion_id = {potion.potion_type}"""
         connection.execute(sqlalchemy.text(update_potion_mix_inventory_sql))
         
     return "OK"

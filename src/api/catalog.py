@@ -5,6 +5,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
+#NEED TO UPDATE
 
 @router.get("/catalog/", tags=["catalog"])
 def get_catalog():

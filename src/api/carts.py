@@ -119,11 +119,11 @@ def create_cart(new_cart: Customer):
 
     with db.engine.begin() as connection:
         sqlcartsinsert = f"""INSERT INTO carts (customer_name, customer_class, level) 
-                     VALUES {new_cart.customer_name}, {new_cart.customer_class}, {new_cart.level}"""
+                     VALUES (:customer_name, :character_class, :level) RETURNING cart_id"""
         
-        result = connection.execute(sqlalchemy.text(sqlcartsinsert))
+        cartid = connection.execute(sqlalchemy.text(sqlcartsinsert), {"customer_name": new_cart.customer_name, "character_class": new_cart.character_class, "level": new_cart.level}).scalar_one() 
 
-    return {"cart_id": result.cart_id}
+    return {"cart_id": cartid}
 
 
 class CartItem(BaseModel):
