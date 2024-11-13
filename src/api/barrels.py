@@ -56,7 +56,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """Planning to purchase barrels"""
-    #print(wholesale_catalog)
+    print("test")
     for barrel in wholesale_catalog:
         print(barrel)
 
