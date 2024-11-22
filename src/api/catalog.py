@@ -25,7 +25,7 @@ def get_catalog():
     with db.engine.begin() as connection:
         sqlpotionamt = """SELECT 
                         num_red_potions, num_green_potions, num_blue_potions, num_dark_potions,
-                        num_purple_potions, num_teal_potions, num_slospecial_potions 
+                        num_purple_potions, num_teal_potions, num_yellow_potions, num_slospecial_potions 
                         FROM global_inventory"""
         #CHANGE ^ because getting rid of global_inventory
         sqlmlamt = "SELECT num_red_ml, num_green_ml, num_blue_ml, num_dark_ml FROM global_inventory"
@@ -36,7 +36,7 @@ def get_catalog():
         #base potions:
         red_potions, green_potions, blue_potions, dark_potions = 0, 0, 0, 0
         #special potions:
-        purple_potions, teal_potions, slospecial_potions = 0, 0, 0
+        purple_potions, teal_potions, yellow_potions, slospecial_potions = 0, 0, 0, 0
         red_ml, green_ml, blue_ml, dark_ml = 0, 0, 0, 0
 
         if potionamt is not None:
@@ -46,7 +46,8 @@ def get_catalog():
             dark_potions = potionamt[3]
             purple_potions = potionamt[4]
             teal_potions = potionamt[5]
-            slospecial_potions = potionamt[6]
+            yellow_potions = potionamt[6]
+            slospecial_potions = potionamt[7]
 
         if mlamt is not None:
             red_ml = mlamt[0]
@@ -60,7 +61,7 @@ def get_catalog():
         #if we have at least one red potion, add 1 red potion to catalog
         if red_potions >= 1 and red_ml >= 100:
             catalog.append({
-                "sku": "RED_POTION_0",
+                "sku": "1",
                 "name": "red potion",
                 "quantity": potionamt[0],
                 "price": 20,
@@ -70,7 +71,7 @@ def get_catalog():
         #green
         if green_potions >= 1 and green_ml >= 100:
             catalog.append({
-                "sku": "GREEN_POTION_0",
+                "sku": "2",
                 "name": "green potion",
                 "quantity": potionamt[1],
                 "price": 20,
@@ -80,7 +81,7 @@ def get_catalog():
         #blue
         if blue_potions >= 1 and blue_ml >= 100:
             catalog.append({
-                "sku": "BLUE_POTION_0",
+                "sku": "3",
                 "name": "blue potion",
                 "quantity": potionamt[2],
                 "price": 20,
@@ -90,7 +91,7 @@ def get_catalog():
         #dark
         if dark_potions >= 1 and dark_ml >= 100:
             catalog.append({
-                "sku": "DARK_POTION_0",
+                "sku": "4",
                 "name": "dark potion",
                 "quantity": potionamt[3],
                 "price": 20,
@@ -100,7 +101,7 @@ def get_catalog():
         #purple
         if purple_potions >= 1 and red_ml >= 50 and blue_ml >= 50:
             catalog.append({
-                "sku": "PURPLE_POTION_0",
+                "sku": "5",
                 "name": "purple potion",
                 "quantity": potionamt[4],
                 "price": 40,
@@ -110,9 +111,18 @@ def get_catalog():
         #teal
         if teal_potions >= 1 and blue_ml >= 50 and green_ml >= 50:
             catalog.append({
-                "sku": "TEAL_POTION_0",
+                "sku": "6",
                 "name": "teal potion",
                 "quantity": potionamt[5],
+                "price": 40,
+                "potion_type": [0, 50, 50, 0],
+            })
+
+        if yellow_potions >= 1 and red_ml >= 50 and green_ml >= 50:
+            catalog.append({
+                "sku": "7",
+                "name": "yellow potion",
+                "quantity": potionamt[6],
                 "price": 40,
                 "potion_type": [0, 50, 50, 0],
             })
@@ -120,9 +130,9 @@ def get_catalog():
         #slo special
         if slospecial_potions >= 1 and red_ml >= 25 and green_ml >= 25 and blue_ml >= 25 and dark_ml >= 25:
             catalog.append({
-                "sku": "SLOSPECIAL_POTION_0",
+                "sku": "8",
                 "name": "slo special potion",
-                "quantity": potionamt[6],
+                "quantity": potionamt[7],
                 "price": 50,
                 "potion_type": [25, 25, 25, 25],
             })
