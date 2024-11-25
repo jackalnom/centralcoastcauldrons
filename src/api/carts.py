@@ -12,7 +12,6 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-#i did this:
 #create cartLineItem table
 # CartLineItem
 # cart_id | potion_id | quantity
@@ -27,13 +26,6 @@ class search_sort_options(str, Enum):
 class search_sort_order(str, Enum):
     asc = "asc"
     desc = "desc"   
-
-#
-##
-#add dictionary for the carts
-carts = {}
-##
-#
 
 @router.get("/search/", tags=["search"])
 def search_orders(
@@ -133,18 +125,66 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """Set the quantity of an item in the cart"""
-#don't need sql rn in this function
-
-    #with db.engine.begin() as connection:
-    #    result = connection.execute(sqlalchemy.text(sql_to_execute))
 
 #item sku is [0]
 #quantity is [1]
+    #SELECT * FROM carts where id = cart_id 
 
-    if cart_id not in carts:
-        return "Error! Cart not found."
+    print(f"cart_id: {cart_id} ")
 
-    carts[cart_id] = {item_sku, cart_item.quantity} 
+    with db.engine.begin() as connection:
+        cartssql = f"SELECT * FROM carts WHERE cart_id = {cart_id}"
+        carts = connection.execute(sqlalchemy.text(cartssql)).fetchall()
+
+        if carts:
+            return "Error! Cart not found."
+
+        set20price = "INSERT INTO cart_items SET item_price (20)"
+        set20pricequant = f"INSERT INTO cart_items SET item_price (20 * {cart_item.quantity})"
+        set40price = "INSERT INTO cart_items SET item_price (40)"
+        set40pricequant = f"INSERT INTO cart_items SET item_price (40 * {cart_item.quantity})"
+        set50price = "INSERT INTO cart_items SET item_price (40)"
+        set50pricequant = f"INSERT INTO cart_items SET item_price (40 * {cart_item.quantity})"
+
+        #red
+        if(item_sku == "1"):
+            connection.execute(sqlalchemy.text(set20price))
+            connection.execute(sqlalchemy.text(set20pricequant))
+
+        #green
+        if(item_sku == "2"):
+            connection.execute(sqlalchemy.text(set20price))
+            connection.execute(sqlalchemy.text(set20pricequant))
+
+        #blue
+        if(item_sku == "3"):
+            connection.execute(sqlalchemy.text(set20price))
+            connection.execute(sqlalchemy.text(set20pricequant))
+
+        #dark
+        if(item_sku == "4"):
+            connection.execute(sqlalchemy.text(set20price))
+            connection.execute(sqlalchemy.text(set20pricequant))
+
+        #purple
+        if(item_sku == "5"):
+            connection.execute(sqlalchemy.text(set40price))
+            connection.execute(sqlalchemy.text(set40pricequant))
+
+        #teal
+        if(item_sku == "6"):
+            connection.execute(sqlalchemy.text(set40price))
+            connection.execute(sqlalchemy.text(set40pricequant))
+
+        #yellow
+        if(item_sku == "7"):
+            connection.execute(sqlalchemy.text(set40price))
+            connection.execute(sqlalchemy.text(set40pricequant))
+
+        #slo special
+        if(item_sku == "8"):
+            connection.execute(sqlalchemy.text(set50price))
+            connection.execute(sqlalchemy.text(set50pricequant))
         
     return "OK"
 
@@ -167,34 +207,31 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         #item_sku = carts[cart_id][0]
 
     #decrement amt of potions, increment gold (in sql statement)
-        
-
-
-
         for item_sku, quantity in carts[cart_id].items():
             mlamt = quantity * 100 #100 ml per potion
             goldamt = quantity * 40 #40 is the gold price
             totalgoldpaid += goldamt
 
-            #subtract ml from inventory
-            if(item_sku == "RED_POTION_0"):
-                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_red_ml =  num_red_ml - {mlamt}"))
+            #insert negative ml and potion ledgers
+            if(item_sku == "RED_POTION"):
+                connection.execute(sqlalchemy.text(f"INSERT INTO ml_ledgers (num_red_ml) VALUES (-{mlamt})"))
+                connection.execute(sqlalchemy.text(f"UPDATE potion_ledgers SET potion_change = -{quantity}"))
+            elif(item_sku == "GREEN_POTION"):
+                connection.execute(sqlalchemy.text(f"INSERT INTO ml_ledgers (num_green_ml) VALUES (-{mlamt})"))
+                connection.execute(sqlalchemy.text(f"UPDATE potion_ledgers SET potion_change = -{quantity}"))
 
-            elif(item_sku == "GREEN_POTION_0"):
-                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_green_ml =  num_green_ml - {mlamt}"))
+            elif(item_sku == "BLUE_POTION"):
+                connection.execute(sqlalchemy.text(f"INSERT INTO ml_ledgers (num_blue_ml) VALUES (-{mlamt})"))
+                connection.execute(sqlalchemy.text(f"UPDATE potion_ledgers SET potion_change = -{quantity}"))
 
-            elif(item_sku == "BLUE_POTION_0"):
-                connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET num_blue_ml =  num_blue_ml - {mlamt}"))
+            elif(item_sku == "DARK_POTION"):
+                connection.execute(sqlalchemy.text(f"INSERT INTO ml_ledgers (num_dark_ml) VALUES (-{mlamt})"))
+                connection.execute(sqlalchemy.text(f"UPDATE potion_ledgers SET potion_change = -{quantity}"))
+            
+            total_gold_paid += goldamt
 
         #add gold based on how many potions bought 
-        connection.execute(sqlalchemy.text(f"UPDATE global_inventory SET gold =  gold + {goldamt}"))
-
+        connection.execute(sqlalchemy.text(f"INSERT INTO gold_ledgers (gold_change) VALUES (-{goldamt})"))
        
-       #notes
-        #newgoldsql = 
-        #newgold = connection.execute(sqlalchemy.text(newgoldsql)).scalar()
-
-#decrement amt of potions, increment gold (in sql statement)
-      #the only place in carts where i need sql rn 
 
     return {"total_potions_bought": quantity, "total_gold_paid": total_gold_paid}
