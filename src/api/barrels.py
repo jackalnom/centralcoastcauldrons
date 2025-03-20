@@ -12,7 +12,7 @@ class Barrel(BaseModel):
     sku: str
 
     ml_per_barrel: int
-    potion_type: list[int]
+    potion_type: list[float]
     price: int
 
     quantity: int
@@ -20,7 +20,7 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     return "OK"
 
@@ -28,7 +28,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
-    print(wholesale_catalog)
+    print(f"barrel catalog: {wholesale_catalog}")
 
     return [
         {
