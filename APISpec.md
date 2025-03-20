@@ -159,8 +159,8 @@ Gets the plan for bottling potions.
 ```json
 [
     {
-        "potion_type": [r, g, b, d],
-        "quantity": "integer"
+        "potion_type": [r, g, b, d], /* r, g, b, d are integers that add up to exactly 100 */
+        "quantity": "integer"  /* Between 1 and 10000 */
     }
 ]
 ```
@@ -199,7 +199,7 @@ and the shop returns back which barrels they'd like to purchase and how many.
   {
     "sku": "string",
     "ml_per_barrel": "integer",
-    "potion_type": "integer",
+    "potion_type": [r, g, b, d], /* Where one of r, g, b, or d is set to 1 and the rest are 0. */
     "price": "integer",
     "quantity": "integer"
   }
@@ -229,7 +229,7 @@ a single delivery.
   {
     "sku": "string",
     "ml_per_barrel": "integer",
-    "potion_type": "integer",
+    "potion_type": [r, g, b, d], /* Where one of r, g, b, or d is set to 1 and the rest are 0. */
     "price": "integer",
     "quantity": "integer"
   }
