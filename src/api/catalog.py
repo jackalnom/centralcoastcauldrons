@@ -4,28 +4,12 @@ from typing import List, Annotated
 
 router = APIRouter()
 
-class PotionType(BaseModel):
-    r: Annotated[int, Field(ge=0, le=100)]
-    g: Annotated[int, Field(ge=0, le=100)]
-    b: Annotated[int, Field(ge=0, le=100)]
-    d: Annotated[int, Field(ge=0, le=100)]
-
-    @field_validator("d", mode="before")
-    @classmethod
-    def check_sum(cls, v: int, info: ValidationInfo) -> int:
-        values = info.data
-        if "r" in values and "g" in values and "b" in values:
-            if values["r"] + values["g"] + values["b"] + v != 100:
-                raise ValueError("r, g, b, d must add up to 100")
-        return v
-
-
 class CatalogItem(BaseModel):
     sku: Annotated[str, Field(pattern=r"^[a-zA-Z0-9_]{1,20}$")]
     name: str
     quantity: Annotated[int, Field(ge=1, le=10000)]
     price: Annotated[int, Field(ge=1, le=500)]
-    potion_type: PotionType
+    potion_type: List[int] = Field(..., min_items=4, max_items=4, description="Must contain exactly 4 elements: [r, g, b, d]")
 
 
 # Placeholder function, you will replace this with a database call
@@ -36,7 +20,7 @@ def get_sample_items() -> List[CatalogItem]:
             name="red potion",
             quantity=1,
             price=50,
-            potion_type=PotionType(r=100, g=0, b=0, d=0)
+            potion_type=[100, 0, 0, 0]
         )
     ]
 
