@@ -39,6 +39,7 @@ in the current catalog.
 ```json
 [
   {
+    "customer_id": "string",
     "customer_name": "string",
     "character_class": "string",
     "level": "number"
@@ -64,6 +65,7 @@ Creates a new cart for a specific customer.
 
 ```json
 {
+  "customer_id": "string",
   "customer_name": "string",
   "character_class": "string",
   "level": "number"
@@ -199,7 +201,7 @@ and the shop returns back which barrels they'd like to purchase and how many.
   {
     "sku": "string",
     "ml_per_barrel": "integer",
-    "potion_type": [r, g, b, d], /* Where one of r, g, b, or d is set to 1 and the rest are 0. */
+    "potion_type": [r, g, b, d], /* Where r, g, b, and d are decimal values that add up to 1. */
     "price": "integer",
     "quantity": "integer"
   }
@@ -229,7 +231,7 @@ a single delivery.
   {
     "sku": "string",
     "ml_per_barrel": "integer",
-    "potion_type": [r, g, b, d], /* Where one of r, g, b, or d is set to 1 and the rest are 0. */
+    "potion_type": [r, g, b, d], /* Where r, g, b, and d are decimal values that add up to 1. */
     "price": "integer",
     "quantity": "integer"
   }
@@ -280,7 +282,8 @@ Return a summary of your current number of potions, ml, and gold.
 
 What additional potion or ML capacity the shop would like to buy. Called once a day.
 You start with 1 capacity of potion and 1 capacity of ml storage. Each potion capacity
-allows 50 potion storage. Each ml capacity allows 10k of ml storage.
+allows 50 potion storage. Each ml capacity allows 10k of ml storage. You can buy at most
+10 of any capacity in a single delivery.
 
 **Response**:
 ```json
