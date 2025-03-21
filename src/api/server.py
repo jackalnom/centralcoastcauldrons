@@ -10,6 +10,13 @@ from starlette.middleware.cors import CORSMiddleware
 description = """
 Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
 """
+tags_metadata = [
+    {
+        "name": "cart",
+        "description": "Endpoints related to retrieving and updating time-related information.",
+    },
+    # You can add more tags here
+]
 
 app = FastAPI(
     title="Central Coast Cauldrons",
@@ -20,6 +27,7 @@ app = FastAPI(
         "name": "Lucas Pierce",
         "email": "lupierce@calpoly.edu",
     },
+    openapi_tags=tags_metadata
 )
 
 origins = ["https://potion-exchange.vercel.app"]

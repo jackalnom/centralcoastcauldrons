@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel
 from src.api import auth
 
@@ -12,10 +12,10 @@ class Timestamp(BaseModel):
     day: str
     hour: int
 
-@router.post("/current_time")
+@router.post("/current_time", status_code=status.HTTP_204_NO_CONTENT)
 def post_time(timestamp: Timestamp):
     """
-    Share current time.
+    Shares what the latest time (in game time) is. 
     """
-    return "OK"
-
+    # Implement actual logic here
+    pass

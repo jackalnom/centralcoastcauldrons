@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, status
+from pydantic import BaseModel, conint
 from src.api import auth
-import math
 
 router = APIRouter(
     prefix="/inventory",
@@ -9,35 +8,46 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-@router.get("/audit")
+class InventoryAudit(BaseModel):
+    number_of_potions: int
+    ml_in_barrels: int
+    gold: int
+
+
+class CapacityPlan(BaseModel):
+    potion_capacity: conint(ge=0, le=10)
+    ml_capacity: conint(ge=0, le=10)
+
+
+@router.get("/audit", response_model=InventoryAudit)
 def get_inventory():
-    """ """
-    
-    return {"number_of_potions": 0, "ml_in_barrels": 0, "gold": 0}
+    """
+    Returns an audit of the current inventory. Any discrepencies between
+    what is reported here and my source of trusth will be posted
+    as errors on potion exchange.
+    """
+    return InventoryAudit(number_of_potions=0, ml_in_barrels=0, gold=0)
 
-# Gets called once a day
-@router.post("/plan")
+
+@router.post("/plan", response_model=CapacityPlan)
 def get_capacity_plan():
-    """ 
-    Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
-    capacity unit costs 1000 gold.
     """
+    Provides a daily capacity purchase plan.
 
-    return {
-        "potion_capacity": 0,
-        "ml_capacity": 0
-        }
-
-class CapacityPurchase(BaseModel):
-    potion_capacity: int
-    ml_capacity: int
-
-# Gets called once a day
-@router.post("/deliver/{order_id}")
-def deliver_capacity_plan(capacity_purchase : CapacityPurchase, order_id: int):
-    """ 
-    Start with 1 capacity for 50 potions and 1 capacity for 10000 ml of potion. Each additional 
-    capacity unit costs 1000 gold.
+    Start with 1 capacity for 50 potions and 1 capacity for 10,000 ml of potion.
+    Each additional capacity unit costs 1000 gold.
     """
+    return CapacityPlan(potion_capacity=0, ml_capacity=0)
 
-    return "OK"
+
+@router.post("/deliver/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+def deliver_capacity_plan(capacity_purchase: CapacityPlan, order_id: int):
+    """
+    Processes the delivery of the planned capacity purchase.
+
+    Start with 1 capacity for 50 potions and 1 capacity for 10,000 ml of potion.
+    Each additional capacity unit costs 1000 gold.
+    """
+    print(f"capacity delivered: {capacity_purchase} order_id: {order_id}")
+
+    pass
