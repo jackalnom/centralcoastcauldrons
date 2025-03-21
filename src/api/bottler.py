@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, conint, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List
 from src.api import auth
 
@@ -9,16 +9,16 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-class PotionMixes(BaseModel):
-    potion_type: List[conint(ge=0, le=100)]
-    quantity: conint(ge=1, le=10000)
 
-    @validator('potion_type')
-    def validate_potion_type(cls, potion_type):
-        if len(potion_type) != 4:
-            raise ValueError('potion_type must have exactly 4 elements: [r, g, b, d]')
+class PotionMixes(BaseModel):
+    potion_type: List[int] = Field(..., min_items=4, max_items=4, description="Must contain exactly 4 elements: [r, g, b, d]")
+    quantity: int = Field(..., ge=1, le=10000, description="Quantity must be between 1 and 10,000")
+
+    @field_validator("potion_type")
+    @classmethod
+    def validate_potion_type(cls, potion_type: List[int]) -> List[int]:
         if sum(potion_type) != 100:
-            raise ValueError('Sum of potion_type values must be exactly 100')
+            raise ValueError("Sum of potion_type values must be exactly 100")
         return potion_type
 
 
