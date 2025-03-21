@@ -68,7 +68,7 @@ def search_orders(
 
 
 class Customer(BaseModel):
-    uuid: str
+    customer_id: str
     customer_name: str
     character_class: str
     level: int
