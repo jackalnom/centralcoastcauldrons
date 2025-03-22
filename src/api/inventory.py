@@ -16,7 +16,9 @@ class InventoryAudit(BaseModel):
 
 
 class CapacityPlan(BaseModel):
-    potion_capacity: int = Field(ge=0, le=10, description="Potion capacity units, max 10")
+    potion_capacity: int = Field(
+        ge=0, le=10, description="Potion capacity units, max 10"
+    )
     ml_capacity: int = Field(ge=0, le=10, description="ML capacity units, max 10")
 
 
