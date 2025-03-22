@@ -34,8 +34,6 @@ Lastly, customers are more likely to shop in a store in the first place that has
 3. Reliability: Reliability is based upon not having errors in the checkout process. Your site being down or offering up potions for sale you don't have in inventory are examples of errors that will hurt reliability.
 4. Recognition: Recognition is based upon the number of total successful purchasing trips that customers of that class have had. The more you serve a particular class, the more others of that class will trust to come to you.
 
-For more information please reference the [API Spec](APISpec.md)
-
 ## Initial Setup
 
 Follow these steps to get your potion shop up and running:
