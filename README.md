@@ -1,6 +1,6 @@
 # Central Coast Cauldrons
 
-Central Coast Cauldrons is a stubbed out API meant to serve as a starting point for learning how to build backend servies that integrate with a persistance layer. You will progressively build out your own forked version of the API and integrate with a progressively more sophisticated database backend. When you register your backend at the [Potion Exchange](https://potion-exchange.vercel.app/) simulated customers will shop at your store using your API. 
+Central Coast Cauldrons is a stubbed out API meant to serve as a starting point for learning how to build backend services that integrate with a persistence layer. You will progressively build out your own version of the API and integrate with a progressively more sophisticated database backend. When you register your backend at the [Potion Exchange](https://potion-exchange.vercel.app/), simulated customers will shop at your store using your API. 
 
 The application's setting is a simulated fantasy RPG world with adventurers seeking to buy potions. You are one of many shops in this world that offer a variety (over 100k possibilities) of potions.
 
@@ -8,12 +8,12 @@ The application's setting is a simulated fantasy RPG world with adventurers seek
 
 With an initial capital of 100 gold, no potions in your inventory, and devoid of barrels, your backend API is scheduled to be invoked at regular intervals, known as 'ticks' that go off every two hours. There are 12 ticks in a day, and 7 days in a week. The weekdays in the Potion Exchange world are:
 1. Edgeday
-1. Bloomday
-1. Aracanaday
-1. Hearthday
-1. Crownday
-1. Blesseday
-1. Soulday
+2. Bloomday
+3. Aracanaday
+4. Hearthday
+5. Crownday
+6. Blesseday
+7. Soulday
 
 There are three primary actions that may unfold during these ticks:
 
@@ -23,10 +23,10 @@ There are three primary actions that may unfold during these ticks:
 
 3. **Barrel Purchasing**: On every alternate tick, you have an opportunity to purchase additional barrels of various colors. Your API receives a catalog of barrels available for sale and should respond with your purchase decisions. The gold cost of each barrel is deducted from your balance upon purchase.
 
-Part of the challenge in these interactions is you are responsible for keeping track of your gold and your various inventory levels. The [Potion Exchange](https://potion-exchange.vercel.app/) separately keeps an authoritiative record (which can be viewed under Shop stats).
+Part of the challenge in these interactions is you are responsible for keeping track of your gold and your various inventory levels. The [Potion Exchange](https://potion-exchange.vercel.app/) separately keeps an authoritative record (which can be viewed under Shop stats).
 
 ### Customers
-Customers of various types have different seasonality on when they show up. For example, some customers are more likely to shop on certain days of the week and at certain times of day. Customers each have their own class which has a huge impact on what types of potions that customer is looking for. The amount a customer is willing to spend on a given potion depends on both the customers own level of wealth and how precisely the potions available in a store match their own preference.
+Customers of various types have different seasonality on when they show up. For example, some customers are more likely to shop on certain days of the week and at certain times of day. Customers each have their own class which has a huge impact on what types of potions that customer is looking for. The amount a customer is willing to spend on a given potion depends on both the customer's own level of wealth and how precisely the potions available in a store match their own preference.
 
 Lastly, customers are more likely to shop in a store in the first place that has a good reputation. You can see your shop's reputation with a particular class at [Potion Exchange](https://potion-exchange.vercel.app/). Reputation is based on three different factors:
 1. Value: Value is based upon selling the cheapest potions to a given class compared to competitors. 
@@ -38,21 +38,30 @@ Lastly, customers are more likely to shop in a store in the first place that has
 
 Follow these steps to get your potion shop up and running:
 
-1. Create your own Github repository based on Central Coast Cauldrons GitHub repository. When creating your repository, name it something unique from centralcoastcauldrons.
-2. Register on [Render](https://render.com/). Click New + and select Web Service. We will do a basic Build and deploy from a Git repository. Connect it to your Github repository and point it the new repository you created on step 1.
-3. Name your service something cute and unique. Oregon is fine as a region. Leave branch and Root Directory as default. The Runtime should be Python 3. Build command should be pip install uv && uv pip sync. Start command should be changed to uvicorn src.api.server:app --host 0.0.0.0 --port $PORT. Select the Free Instance Type. Select Advanced and add two environment variables to start. The first is called `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications. You will use it later when testing your service and registering it. The second is called `PYTHON_VERSION`. We will set this to 3.11.4.
-5. Visit your newly deployed project to ensure it's functioning as expected. Try navigating to https://`your-project`.onrender.com/docs. Once there, click the 'Authorize' button in the upper right corner and enter the same `API_KEY` you entered into environment variables earlier. After authorization, try out various endpoints to confirm their functionality.
-6. Navigate to [Potion Exchange](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed webservice (don't include doc/, just the base url) and the `API_KEY` you set earlier.
-7. Return to [Potion Exchange](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance and potion inventory. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
+1. Create your own (don't fork!) Github repository based on Central Coast Cauldrons GitHub repository. When creating your repository, name it something unique from centralcoastcauldrons. Make your repo private but give my github (jackalnom) read access to it.
+2. Register on [Render](https://render.com/). Click New + and select Web Service. We will do a basic Build and deploy from a Git repository. Connect it to your Github repository and point it to the new repository you created in step 1.
+3. Name your service something cute and unique. Oregon is fine as a region. Leave branch and Root Directory as default. The Runtime should be Python 3. Build command should be `pip install uv && uv pip sync`. Start command should be changed to `uvicorn src.api.server:app --host 0.0.0.0 --port $PORT`. Select the Free Instance Type. Select Advanced and add two environment variables to start. The first is called `API_KEY`. Assign a unique string value to this variable. This string acts as a unique identifier for your shop and helps secure your communications. You will use it later when testing your service and registering it. The second is called `PYTHON_VERSION`. We will set this to `3.11.4`.
+4. Visit your newly deployed project to ensure it's functioning as expected. Try navigating to https://`your-project`.onrender.com/docs. Once there, click the 'Authorize' button in the upper right corner and enter the same `API_KEY` you entered into environment variables earlier. After authorization, try out various endpoints to confirm their functionality.
+5. Navigate to [Potion Exchange](https://potion-exchange.vercel.app/), sign in using your GitHub account, and add your newly created shop to the platform. Be sure to provide the URL of your newly deployed webservice (don't include docs/, just the base url) and the `API_KEY` you set earlier.
+6. Return to [Potion Exchange](https://potion-exchange.vercel.app/) to monitor the next tick. Check for changes in your gold balance and potion inventory. You should see with even this purely static implementation of your API barrels being purchased, potions getting mixed, and selling some potions to customers.
 
-## Version 1 - Adding persistance
+## Running and testing locally
+
+To run your server locally:
+1. Create a .env file in the root of your workspace. Create the API_KEY variable, but make it something easy to type since this is only available on your local environment.
+2. Run `pip install uv && uv pip sync` to install packages.
+3. Run `python main.py`.
+4. Go to http://127.0.0.1:8000/docs and test out your endpoints.
+5. As you write new functions, write new test cases in the test folder. You can run the tests by running the `pytest` command in your workspace.
+
+## Version 1 - Adding persistence
 
 The first version of your improved store will be to: 1) change from selling red potions to green potions and 2) adding inventory tracking for your green potions. Follow these steps:
 
 1. Create an account on [Supabase](https://supabase.com/).
 2. We will start with the simplest possible schema: a single row in a single table. Create a new project in Supabase, select the 'Table Editor' on the left-hand navigation menu, and then click the "Create a new table" button. Create a table called `global_inventory`. This table should have columns named `num_green_potions` (int4), `num_green_ml` (int4), and `gold` (int4) to keep track of your current resources.
 3. Insert an initial row in your database and set `num_green_potions` to 0, `num_green_ml` to 0, and `gold` to 100.
-3. Add your database connection details to the environment variables in your Render project. Within your Supabase project settings, click Connect at the top of the screen. Copy the connection string and replace the initial postgres:// with postgresql+psycopg2:// and replace [YOUR-PASSWORD] with whatever your password is. For simplicity, avoid having any special characters in your password as they can screw up parsing of the connection string unless you properly escape them. Back in Render, add this modified string as a new environment variable named `POSTGRES_URI`.
+4. Add your database connection details to the environment variables in your Render project. Within your Supabase project settings, click Connect at the top of the screen. Copy the connection string and replace the initial postgres:// with postgresql+psycopg2:// and replace [YOUR-PASSWORD] with whatever your password is. For simplicity, avoid having any special characters in your password as they can screw up parsing of the connection string unless you properly escape them. Back in Render, add this modified string as a new environment variable named `POSTGRES_URI`.
 
 In your backend repository, establish a connection to your Supabase database using SQLAlchemy, drawing the `POSTGRES_URI` from environment variables. To do so, create a database.py file in your src folder with the following code:
 ```py
@@ -82,9 +91,11 @@ with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute))
 ```
 
-You will need to use SELECT and UPDATE sql statements. In this version you won't need to do any INSERTs or DELETEs. See my [getting started guide](https://observablehq.com/@calpoly-pierce/getting-started-with-sql-in-python) for how to execute these initial statements in SQL using sqlaclhemy and python.
+You will need to use SELECT and UPDATE SQL statements. In this version you won't need to do any INSERTs or DELETEs. See my [getting started guide](https://observablehq.com/@calpoly-pierce/getting-started-with-sql-in-python) for how to execute these initial statements in SQL using SQLAlchemy and Python.
 
-As a very basic initial logic, purchase a new small green potion barrel only if the number of potions in inventory is less than 10. Always mix all available green ml if any exists. Offer up for sale in the catalog only the amount of green potions that actually exist currently in inventory.
+As a very basic initial logic, purchase a new small green potion barrel only if the number of potions in inventory is less than 5. Always mix all available green ml if any exists. Write a unit test that confirms this functionality; I will be checking for the existence of the unit test! 
+
+Offer up for sale in the catalog only the amount of green potions that actually exist currently in inventory. 
 
 Once you've finished making your changes, go back to [Potion Exchange](https://potion-exchange.vercel.app/) and click "Burn Shop to Ground!" at the bottom of the page to reset your shop's state back to the beginning.
 
@@ -94,22 +105,23 @@ With the release of this version, you should no longer encounter job errors resu
 
 In this second version of your shop, you need to also make and sell red and blue potions. You will need to come up with your own logic for when to buy red, green, or blue barrels. Your logic does not have to be particularly clever, you just have to make sure at some point your shop is successfully selling red, green, and blue potions. The implementation details from there are completely up to you.
 
-Additionally, you must support resetting your inventory state. Go to admin.py and fill in the appropriate functionality to the reset method which will set your gold back to 100 and your inventory to 0 when called.
+Additionally, you must support resetting your inventory state. Go to admin.py and fill in the appropriate functionality to the reset method which will set your gold back to 100 and your inventory to 0 when called. Additionally, make sure you update your tests to cover the additional functionality.
 
 ## Version 3 - Custom Potion Types and Order Management
 
 In the third version of central coast cauldrons, your goal is to:
-* support customizable potion mixes and remove all hardcoding of the potions sold from your code. 
-* build out a proper order management system for our carts backed by our database.
-* Implement audit if you haven’t done so already.
+* Support customizable potion mixes and remove all hardcoding of the potions sold from your code. 
+* Build out a proper order management system for our carts backed by our database.
+* Implement audit if you haven't done so already.
+* Write automated tests that cover all of the above.
 
 Additionally, please include the SQL used to create and initially populate your database in a file called schema.sql in the root of your github. I will be reviewing this to ensure your database tables are setup correctly.
 
 ### Supporting custom potion types
-Thus far, you’ve been hardcoding the mixing of potions to pure Red, pure Green, and pure Blue potions. What we are going to do now is create a table in your database where every row indicates a unique potion mixture. Each row will have (at a minimum):
-* the type of potion (for example 50 red, 0 green, 50 blue, 0 dark to make a purple potion) that can be made
-* all relevant catalog information you will need to offer them for sale. 
-* the available inventory of that potion.
+Thus far, you've been hardcoding the mixing of potions to pure Red, pure Green, and pure Blue potions. What we are going to do now is create a table in your database where every row indicates a unique potion mixture. Each row will have (at a minimum):
+* The type of potion (for example 50 red, 0 green, 50 blue, 0 dark to make a purple potion) that can be made
+* All relevant catalog information you will need to offer them for sale. 
+* The available inventory of that potion.
 
 Across your endpoints, you must no longer hardcode ANY reference to a particular potion type. The potions your shop makes should be entirely driven by your new table.
 
@@ -119,16 +131,16 @@ To get full points, I need to see at least one purchase occur of a potion that i
 I encouraged many of you to just use an in-memory structure to handle management of your carts for versions 1 and 2 (for example, a global cart_id that you incremented, and a dictionary to hold cart items.). Now, I am requiring that carts be stored in the database. You should at a minimum have two tables to support your carts: a carts table to reflect a new cart created by a customer and a cart items table to represent a specific item being added to your cart. Foreign key references in the cart items table must be setup correctly (cart items should have at least two…).
 
 ### Audit
-If you haven’t already, make sure the audit inventory endpoint correctly reflects your gold, number of potions, and number of mls.
+If you haven't already, make sure the audit inventory endpoint correctly reflects your gold, number of potions, and number of mls.
 
 ## Version 4 - Ledgers
 
-In the fourth version of central coast cauldrons, you will ledgerize your database. Rather than updating inventory values (gold, ml, and potion amounts) directly, you will instead just record changes to values in the form of an append-only log. When calculating the amount of inventory you have, you will instead SUM up your ledger on-the-fly. By doing so, you gain several new advantages:
+In the fourth version of central coast cauldrons, you will ledgerize your database. This is also known as the event sourcing pattern. Rather than updating inventory values (gold, ml, and potion amounts) directly, you will instead just record changes to values in the form of an append-only log. When calculating the amount of inventory you have, you will instead SUM up your ledger on-the-fly. By doing so, you gain several new advantages:
 * You can gain a history of changes made over time
 * You can see what your historical inventory levels were at any point in time
-* You can reconcile what events caused discrepencies in your inventory levels and undo those events independently of other events
+* You can reconcile what events caused discrepancies in your inventory levels and undo those events independently of other events
 
-To gain full points on this version, you must convert gold, ml, and potion inventory tracking to a ledgerized design.
+To gain full points on this version, you must convert gold, ml, and potion inventory tracking to a ledgerized design. Your unit tests should all pass still.
 
 ### Example of a ledger design
 For a concrete example of how you would build a ledger, let's say I was building a database to record the movement of money between groups of people. I could decide I want to model out three entities:
