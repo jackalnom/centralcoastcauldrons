@@ -1,3 +1,10 @@
+[![Python package](https://github.com/{username}/{repository}/actions/workflows/python-package.yml/badge.svg)](https://github.com/{username}/{repository}/actions/workflows/python-package.yml)
+[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.103.0-009688.svg?&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Coverage](https://img.shields.io/badge/Coverage-80%25-brightgreen.svg)](https://github.com/{username}/{repository}/actions)
+
 # Central Coast Cauldrons
 
 Central Coast Cauldrons is a stubbed-out API designed as a starting point for learning how to build backend services that integrate with a persistence layer. You will progressively develop your own version of the API and integrate it with an increasingly sophisticated database backend. When you register your backend at the [Potion Exchange](https://potion-exchange.vercel.app/), simulated customers will shop at your store using your API.
