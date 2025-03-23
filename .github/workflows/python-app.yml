@@ -35,25 +35,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uv-
 
+      - name: Create virtual environment
+        run: |
+          uv venv
+
       - name: Install dependencies with uv
         run: |
+          source .venv/bin/activate
           uv pip install pytest==7.4.3 mypy==1.7.1 ruff==0.1.6
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Lint with ruff
         run: |
+          source .venv/bin/activate
           ruff check --exit-non-zero-on-fix
 
       - name: Format with ruff
         run: |
+          source .venv/bin/activate
           ruff format --check
 
       - name: Type check with mypy
         run: |
+          source .venv/bin/activate
           mypy . --check-untyped-defs
 
       - name: Run tests with coverage
         run: |
+          source .venv/bin/activate
           uv pip install pytest-cov
           pytest --cov=. --cov-report=xml --junitxml=test-results.xml
 
