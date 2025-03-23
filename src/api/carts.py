@@ -64,7 +64,7 @@ def search_orders(
 
 
 cart_id_counter = 1
-carts = {}
+carts: dict[int, dict[str, int]] = {}
 
 
 class Customer(BaseModel):
