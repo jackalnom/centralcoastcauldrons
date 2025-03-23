@@ -33,7 +33,7 @@ jobs:
 
       - name: Type check with mypy
         run: |
-          mypy .
+          mypy . --check-untyped-defs
 
       - name: Run tests
         run: |

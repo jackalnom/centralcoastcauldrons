@@ -7,7 +7,7 @@ def test_bottle_red_potions():
     blue_ml = 0
     dark_ml = 0
     maximum_potion_capacity = 50
-    current_potion_inventory = []
+    current_potion_inventory: list = []
 
     result = create_bottle_plan(
         red_ml=red_ml,
