@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies with uv
         run: |
           source .venv/bin/activate
-          uv pip install pytest==7.4.3 mypy==1.7.1 ruff==0.1.6
+          uv pip install pytest==7.4.3 mypy==1.7.1 ruff==0.1.6 pytest-cov
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Lint with ruff
@@ -63,8 +63,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           source .venv/bin/activate
-          uv pip install pytest-cov
-          pytest --cov=. --cov-report=xml --junitxml=test-results.xml
+          pytest --cov=. --cov-report=html --cov-report=xml --junitxml=test-results.xml
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -73,7 +72,10 @@ jobs:
           name: test-results
           path: test-results.xml
           
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          file: ./coverage.xml
+          name: coverage-report
+          path: htmlcov/
+          
