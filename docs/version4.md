@@ -1,4 +1,4 @@
-# Version 4 - Develop a Shop Strategy and Implement Analytics
+# Version 4 - Develop a Data-Driven Shop Strategy
 
 In this version, we will introduce a competition among all potion shops. Your goal is to develop a **winning strategy** to create the most profitable shop.
 
@@ -18,5 +18,8 @@ To test your hypotheses effectively, you may need to track new data points. Iden
 
 Add a section to your strategy document detailing the new instrumentation you added to your shop to test your hypotheses and why.
 
-By following this structured approach, you will refine your shop’s strategy using **data-driven decision-making**, giving you the best chance to win the competition!
+## Step 4: Write Analytics Queries
+Write the SQL queries that you will use based on the instrumentation you did in step 3 to test your hypotheses.
 
+
+All four steps should be detailed in your `strategy.md`. Good luck!

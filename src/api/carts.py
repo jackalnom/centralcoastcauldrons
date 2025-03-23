@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from src.api import auth
 from enum import Enum
@@ -63,6 +63,10 @@ def search_orders(
     )
 
 
+cart_id_counter = 1
+carts = {}
+
+
 class Customer(BaseModel):
     customer_id: str
     customer_name: str
@@ -88,7 +92,11 @@ def create_cart(new_cart: Customer):
     """
     Creates a new cart for a specific customer.
     """
-    return CartCreateResponse(cart_id=1)
+    global cart_id_counter
+    cart_id = cart_id_counter
+    cart_id_counter += 1
+    carts[cart_id] = {}
+    return CartCreateResponse(cart_id=cart_id)
 
 
 class CartItem(BaseModel):
@@ -97,10 +105,14 @@ class CartItem(BaseModel):
 
 @router.post("/{cart_id}/items/{item_sku}", status_code=status.HTTP_204_NO_CONTENT)
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
-    """
-    Updates the quantity of a specific item in a cart.
-    """
-    pass
+    print(
+        f"cart_id: {cart_id}, item_sku: {item_sku}, cart_item: {cart_item}, carts: {carts}"
+    )
+    if cart_id not in carts:
+        raise HTTPException(status_code=404, detail="Cart not found")
+
+    carts[cart_id][item_sku] = cart_item.quantity
+    return status.HTTP_204_NO_CONTENT
 
 
 class CheckoutResponse(BaseModel):
@@ -117,4 +129,15 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """
     Handles the checkout process for a specific cart.
     """
-    return CheckoutResponse(total_potions_bought=1, total_gold_paid=50)
+
+    if cart_id not in carts:
+        raise HTTPException(status_code=404, detail="Cart not found")
+
+    total_potions_bought = sum(carts[cart_id].values())
+    total_gold_paid = total_potions_bought * 50  # Assuming each potion costs 50 gold
+
+    # TODO: Deduct the right potions from inventory and add gold to the shop
+
+    return CheckoutResponse(
+        total_potions_bought=total_potions_bought, total_gold_paid=total_gold_paid
+    )
