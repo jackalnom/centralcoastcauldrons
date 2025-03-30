@@ -1,8 +1,8 @@
-from config import get_settings
+from src import config
 from fastapi import Security, HTTPException, status, Request
 from fastapi.security.api_key import APIKeyHeader
 
-api_key = get_settings().API_KEY
+api_key = config.get_settings().API_KEY
 api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 
