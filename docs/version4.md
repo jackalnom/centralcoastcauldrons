@@ -22,4 +22,4 @@ Add a section to your strategy document detailing the new instrumentation you ad
 Write the SQL queries that you will use based on the instrumentation you did in step 3 to test your hypotheses.
 
 
-All four steps should be detailed in your `strategy.md`. Good luck!
+All four steps should be detailed in your `strategy.md`. I'm not grading based on length but rather quality of thought, but generally you should expect this to be around 3 pages in total of markdown text. Good luck!
