@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field, field_validator
 from typing import List
+
+import sqlalchemy
 from src.api import auth
+from src import database as db
 
 router = APIRouter(
     prefix="/barrels",
@@ -44,9 +47,25 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     a single delivery; the call is idempotent based on the order_id.
     """
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
+    print(barrels_delivered)
 
-    # TODO: Record values of delivered barrels in your database.
-    # TODO: Subtract gold based on cost of delivered barrels.
+    gold_paid = 0
+
+    for barrel_delivered in barrels_delivered:
+        gold_paid += barrel_delivered.price * barrel_delivered.quantity
+
+    print(f"gold_paid: {gold_paid}")
+
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory SET 
+                gold = gold - :gold_paid
+                """
+            ),
+            [{"gold_paid": gold_paid}],
+        )
 
     pass
 
@@ -60,6 +79,9 @@ def create_barrel_plan(
     current_dark_ml: int,
     wholesale_catalog: List[Barrel],
 ) -> List[BarrelOrder]:
+    print(
+        f"gold: {gold}, max_barrel_capacity: {max_barrel_capacity}, current_red_ml: {current_red_ml}, current_green_ml: {current_green_ml}, current_blue_ml: {current_blue_ml}, current_dark_ml: {current_dark_ml}, wholesale_catalog: {wholesale_catalog}"
+    )
     # TODO: placeholder implementation, replace with actual logic
     return [BarrelOrder(sku="SMALL_RED_BARREL", quantity=1)]
 
@@ -72,9 +94,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: List[Barrel]):
     """
     print(f"barrel catalog: {wholesale_catalog}")
 
+    with db.engine.begin() as connection:
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold
+                FROM global_inventory
+                """
+            )
+        ).one()
+
+        gold = row.gold
+
     # TODO: fill in values correctly based on what is in your database
     return create_barrel_plan(
-        gold=100,
+        gold=gold,
         max_barrel_capacity=10000,
         current_red_ml=0,
         current_green_ml=0,

@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+import sqlalchemy
 from src.api import auth
 from enum import Enum
 from typing import List, Optional
+from src import database as db
 
 router = APIRouter(
     prefix="/carts",
@@ -136,7 +138,28 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     total_potions_bought = sum(carts[cart_id].values())
     total_gold_paid = total_potions_bought * 50  # Assuming each potion costs 50 gold
 
-    # TODO: Deduct the right potions from inventory and add gold to the shop
+    with db.engine.begin() as connection:
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold FROM global_inventory
+                """
+            )
+        ).one()
+
+        gold = row.gold
+        gold += total_gold_paid
+
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory SET 
+                gold = :total_gold
+                """
+            ),
+            [{"total_gold": gold}],
+        )
+    # TODO: Deduct the right potions from inventory to the shop
 
     return CheckoutResponse(
         total_potions_bought=total_potions_bought, total_gold_paid=total_gold_paid

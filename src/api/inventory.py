@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
+import sqlalchemy
 from src.api import auth
+from src import database as db
 
 router = APIRouter(
     prefix="/inventory",
@@ -29,7 +31,20 @@ def get_inventory():
     what is reported here and my source of truth will be posted
     as errors on potion exchange.
     """
-    return InventoryAudit(number_of_potions=0, ml_in_barrels=0, gold=0)
+
+    with db.engine.begin() as connection:
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold
+                FROM global_inventory
+                """
+            )
+        ).one()
+
+        gold = row.gold
+
+    return InventoryAudit(number_of_potions=0, ml_in_barrels=0, gold=gold)
 
 
 @router.post("/plan", response_model=CapacityPlan)
