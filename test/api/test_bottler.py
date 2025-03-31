@@ -1,13 +1,16 @@
-from src.api.bottler import create_bottle_plan
+from src.api.bottler import PotionMixes, create_bottle_plan
 
 
-def test_bottle_red_potions():
-    red_ml = 100
-    green_ml = 0
-    blue_ml = 0
-    dark_ml = 0
-    maximum_potion_capacity = 50
-    current_potion_inventory: list = []
+from typing import List
+
+
+def test_bottle_red_potions() -> None:
+    red_ml: int = 100
+    green_ml: int = 0
+    blue_ml: int = 0
+    dark_ml: int = 0
+    maximum_potion_capacity: int = 1000
+    current_potion_inventory: List[PotionMixes] = []
 
     result = create_bottle_plan(
         red_ml=red_ml,

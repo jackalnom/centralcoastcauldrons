@@ -7,7 +7,7 @@ from src.api.barrels import (
 from typing import List
 
 
-def test_barrel_delivery():
+def test_barrel_delivery() -> None:
     delivery: List[Barrel] = [
         Barrel(
             sku="SMALL_RED_BARREL",
@@ -30,7 +30,7 @@ def test_barrel_delivery():
     assert delivery_summary.gold_paid == 1750
 
 
-def test_buy_small_red_barrel_plan():
+def test_buy_small_red_barrel_plan() -> None:
     wholesale_catalog: List[Barrel] = [
         Barrel(
             sku="SMALL_RED_BARREL",
@@ -79,7 +79,7 @@ def test_buy_small_red_barrel_plan():
     assert barrel_orders[0].quantity == 1  # Placeholder quantity assertion
 
 
-def test_cant_afford_barrel_plan():
+def test_cant_afford_barrel_plan() -> None:
     wholesale_catalog: List[Barrel] = [
         Barrel(
             sku="SMALL_RED_BARREL",

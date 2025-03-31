@@ -95,7 +95,7 @@ def create_barrel_plan(
     )
 
     # make sure we can afford it
-    if red_barrel.price <= gold:
+    if red_barrel and red_barrel.price <= gold:
         return [BarrelOrder(sku=red_barrel.sku, quantity=1)]
 
     # return an empty list if no affordable red barrel is found
