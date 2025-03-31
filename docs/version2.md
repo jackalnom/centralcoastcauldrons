@@ -1,6 +1,6 @@
 # Version 2 - Custom Potion Types and Order Management
 
-In the third version of central coast cauldrons, your goal is to:
+Your goal is to:
 * Support customizable potion mixes and remove all hardcoding of the potions sold from your code. 
 * Build out a proper order management system for our carts backed by our database.
 * Implement audit if you haven't done so already.

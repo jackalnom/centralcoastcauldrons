@@ -1,6 +1,6 @@
 # Version 1 - Add Persistence for Red, Green, and Blue Potions
 
-The first version of your improved store will involve: (1) changing from selling red potions to green potions and (2) adding inventory tracking for your green potions. Follow these steps:
+The first version of your improved store will involve keeping track of raw potion ml and number of red, green, and blue potions available for sale. Follow these steps:
 
 1. **Add more columns to our global_inventory table**
   - Run:
