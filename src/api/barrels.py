@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field, field_validator
 from typing import List
@@ -40,6 +41,15 @@ class BarrelOrder(BaseModel):
     quantity: int = Field(gt=0, description="Quantity must be greater than 0")
 
 
+@dataclass
+class BarrelSummary:
+    gold_paid: int
+
+
+def calculate_barrel_summary(barrels: List[Barrel]) -> BarrelSummary:
+    return BarrelSummary(gold_paid=sum(b.price * b.quantity for b in barrels))
+
+
 @router.post("/deliver/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     """
@@ -47,14 +57,8 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     a single delivery; the call is idempotent based on the order_id.
     """
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
-    print(barrels_delivered)
 
-    gold_paid = 0
-
-    for barrel_delivered in barrels_delivered:
-        gold_paid += barrel_delivered.price * barrel_delivered.quantity
-
-    print(f"gold_paid: {gold_paid}")
+    delivery = calculate_barrel_summary(barrels_delivered)
 
     with db.engine.begin() as connection:
         connection.execute(
@@ -64,7 +68,7 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
                 gold = gold - :gold_paid
                 """
             ),
-            [{"gold_paid": gold_paid}],
+            [{"gold_paid": delivery.gold_paid}],
         )
 
     pass
@@ -82,8 +86,20 @@ def create_barrel_plan(
     print(
         f"gold: {gold}, max_barrel_capacity: {max_barrel_capacity}, current_red_ml: {current_red_ml}, current_green_ml: {current_green_ml}, current_blue_ml: {current_blue_ml}, current_dark_ml: {current_dark_ml}, wholesale_catalog: {wholesale_catalog}"
     )
-    # TODO: placeholder implementation, replace with actual logic
-    return [BarrelOrder(sku="SMALL_RED_BARREL", quantity=1)]
+
+    # find cheapest red barrel
+    red_barrel = min(
+        (barrel for barrel in wholesale_catalog if barrel.potion_type[0] == 1),
+        key=lambda b: b.price,
+        default=None,
+    )
+
+    # make sure we can afford it
+    if red_barrel.price <= gold:
+        return [BarrelOrder(sku=red_barrel.sku, quantity=1)]
+
+    # return an empty list if no affordable red barrel is found
+    return []
 
 
 @router.post("/plan", response_model=List[BarrelOrder])

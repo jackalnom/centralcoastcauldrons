@@ -1,13 +1,18 @@
+# Central Coast Cauldrons
+
 [![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.103.0-009688.svg?&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com/) [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
-# Central Coast Cauldrons
 
 Central Coast Cauldrons is a stubbed-out API designed as a starting point for learning how to build backend services that integrate with a persistence layer. You will progressively develop your own version of the API and integrate it with an increasingly sophisticated database backend. When you register your backend at the [Potion Exchange](https://potion-exchange.vercel.app/), simulated customers will shop at your store using your API.
 
 The application is set in a simulated fantasy RPG world where adventurers seek to buy potions. Your shop is one of many in this world, offering a variety of potions with over 100,000 possible combinations.
 
-## Understanding the Game Mechanics
+## Table of Contents
+- [Game Mechanics](#game-mechanics)
+- [Getting Started](#getting-started)
+- [Local Development & Testing](#local-development--testing)
+
+## Game Mechanics
 
 You start with 100 gold, an empty inventory, and no barrels. Your backend API is invoked at regular intervals, called 'ticks,' occurring every two hours. There are 12 ticks per day and 7 days in a week. The weekdays in the Potion Exchange world are:
 
@@ -40,7 +45,7 @@ Customers are more likely to visit a shop with a good reputation. You can monito
 3. **Reliability**: Avoiding errors such as checkout failures or listing unavailable potions.
 4. **Recognition**: The number of successful purchases by a given customer class. Serving more of a class increases their trust in your shop.
 
-## Initial Setup
+## Getting Started
 
 Follow these steps to set up your potion shop:
 
@@ -49,7 +54,18 @@ Follow these steps to set up your potion shop:
    - Name your repository something unique.
    - Make your repository private and grant read access to `jackalnom`.
 
-2. **Deploy on Render**
+2. **Setup Supabase**
+   - Sign up at [Supabase](https://supabase.com/).
+   - Create a new project.
+   - Click the "Connect" button at the top of the screen.
+   - Copy the connection string for Session Pooler (should be the bottom one) and modify it:
+     - Replace `postgres://` with `postgresql+psycopg://`.
+     - Replace `[YOUR-PASSWORD]` with your database password you just setup.
+     - Avoid special characters in the password to prevent parsing issues.
+   - Save this connection string for the next step.
+
+
+3. **Deploy on Render**
    - Sign up at [Render](https://render.com/).
    - Click "New +" and select "Web Service."
    - Deploy from your new GitHub repository.
@@ -60,40 +76,54 @@ Follow these steps to set up your potion shop:
    - Use `pip install uv && uv pip sync` as the build command.
    - Use `uvicorn src.api.server:app --host 0.0.0.0 --port $PORT` as the start command.
    - Choose the Free Instance Type.
-   - Under "Advanced," add two environment variables:
+   - Under "Advanced," add three environment variables:
      - `API_KEY`: A unique string to secure your shop's API.
+     - `POSTGRES_URI`: The connection string you created earlier.
      - `PYTHON_VERSION`: Set to `3.12`.
    - Congratulations you have officially deployed your service to the public cloud! This will be your production instance that is publicly accessible to customers.
 
-3. **Verify Your Deployment**
+4. **Verify Your Deployment**
    - Navigate to `https://[your-project].onrender.com/docs`, replacing `[your-project]` with whatever your project is called.
    - Click 'Authorize' and enter the same `API_KEY` you put into the environment variables above.
    - Test the available endpoints.
 
-4. **Register Your Shop on Potion Exchange**
+5. **Register Your Shop on Potion Exchange**
    - Sign in to [Potion Exchange](https://potion-exchange.vercel.app/).
    - Add your shop with its base URL and `API_KEY`.
 
-5. **Monitor Performance**
+6. **Monitor Performance**
    - Return to [Potion Exchange](https://potion-exchange.vercel.app/) to track your shop's progress.
    - Observe changes in gold balance, potion inventory, and customer interactions.
 
-## Running and Testing Locally
+## Local Development & Testing
 
 To run your server locally:
 
-1. **Set Up Environment Variables**
-   - Create a `.env` file in your workspace root.
-   - Define `API_KEY` with an easily memorable value for local testing.
-
-2. **Install Dependencies**
-   ```sh
+1. **Install Dependencies**
+   ```bash
    pip install uv && uv pip sync
    ```
 
+2. **Setup local database**
+   - Run the following command in your terminal:
+     ```bash
+     docker run --name mypostgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres:latest
+     ```
+
+   - Download and install [TablePlus](https://tableplus.com/).
+   - Create a new connection with the following connection string:
+     ```bash
+     postgresql://myuser:mypassword@localhost:5432/mydatabase
+     ```
+
+    - Upgrade the database to your latest schema:
+      ```bash
+      uv run alembic upgrade head
+      ```
+
 3. **Run the Server**
-   ```sh
-   python main.py
+   ```bash
+   uv run main.py
    ```
 
 4. **Test Endpoints**
@@ -104,6 +134,6 @@ To run your server locally:
    - Write test cases in the `tests/` folder.
    - Run tests with:
      ```sh
-     pytest
+     uv run pytest
      ```
 
