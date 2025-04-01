@@ -101,7 +101,7 @@ To run your server locally:
 
 1. **Install Dependencies**
    ```bash
-   pip install uv && uv pip sync
+   pip install uv && uv pip sync requirements.txt
    ```
 
 2. **Setup local database**
