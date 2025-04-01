@@ -73,7 +73,7 @@ Follow these steps to set up your potion shop:
    - Select "Oregon" as the region.
    - Leave branch and root directory as default.
    - Set runtime to Python 3.
-   - Use `pip install uv && uv pip sync requirements.txt` as the build command.
+   - Use `pip install uv && uv sync` as the build command.
    - Use `alembic upgrade head && uvicorn src.api.server:app --host 0.0.0.0 --port $PORT` as the start command.
    - Choose the Free Instance Type.
    - Under "Advanced," add three environment variables:
@@ -103,7 +103,7 @@ To run your server locally:
     - [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
     - Run:
    ```bash
-   uv pip sync requirements.txt
+   uv sync
    ```
 
 2. **Setup local database**
