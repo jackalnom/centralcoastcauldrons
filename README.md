@@ -100,8 +100,10 @@ Follow these steps to set up your potion shop:
 To run your server locally:
 
 1. **Install Dependencies**
+    - [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
+    - Run:
    ```bash
-   pip install uv && uv pip sync requirements.txt
+   uv pip sync requirements.txt
    ```
 
 2. **Setup local database**
