@@ -111,17 +111,18 @@ To run your server locally:
      ```bash
      docker run --name mypostgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres:latest
      ```
-
-   - Download and install [TablePlus](https://tableplus.com/).
-   - Create a new connection with the following connection string:
-     ```bash
-     postgresql://myuser:mypassword@localhost:5432/mydatabase
-     ```
-
     - Upgrade the database to your latest schema:
       ```bash
       uv run alembic upgrade head
       ```
+
+   - Download and install [TablePlus](https://tableplus.com/) or [DBeaver](https://dbeaver.io/). Any SQL editor compatible with postgres will work.
+   - Create a new connection with the following connection string:
+     ```bash
+     postgresql://myuser:mypassword@localhost:5432/mydatabase
+     ```
+   - This will let you query your database and debug issues.
+
 
 3. **Run the Server**
    ```bash
