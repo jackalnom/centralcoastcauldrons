@@ -70,7 +70,6 @@ Follow these steps to set up your potion shop:
    - Click "New +" and select "Blueprint."
    - Deploy from your new GitHub repository.
    - Choose a unique and creative name for your service.
-   - Choose the Free Instance Type.
    - For environment variables, enter:
      - `API_KEY`: A unique string to secure your shop's API. Remember this for later.
      - `POSTGRES_URI`: The connection string you created earlier.
@@ -79,7 +78,7 @@ Follow these steps to set up your potion shop:
    - Congratulations you have officially deployed your service to the public cloud! This will be your production instance that is publicly accessible to customers.
 
 4. **Verify Your Deployment**
-   - Navigate to `https://[your-project].onrender.com/docs`, replacing `[your-project]` with whatever your project is called.
+   - Navigate to `https://[your-project].onrender.com/docs`, replacing `[your-project]` with whatever your project is called. You can find the link on your render dashboard for your particular render project.
    - Click 'Authorize' and enter the same `API_KEY` you put into the environment variables above.
    - Test the available endpoints.
 
