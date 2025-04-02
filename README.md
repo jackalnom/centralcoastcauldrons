@@ -73,7 +73,6 @@ Follow these steps to set up your potion shop:
    - For environment variables, enter:
      - `API_KEY`: A unique string to secure your shop's API. Remember this for later.
      - `POSTGRES_URI`: The connection string you created earlier.
-     - `PYTHON_VERSION`: Set to `3.12`.
    - Click Deploy!
    - Congratulations you have officially deployed your service to the public cloud! This will be your production instance that is publicly accessible to customers.
 
