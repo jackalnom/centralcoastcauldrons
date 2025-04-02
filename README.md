@@ -101,6 +101,7 @@ To run your server locally:
    ```
 
 2. **Setup local database**
+   - Install Docker and Docker CLI if you don't already have it.
    - Run the following command in your terminal:
      ```bash
      docker run --name mypostgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres:latest
