@@ -10,6 +10,6 @@ services:
       - key: POSTGRES_URI
         sync: false
       - key: API_KEY
-        sync: false
+        generateValue: true
       - key: PYTHON_VERSION
         value: 3.12.9
