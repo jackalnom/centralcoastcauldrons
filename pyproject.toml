@@ -19,3 +19,6 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.poetry]
+version = "1.0"
