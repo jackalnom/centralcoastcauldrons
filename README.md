@@ -67,19 +67,15 @@ Follow these steps to set up your potion shop:
 
 3. **Deploy on Render**
    - Sign up at [Render](https://render.com/).
-   - Click "New +" and select "Web Service."
+   - Click "New +" and select "Blueprint."
    - Deploy from your new GitHub repository.
    - Choose a unique and creative name for your service.
-   - Select "Oregon" as the region.
-   - Leave branch and root directory as default.
-   - Set runtime to Python 3.
-   - Use `pip install uv && uv sync` as the build command.
-   - Use `alembic upgrade head && uvicorn src.api.server:app --host 0.0.0.0 --port $PORT` as the start command.
    - Choose the Free Instance Type.
-   - Under "Advanced," add three environment variables:
-     - `API_KEY`: A unique string to secure your shop's API.
+   - For environment variables, enter:
+     - `API_KEY`: A unique string to secure your shop's API. Remember this for later.
      - `POSTGRES_URI`: The connection string you created earlier.
      - `PYTHON_VERSION`: Set to `3.12`.
+   - Click Deploy!
    - Congratulations you have officially deployed your service to the public cloud! This will be your production instance that is publicly accessible to customers.
 
 4. **Verify Your Deployment**
