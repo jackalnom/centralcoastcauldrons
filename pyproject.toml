@@ -3,7 +3,7 @@ name = "centralcoastcauldrons"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12.9"
 dependencies = [
     "alembic>=1.15.2",
     "fastapi>=0.115.11",
@@ -19,6 +19,3 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-
-[tool.poetry]
-version = "1.0"
