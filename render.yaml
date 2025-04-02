@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     autoDeploy: true
-    buildCommand: poetry install
+    buildCommand: 
     startCommand: uvicorn src.api.server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: POSTGRES_URI
