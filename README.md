@@ -106,6 +106,10 @@ To run your server locally:
      ```bash
      docker run --name mypostgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres:latest
      ```
+    - In the future, you can restart the container by just running:
+      ```bash
+      docker start mypostgres
+      ```
     - Upgrade the database to your latest schema:
       ```bash
       uv run alembic upgrade head
