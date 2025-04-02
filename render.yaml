@@ -4,10 +4,12 @@ services:
     runtime: python
     plan: free
     autoDeploy: true
-    buildCommand: 
-    startCommand: uvicorn src.api.server:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn src.api.server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: POSTGRES_URI
         sync: false
       - key: API_KEY
         sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.9
