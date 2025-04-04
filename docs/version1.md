@@ -5,7 +5,7 @@ The first version of your improved store will involve keeping track of raw potio
 1. **Add more columns to our global_inventory table**
   - Run:
   ```sh
-  alembic revision -m "Add red, green, blue potions for version 1"
+  uv run alembic revision -m "Add red, green, blue potions for version 1"
   ```
   - This creates a new version py file in your alembic/versions folder. Go to that file and replace the upgrade and downgrade functions with the following:
 ```python
@@ -42,7 +42,7 @@ def downgrade():
 ```
   - What this does is it will modify your global_inventory table to add new columns for storing each potion color's ml and potion quantity. It also puts a constraint to enforce that those values can't be negative. To now run this script to modify your local database run:
   ```sh
-  alembic upgrade head
+  uv run alembic upgrade head
   ```
   - For more information on Alembic see their [tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html#the-migration-environment).
 
