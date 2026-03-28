@@ -73,6 +73,7 @@ class Customer(BaseModel):
     customer_id: str
     customer_name: str
     character_class: str
+    character_species: str
     level: int = Field(ge=1, le=20)
 
 

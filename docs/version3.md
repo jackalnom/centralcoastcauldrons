@@ -77,3 +77,8 @@ The basic flow of how you'll do this is:
 3. Otherwise, proceed as normal.
 
 
+## Additional instrumentation
+
+If you haven't already, make sure you are recording the following data in your database:
+1. The hour and day of the week each potion is sold. 
+2. The customer and their corresponding demographic information that is purchasing each potion.
