@@ -43,6 +43,19 @@ def test_bottler_database() -> None:
         )
     
     assert sum([potions.quantity for potions in get_bottle_plan()]) == 7
+    post_deliver_bottles(get_bottle_plan(), 0)
+
+    with db.engine.begin() as connection:
+        table_row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT red_potions, green_potions, blue_potions
+                FROM global_inventory  
+                """
+            )
+        ).one()
+    assert sum(table_row) == 13
+
 
     reset()
     # Verify reset worked
@@ -54,7 +67,7 @@ def test_bottler_database() -> None:
                 FROM global_inventory  
                 """
             )
-        ).all()[0]
+        ).one()
 
     assert table_row[0] == 100
     for i in range(1, len(table_row)):

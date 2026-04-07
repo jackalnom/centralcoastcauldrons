@@ -48,30 +48,27 @@ def post_deliver_bottles(potions_delivered: List[PotionMixes], order_id: int):
                     """
                     UPDATE global_inventory SET 
                     red_ml = red_ml - :red_ml,
-                    blue_ml = blue_ml - :blue_ml,
                     green_ml = green_ml - :green_ml,
-                    dark_ml = dark_ml - :dark_ml
+                    blue_ml = blue_ml - :blue_ml
                     """
                 ),
                 [{"red_ml": potion.potion_type[0] * potion.quantity,
-                  "blue_ml": potion.potion_type[1] * potion.quantity,
-                  "green_ml": potion.potion_type[2] * potion.quantity,
-                  "dark_ml": potion.potion_type[3] * potion.quantity}],
+                  "green_ml": potion.potion_type[1] * potion.quantity,
+                  "blue_ml": potion.potion_type[2] * potion.quantity
+                }],
             )
             connection.execute(
                 sqlalchemy.text(
                     """
                     UPDATE global_inventory SET 
-                    red_potions = red_potions + :red_potions
+                    red_potions = red_potions + :red_potions,
+                    green_potions = green_potions + :green_potions,
                     blue_potions = blue_potions + :blue_potions
-                    green_potions = green_potions + :green_potions
-                    dark_potions = dark_potions + :dark_potions
                     """
                 ),
                 [{"red_potions": potion.quantity * (potion.potion_type[0] != 0),
-                  "blue_potions": potion.quantity * (potion.potion_type[1] != 0),
-                  "green_potions": potion.quantity * (potion.potion_type[2] != 0),
-                  "dark_potions": potion.quantity * (potion.potion_type[3] != 0)}],
+                  "green_potions": potion.quantity * (potion.potion_type[1] != 0),
+                  "blue_potions": potion.quantity * (potion.potion_type[2] != 0)}],
             )
     pass
 
