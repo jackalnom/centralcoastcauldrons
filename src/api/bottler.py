@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field, field_validator
 from typing import List
+
+import sqlalchemy
 from src.api import auth
+from src import database as db
 
 router = APIRouter(
     prefix="/bottler",
@@ -37,8 +40,39 @@ def post_deliver_bottles(potions_delivered: List[PotionMixes], order_id: int):
     """
     print(f"potions delivered: {potions_delivered} order_id: {order_id}")
 
-    # TODO: Record values of delivered potions in your database.
-    # TODO: Subtract ml based on how much delivered potions used.
+    for potion in potions_delivered:
+        with db.engine.begin() as connection:
+            # Placeholder until multi type potions are created.
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    UPDATE global_inventory SET 
+                    red_ml = red_ml - :red_ml
+                    blue_ml = blue_ml - :blue_ml
+                    green_ml = green_ml - :green_ml
+                    dark_ml = dark_ml - :dark_ml
+                    """
+                ),
+                [{"red_ml": potion.potion_type[0],
+                  "blue_ml": potion.potion_type[1],
+                  "green_ml": potion.potion_type[2],
+                  "dark_ml": potion.potion_type[3]}],
+            )
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    UPDATE global_inventory SET 
+                    red_potions = red_potions + :red_potions
+                    blue_potions = blue_potions + :blue_potions
+                    green_potions = green_potions + :green_potions
+                    dark_potions = dark_potions + :dark_potions
+                    """
+                ),
+                [{"red_potions": potion.potion_type[0] * potion.quantity,
+                  "blue_potions": potion.potion_type[1] * potion.quantity,
+                  "green_potions": potion.potion_type[2] * potion.quantity,
+                  "dark_potions": potion.potion_type[3] * potion.quantity}],
+            )
     pass
 
 
