@@ -121,14 +121,18 @@ def get_wholesale_purchase_plan(wholesale_catalog: List[Barrel]):
         ).one()
 
         gold = row.gold
+        red_ml = row.red_ml
+        green_ml = row.green_ml
+        blue_ml = row.blue_ml
+
 
     # TODO: fill in values correctly based on what is in your database
     return create_barrel_plan(
         gold=gold,
         max_barrel_capacity=10000,
-        current_red_ml=0,
-        current_green_ml=0,
-        current_blue_ml=0,
+        current_red_ml=red_ml,
+        current_green_ml=green_ml,
+        current_blue_ml=blue_ml,
         current_dark_ml=0,
         wholesale_catalog=wholesale_catalog,
     )
