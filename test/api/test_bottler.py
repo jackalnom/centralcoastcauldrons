@@ -1,5 +1,5 @@
-from src.api.bottler import PotionMixes, create_bottle_plan
-
+from src.api.bottler import *
+from src.api.admin import reset
 
 from typing import List
 
@@ -23,4 +23,41 @@ def test_bottle_red_potions() -> None:
 
     assert len(result) == 1
     assert result[0].potion_type == [100, 0, 0, 0]
-    assert result[0].quantity == 5
+    assert result[0].quantity == 1
+
+def test_bottler_database() -> None: 
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory SET 
+                gold = 100,
+                red_ml = 400,
+                blue_ml = 200,
+                green_ml = 100,
+                red_potions = 2,
+                green_potions = 3,
+                blue_potions= 1
+                """
+            )
+        )
+    
+    assert sum([potions.quantity for potions in get_bottle_plan()]) == 7
+
+    reset()
+    # Verify reset worked
+    with db.engine.begin() as connection:
+        table_row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold, red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
+                FROM global_inventory  
+                """
+            )
+        ).all()[0]
+
+    assert table_row[0] == 100
+    for i in range(1, len(table_row)):
+        assert table_row[i] == 0
+
+

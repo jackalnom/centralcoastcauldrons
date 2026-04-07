@@ -47,16 +47,16 @@ def post_deliver_bottles(potions_delivered: List[PotionMixes], order_id: int):
                 sqlalchemy.text(
                     """
                     UPDATE global_inventory SET 
-                    red_ml = red_ml - :red_ml
-                    blue_ml = blue_ml - :blue_ml
-                    green_ml = green_ml - :green_ml
+                    red_ml = red_ml - :red_ml,
+                    blue_ml = blue_ml - :blue_ml,
+                    green_ml = green_ml - :green_ml,
                     dark_ml = dark_ml - :dark_ml
                     """
                 ),
-                [{"red_ml": potion.potion_type[0],
-                  "blue_ml": potion.potion_type[1],
-                  "green_ml": potion.potion_type[2],
-                  "dark_ml": potion.potion_type[3]}],
+                [{"red_ml": potion.potion_type[0] * potion.quantity,
+                  "blue_ml": potion.potion_type[1] * potion.quantity,
+                  "green_ml": potion.potion_type[2] * potion.quantity,
+                  "dark_ml": potion.potion_type[3] * potion.quantity}],
             )
             connection.execute(
                 sqlalchemy.text(
@@ -68,10 +68,10 @@ def post_deliver_bottles(potions_delivered: List[PotionMixes], order_id: int):
                     dark_potions = dark_potions + :dark_potions
                     """
                 ),
-                [{"red_potions": potion.potion_type[0] * potion.quantity,
-                  "blue_potions": potion.potion_type[1] * potion.quantity,
-                  "green_potions": potion.potion_type[2] * potion.quantity,
-                  "dark_potions": potion.potion_type[3] * potion.quantity}],
+                [{"red_potions": potion.quantity * (potion.potion_type[0] != 0),
+                  "blue_potions": potion.quantity * (potion.potion_type[1] != 0),
+                  "green_potions": potion.quantity * (potion.potion_type[2] != 0),
+                  "dark_potions": potion.quantity * (potion.potion_type[3] != 0)}],
             )
     pass
 
@@ -84,13 +84,22 @@ def create_bottle_plan(
     maximum_potion_capacity: int,
     current_potion_inventory: List[PotionMixes],
 ) -> List[PotionMixes]:
-    # TODO: Create a real bottle plan logic
-    return [
-        PotionMixes(
-            potion_type=[100, 0, 0, 0],
-            quantity=5,
-        )
-    ]
+    mixes = []
+    remaining_slots = maximum_potion_capacity
+    remaining_slots -= sum([potion.quantity for potion in current_potion_inventory])
+    if red_ml >= 100:
+        potion_cap = min(remaining_slots, red_ml // 100)
+        remaining_slots -= potion_cap
+        mixes.append(PotionMixes(potion_type=[100, 0, 0, 0], quantity=potion_cap))
+    if green_ml >= 100:
+        potion_cap = min(remaining_slots, green_ml // 100)
+        remaining_slots -= potion_cap
+        mixes.append(PotionMixes(potion_type=[0, 100, 0, 0], quantity=potion_cap))
+    if blue_ml >= 100:
+        potion_cap = min(remaining_slots, blue_ml // 100)
+        remaining_slots -= potion_cap
+        mixes.append(PotionMixes(potion_type=[0, 0, 100, 0], quantity=potion_cap))
+    return mixes
 
 
 @router.post("/plan", response_model=List[PotionMixes])
@@ -100,15 +109,31 @@ def get_bottle_plan():
     Each bottle has a quantity of what proportion of red, green, blue, and dark potions to add.
     Colors are expressed in integers from 0 to 100 that must sum up to exactly 100.
     """
+    
+    with db.engine.begin() as connection:
+        table_row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
+                FROM global_inventory  
+                """
+            )
+        ).one()
+    mixes = []
+    if table_row[3] > 0:
+        mixes.append(PotionMixes(potion_type=[100, 0, 0, 0], quantity=table_row[3]))
+    if table_row[4] > 0:
+        mixes.append(PotionMixes(potion_type=[0, 100, 0, 0], quantity=table_row[4]))
+    if table_row[5] > 0:
+        mixes.append(PotionMixes(potion_type=[0, 0, 100, 0], quantity=table_row[5]))
 
-    # TODO: Fill in values below based on what is in your database
     return create_bottle_plan(
-        red_ml=100,
-        green_ml=0,
-        blue_ml=0,
+        red_ml=table_row[0],
+        green_ml=table_row[1],
+        blue_ml=table_row[2],
         dark_ml=0,
         maximum_potion_capacity=50,
-        current_potion_inventory=[],
+        current_potion_inventory=mixes,
     )
 
 

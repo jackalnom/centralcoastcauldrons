@@ -160,7 +160,17 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             ),
             [{"total_gold": gold}],
         )
-    # TODO: Deduct the right potions from inventory to the shop
+
+        for potion, quantity in carts[cart_id].items():
+            connection.execute(
+                sqlalchemy.text(
+                    f"""
+                    UPDATE global_inventory SET 
+                    {potion} = {potion} - :quantity
+                    """
+                ),
+                [{"quantity": quantity}],
+            )
 
     return CheckoutResponse(
         total_potions_bought=total_potions_bought, total_gold_paid=total_gold_paid
