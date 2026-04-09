@@ -6,6 +6,7 @@ from typing import List
 import sqlalchemy
 from src.api import auth
 from src import database as db
+import random
 
 router = APIRouter(
     prefix="/barrels",
@@ -59,16 +60,25 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
 
     delivery = calculate_barrel_summary(barrels_delivered)
+    for barrel in barrels_delivered:
+       ml =  barrel.ml_per_barrel * barrel.quantity
 
+       highest_type = max(barrel.potion_type)
+       potion_select = barrel.potion_type.index(highest_type)
+
+    # Remove gold and add potion quantity
     with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text(
                 """
                 UPDATE global_inventory SET 
                 gold = gold - :gold_paid
+                :potionType = :potionType + :ml
                 """
             ),
-            [{"gold_paid": delivery.gold_paid}],
+            [{"gold_paid": delivery.gold_paid}, 
+             {"potionType": barrel.potion_type[potion_select]},
+             {"ml": ml}]
         )
 
     pass
@@ -87,16 +97,30 @@ def create_barrel_plan(
         f"gold: {gold}, max_barrel_capacity: {max_barrel_capacity}, current_red_ml: {current_red_ml}, current_green_ml: {current_green_ml}, current_blue_ml: {current_blue_ml}, current_dark_ml: {current_dark_ml}, wholesale_catalog: {wholesale_catalog}"
     )
 
-    # find cheapest red barrel
-    red_barrel = min(
-        (barrel for barrel in wholesale_catalog if barrel.potion_type[0] == 1),
+    # Select random potion color (RGB)
+    potion_select = random.randrange(0, 2)
+    potion_options = ("red_potions", "green_potions", "blue_potions")
+
+    # find find cheapest barrel
+    barrel = min(
+        (barrel for barrel in wholesale_catalog if barrel.potion_type[potion_select] == 1),
         key=lambda b: b.price,
         default=None,
     )
 
-    # make sure we can afford it
-    if red_barrel and red_barrel.price <= gold:
-        return [BarrelOrder(sku=red_barrel.sku, quantity=1)]
+    with db.engine.begin() as connection:
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT :potionType
+                FROM global_inventory
+                """
+            ), [{"potionType": potion_options[potion_select]}]
+        ).one()
+
+    # make sure we can afford it and need potions
+    if barrel and barrel.price <= gold and row[0] < 5:
+        return [BarrelOrder(sku=barrel.sku, quantity=1)]
 
     # return an empty list if no affordable red barrel is found
     return []
