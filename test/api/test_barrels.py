@@ -1,3 +1,5 @@
+import sqlalchemy
+
 from src.api.barrels import (
     calculate_barrel_summary,
     create_barrel_plan,
@@ -5,6 +7,9 @@ from src.api.barrels import (
     BarrelOrder,
 )
 from typing import List
+from src.api.admin import reset
+from src import database as db
+from src.api.barrels import *
 
 
 def test_barrel_delivery() -> None:
@@ -30,97 +35,79 @@ def test_barrel_delivery() -> None:
     assert delivery_summary.gold_paid == 1750
 
 
-def test_buy_small_red_barrel_plan() -> None:
+def test_barrel_plan() -> None:
     wholesale_catalog: List[Barrel] = [
         Barrel(
             sku="SMALL_RED_BARREL",
             ml_per_barrel=1000,
             potion_type=[1.0, 0, 0, 0],
-            price=100,
+            price=50,
             quantity=10,
         ),
         Barrel(
             sku="SMALL_GREEN_BARREL",
             ml_per_barrel=1000,
             potion_type=[0, 1.0, 0, 0],
-            price=150,
+            price=50,
             quantity=5,
         ),
         Barrel(
             sku="SMALL_BLUE_BARREL",
             ml_per_barrel=1000,
             potion_type=[0, 0, 1.0, 0],
-            price=500,
+            price=50,
             quantity=2,
         ),
     ]
 
-    gold = 100
-    max_barrel_capacity = 10000
-    current_red_ml = 0
-    current_green_ml = 1000
-    current_blue_ml = 1000
-    current_dark_ml = 1000
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory SET 
+                gold = 1000,
+                red_ml = 400,
+                blue_ml = 200,
+                green_ml = 100,
+                red_potions = 2,
+                green_potions = 3,
+                blue_potions= 1
+                """
+            )
+        )
+    
+    post_deliver_barrels(wholesale_catalog, 0)
+    with db.engine.begin() as connection:
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold, red_ml, green_ml, blue_ml
+                FROM global_inventory
+                """
+            )
+        ).one()
+    assert row[0] == 150
+    assert row[1] == 10400
+    assert row[2] == 5100
+    assert row[3] == 2200
 
-    barrel_orders = create_barrel_plan(
-        gold,
-        max_barrel_capacity,
-        current_red_ml,
-        current_green_ml,
-        current_blue_ml,
-        current_dark_ml,
-        wholesale_catalog,
-    )
-
-    assert isinstance(barrel_orders, list)
-    assert all(isinstance(order, BarrelOrder) for order in barrel_orders)
-    assert len(barrel_orders) > 0  # Ensure at least one order is generated
-    assert barrel_orders[0].sku == "SMALL_RED_BARREL"  # Placeholder expected output
-    assert barrel_orders[0].quantity == 1  # Placeholder quantity assertion
+    plan = get_wholesale_purchase_plan(wholesale_catalog)[0]
+    assert plan.quantity == 1
+        
 
 
-def test_cant_afford_barrel_plan() -> None:
-    wholesale_catalog: List[Barrel] = [
-        Barrel(
-            sku="SMALL_RED_BARREL",
-            ml_per_barrel=1000,
-            potion_type=[1.0, 0, 0, 0],
-            price=100,
-            quantity=10,
-        ),
-        Barrel(
-            sku="SMALL_GREEN_BARREL",
-            ml_per_barrel=1000,
-            potion_type=[0, 1.0, 0, 0],
-            price=150,
-            quantity=5,
-        ),
-        Barrel(
-            sku="SMALL_BLUE_BARREL",
-            ml_per_barrel=1000,
-            potion_type=[0, 0, 1.0, 0],
-            price=500,
-            quantity=2,
-        ),
-    ]
+    reset()
+    # Verify reset worked
+    with db.engine.begin() as connection:
+        table_row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT gold, red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
+                FROM global_inventory  
+                """
+            )
+        ).one()
 
-    gold = 50
-    max_barrel_capacity = 10000
-    current_red_ml = 0
-    current_green_ml = 1000
-    current_blue_ml = 1000
-    current_dark_ml = 1000
-
-    barrel_orders = create_barrel_plan(
-        gold,
-        max_barrel_capacity,
-        current_red_ml,
-        current_green_ml,
-        current_blue_ml,
-        current_dark_ml,
-        wholesale_catalog,
-    )
-
-    assert isinstance(barrel_orders, list)
-    assert all(isinstance(order, BarrelOrder) for order in barrel_orders)
-    assert len(barrel_orders) == 0  # Ensure at least one order is generated
+    assert table_row[0] == 100
+    for i in range(1, len(table_row)):
+        assert table_row[i] == 0

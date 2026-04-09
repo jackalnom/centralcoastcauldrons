@@ -58,28 +58,39 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     a single delivery; the call is idempotent based on the order_id.
     """
     print(f"barrels delivered: {barrels_delivered} order_id: {order_id}")
+    ml_options = ("red_ml", "green_ml", "blue_ml")
 
     delivery = calculate_barrel_summary(barrels_delivered)
-    for barrel in barrels_delivered:
-       ml =  barrel.ml_per_barrel * barrel.quantity
-
-       highest_type = max(barrel.potion_type)
-       potion_select = barrel.potion_type.index(highest_type)
-
-    # Remove gold and add potion quantity
     with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text(
-                """
-                UPDATE global_inventory SET 
-                gold = gold - :gold_paid
-                :potionType = :potionType + :ml
+                f"""
+                UPDATE global_inventory 
+                SET gold = gold - :gold_paid
                 """
             ),
-            [{"gold_paid": delivery.gold_paid}, 
-             {"potionType": barrel.potion_type[potion_select]},
-             {"ml": ml}]
+            [{"gold_paid": delivery.gold_paid}]
         )
+
+
+    for barrel in barrels_delivered:
+        ml =  barrel.ml_per_barrel * barrel.quantity
+
+        highest_type = max(barrel.potion_type)
+        select = barrel.potion_type.index(highest_type)
+
+        mlType = ml_options[select]
+        # Remove gold and add potion quantity
+        with db.engine.begin() as connection:
+            connection.execute(
+                sqlalchemy.text(
+                    f"""
+                    UPDATE global_inventory 
+                    SET {mlType} = {mlType} + :ml
+                    """
+                ),
+                [{"ml": ml}]
+            )
 
     pass
 
@@ -98,7 +109,7 @@ def create_barrel_plan(
     )
 
     # Select random potion color (RGB)
-    potion_select = random.randrange(0, 2)
+    potion_select = random.randrange(3)
     potion_options = ("red_potions", "green_potions", "blue_potions")
 
     # find find cheapest barrel
@@ -111,11 +122,11 @@ def create_barrel_plan(
     with db.engine.begin() as connection:
         row = connection.execute(
             sqlalchemy.text(
-                """
-                SELECT :potionType
+                f"""
+                SELECT {potion_options[potion_select]}
                 FROM global_inventory
                 """
-            ), [{"potionType": potion_options[potion_select]}]
+            )
         ).one()
 
     # make sure we can afford it and need potions
@@ -138,19 +149,17 @@ def get_wholesale_purchase_plan(wholesale_catalog: List[Barrel]):
         row = connection.execute(
             sqlalchemy.text(
                 """
-                SELECT gold
+                SELECT gold, red_ml, green_ml, blue_ml
                 FROM global_inventory
                 """
             )
         ).one()
 
-        gold = row.gold
-        red_ml = row.red_ml
-        green_ml = row.green_ml
-        blue_ml = row.blue_ml
+        gold = row[0]
+        red_ml = row[1]
+        green_ml = row[2]
+        blue_ml = row[3]
 
-
-    # TODO: fill in values correctly based on what is in your database
     return create_barrel_plan(
         gold=gold,
         max_barrel_capacity=10000,
