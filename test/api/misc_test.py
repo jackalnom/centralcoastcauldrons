@@ -24,6 +24,12 @@ def test_catalog() -> None:
     assert catalog[1].quantity == 3
     assert catalog[2].quantity == 1
     assert catalog[0].price == 75
+    assert catalog[1].price == 75
+    assert catalog[2].price == 75
+
+    inventory = get_inventory()
+    assert inventory.gold == 1000 and inventory.number_of_potions == 6 and inventory.ml_in_barrels == 700
+
     with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text(
@@ -39,10 +45,11 @@ def test_catalog() -> None:
                 """
             )
         )
-    catalog = get_catalog()
+
     inventory = get_inventory()
     assert inventory.gold == 1000 and inventory.number_of_potions == 2 and inventory.ml_in_barrels == 700
     
+    catalog = get_catalog()
     assert len(catalog) == 1
     reset()
     

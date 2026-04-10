@@ -44,8 +44,8 @@ def get_inventory():
 
         gold = row.gold
 
-    return InventoryAudit(number_of_potions=sum(row[1:3]), 
-                          ml_in_barrels=sum(row[3:]), 
+    return InventoryAudit(number_of_potions=sum(row[1:4]), 
+                          ml_in_barrels=sum(row[4:]), 
                           gold=gold)
 
 
