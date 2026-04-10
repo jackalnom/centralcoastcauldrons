@@ -36,7 +36,6 @@ def create_catalog() -> List[CatalogItem]:
     items = []
     if row[0] != 0:
         items.append(CatalogItem(sku='red_potions', name="red potion", quantity=row[0], price=75, potion_type=[100,0,0,0]))
-
     if row[1] != 0:
         items.append(CatalogItem(sku='green_potions', name="green potion", quantity=row[1], price=75, potion_type=[0,100,0,0]))
     if row[2] != 0:

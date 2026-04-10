@@ -19,5 +19,6 @@ def post_time(timestamp: Timestamp):
     """
     Shares what the latest time (in game time) is.
     """
+    print("Hour: {timestamp.hour} Day: {timestamp.day}") 
     # TODO: Record day and time of the current tick to associate with later calls
     pass

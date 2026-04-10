@@ -1,5 +1,6 @@
 from src.api.admin import reset
 from src.api.catalog import *
+from src.api.inventory import *
 def test_catalog() -> None:
 
     with db.engine.begin() as connection:
@@ -39,6 +40,8 @@ def test_catalog() -> None:
             )
         )
     catalog = get_catalog()
+    inventory = get_inventory()
+    assert inventory.gold == 1000 and inventory.number_of_potions == 2 and inventory.ml_in_barrels == 700
     
     assert len(catalog) == 1
     reset()
