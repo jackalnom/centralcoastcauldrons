@@ -4,7 +4,7 @@ import sqlalchemy
 from src.api import auth
 from enum import Enum
 from typing import List, Optional
-from src.api.helper import get_global_inventory
+from src.api.helper import add_global_inventory, get_global_inventory
 from src import database as db
 
 router = APIRouter(
@@ -140,31 +140,10 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     total_potions_bought = sum(carts[cart_id].values())
     total_gold_paid = total_potions_bought * 75  # Assuming each potion costs 75 gold
 
-    row = get_global_inventory()
-    gold = row.gold
-    gold += total_gold_paid
-
-    with db.engine.begin() as connection:
-        connection.execute(
-            sqlalchemy.text(
-                """
-                UPDATE global_inventory SET 
-                gold = :total_gold
-                """
-            ),
-            [{"total_gold": gold}],
-        )
-
-        for potion, quantity in carts[cart_id].items():
-            connection.execute(
-                sqlalchemy.text(
-                    f"""
-                    UPDATE global_inventory SET 
-                    {potion} = {potion} - :quantity
-                    """
-                ),
-                [{"quantity": quantity}],
-            )
+    # Checkout transation: add gold, remove potions
+    add_global_inventory("gold", total_gold_paid)
+    for potion, quantity in carts[cart_id].items():
+        add_global_inventory(potion, -quantity)
 
     return CheckoutResponse(
         total_potions_bought=total_potions_bought, total_gold_paid=total_gold_paid

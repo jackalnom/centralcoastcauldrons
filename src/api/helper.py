@@ -16,3 +16,15 @@ def get_global_inventory() -> sqlalchemy.Row[Any]:
             )
         ).one()
     return row
+
+def add_global_inventory(column: str, value: int | float) -> None:
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                f"""
+                UPDATE global_inventory 
+                SET {column} = {column} + :value
+                """
+            ),
+            [{"value": value}]
+        )

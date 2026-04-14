@@ -5,7 +5,7 @@ from typing import List
 
 import sqlalchemy
 from src.api import auth
-from src.api.helper import get_global_inventory
+from src.api.helper import *
 from src import database as db
 import random
 
@@ -62,16 +62,7 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
     ml_options = ("red_ml", "green_ml", "blue_ml")
 
     delivery = calculate_barrel_summary(barrels_delivered)
-    with db.engine.begin() as connection:
-        connection.execute(
-            sqlalchemy.text(
-                f"""
-                UPDATE global_inventory 
-                SET gold = gold - :gold_paid
-                """
-            ),
-            [{"gold_paid": delivery.gold_paid}]
-        )
+    add_global_inventory("gold", -delivery.gold_paid)
 
 
     for barrel in barrels_delivered:
@@ -82,16 +73,7 @@ def post_deliver_barrels(barrels_delivered: List[Barrel], order_id: int):
 
         mlType = ml_options[select]
         # Remove gold and add potion quantity
-        with db.engine.begin() as connection:
-            connection.execute(
-                sqlalchemy.text(
-                    f"""
-                    UPDATE global_inventory 
-                    SET {mlType} = {mlType} + :ml
-                    """
-                ),
-                [{"ml": ml}]
-            )
+        add_global_inventory(mlType, ml)
 
     pass
 
