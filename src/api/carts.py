@@ -4,6 +4,7 @@ import sqlalchemy
 from src.api import auth
 from enum import Enum
 from typing import List, Optional
+from src.api.helper import get_global_inventory
 from src import database as db
 
 router = APIRouter(
@@ -137,20 +138,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         raise HTTPException(status_code=404, detail="Cart not found")
 
     total_potions_bought = sum(carts[cart_id].values())
-    total_gold_paid = total_potions_bought * 75  # Assuming each potion costs 50 gold
+    total_gold_paid = total_potions_bought * 75  # Assuming each potion costs 75 gold
+
+    row = get_global_inventory()
+    gold = row.gold
+    gold += total_gold_paid
 
     with db.engine.begin() as connection:
-        row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT gold FROM global_inventory
-                """
-            )
-        ).one()
-
-        gold = row.gold
-        gold += total_gold_paid
-
         connection.execute(
             sqlalchemy.text(
                 """

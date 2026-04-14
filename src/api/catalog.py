@@ -4,6 +4,8 @@ from typing import List, Annotated
 from src import database as db
 import sqlalchemy
 
+from src.api.helper import get_global_inventory
+
 router = APIRouter()
 
 
@@ -23,23 +25,15 @@ class CatalogItem(BaseModel):
 # Placeholder function, you will replace this with a database call
 def create_catalog() -> List[CatalogItem]:
 
-    with db.engine.begin() as connection:
-        row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT red_potions, green_potions, blue_potions
-                FROM global_inventory
-                """
-            )
-        ).one()
+    row = get_global_inventory()
     
     items = []
-    if row[0] != 0:
-        items.append(CatalogItem(sku='red_potions', name="red potion", quantity=row[0], price=75, potion_type=[100,0,0,0]))
-    if row[1] != 0:
-        items.append(CatalogItem(sku='green_potions', name="green potion", quantity=row[1], price=75, potion_type=[0,100,0,0]))
-    if row[2] != 0:
-        items.append(CatalogItem(sku='blue_potions', name="blue potion", quantity=row[2], price=75, potion_type=[0,0,100,0]))
+    if row.red_potions != 0:
+        items.append(CatalogItem(sku='red_potions', name="red potion", quantity=row.red_potions, price=75, potion_type=[100,0,0,0]))
+    if row.green_potions != 0:
+        items.append(CatalogItem(sku='green_potions', name="green potion", quantity=row.green_potions, price=75, potion_type=[0,100,0,0]))
+    if row.blue_potions != 0:
+        items.append(CatalogItem(sku='blue_potions', name="blue potion", quantity=row.blue_potions, price=75, potion_type=[0,0,100,0]))
     return items
 
 

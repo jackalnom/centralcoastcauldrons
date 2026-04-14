@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 import sqlalchemy
 from src.api import auth
 from src import database as db
+from src.api.helper import get_global_inventory
 
 router = APIRouter(
     prefix="/inventory",
@@ -32,21 +33,11 @@ def get_inventory():
     as errors on potion exchange.
     """
 
-    with db.engine.begin() as connection:
-        row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT gold, red_potions, green_potions, blue_potions, red_ml, green_ml, blue_ml
-                FROM global_inventory
-                """
-            )
-        ).one()
+    row = get_global_inventory()
 
-        gold = row.gold
-
-    return InventoryAudit(number_of_potions=sum(row[1:4]), 
-                          ml_in_barrels=sum(row[4:]), 
-                          gold=gold)
+    return InventoryAudit(number_of_potions=sum(row[4:]), 
+                          ml_in_barrels=sum(row[1:4]), 
+                          gold=row.gold)
 
 
 @router.post("/plan", response_model=CapacityPlan)
