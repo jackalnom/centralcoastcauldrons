@@ -18,6 +18,9 @@ def get_global_inventory() -> sqlalchemy.Row[Any]:
     return row
 
 def add_global_inventory(column: str, value: int | float) -> None:
+    """
+    Add value to global inventory column
+    """
     with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text(
@@ -28,3 +31,19 @@ def add_global_inventory(column: str, value: int | float) -> None:
             ),
             [{"value": value}]
         )
+
+def get_potion_inventory():
+    """
+    Return global invetory as (gold, red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions)
+    """
+
+    with db.engine.begin() as connection:
+        rows = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT red_ml, green_ml, blue_ml, dark_ml, quantity
+                FROM potion_inventory
+                """
+            )
+        ).all()
+    return rows

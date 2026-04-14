@@ -1,3 +1,5 @@
+from itertools import product
+
 from fastapi import APIRouter, Depends, status
 import sqlalchemy
 from src.api import auth
@@ -32,4 +34,18 @@ def reset():
                 """
             )
         )
-    pass
+
+        connection.execute(sqlalchemy.text("TRUNCATE TABLE potion_inventory RESTART IDENTITY"))
+
+        # Generate potion combinations with increments of 25 per type
+        for red, green, blue, dark in product(range(0, 101, 25), repeat=4):
+            if red + green + blue + dark == 100:
+                connection.execute(
+                    sqlalchemy.text(
+                        """
+                        INSERT INTO potion_inventory (red_ml, blue_ml, green_ml, dark_ml, quantity)
+                        VALUES (:red, :green, :blue, :dark, 0)
+                        """),
+                        [{"red": red, "green" : green, "blue" : blue, "dark" : dark}])
+
+    
