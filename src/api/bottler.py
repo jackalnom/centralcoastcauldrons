@@ -4,6 +4,7 @@ from typing import List
 
 import sqlalchemy
 from src.api import auth
+from src.api.helper import get_global_inventory
 from src import database as db
 
 router = APIRouter(
@@ -106,28 +107,20 @@ def get_bottle_plan():
     Each bottle has a quantity of what proportion of red, green, blue, and dark potions to add.
     Colors are expressed in integers from 0 to 100 that must sum up to exactly 100.
     """
-    
-    with db.engine.begin() as connection:
-        table_row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
-                FROM global_inventory  
-                """
-            )
-        ).one()
+
+    row = get_global_inventory()
     mixes = []
-    if table_row[3] > 0:
-        mixes.append(PotionMixes(potion_type=[100, 0, 0, 0], quantity=table_row[3]))
-    if table_row[4] > 0:
-        mixes.append(PotionMixes(potion_type=[0, 100, 0, 0], quantity=table_row[4]))
-    if table_row[5] > 0:
-        mixes.append(PotionMixes(potion_type=[0, 0, 100, 0], quantity=table_row[5]))
+    if row.red_potions > 0:
+        mixes.append(PotionMixes(potion_type=[100, 0, 0, 0], quantity=row.red_potions))
+    if row.green_potions > 0:
+        mixes.append(PotionMixes(potion_type=[0, 100, 0, 0], quantity=row.green_potions))
+    if row.blue_potions > 0:
+        mixes.append(PotionMixes(potion_type=[0, 0, 100, 0], quantity=row.blue_potions))
 
     return create_bottle_plan(
-        red_ml=table_row[0],
-        green_ml=table_row[1],
-        blue_ml=table_row[2],
+        red_ml=row.red_ml,
+        green_ml=row.green_ml,
+        blue_ml=row.blue_ml,
         dark_ml=0,
         maximum_potion_capacity=50,
         current_potion_inventory=mixes,
