@@ -5,6 +5,7 @@ from typing import List
 
 import sqlalchemy
 from src.api import auth
+from src.api.helper import get_global_inventory
 from src import database as db
 import random
 
@@ -145,27 +146,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: List[Barrel]):
     """
     print(f"barrel catalog: {wholesale_catalog}")
 
-    with db.engine.begin() as connection:
-        row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT gold, red_ml, green_ml, blue_ml
-                FROM global_inventory
-                """
-            )
-        ).one()
-
-        gold = row[0]
-        red_ml = row[1]
-        green_ml = row[2]
-        blue_ml = row[3]
+    row = get_global_inventory()
+    
 
     return create_barrel_plan(
-        gold=gold,
+        gold=row.gold,
         max_barrel_capacity=10000,
-        current_red_ml=red_ml,
-        current_green_ml=green_ml,
-        current_blue_ml=blue_ml,
+        current_red_ml=row.red_ml,
+        current_green_ml=row.green_ml,
+        current_blue_ml=row.blue_ml,
         current_dark_ml=0,
         wholesale_catalog=wholesale_catalog,
     )
