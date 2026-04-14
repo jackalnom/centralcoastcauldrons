@@ -28,9 +28,7 @@ def reset():
                 red_ml = 0,
                 blue_ml = 0,
                 green_ml = 0,
-                red_potions = 0,
-                green_potions = 0,
-                blue_potions= 0
+                dark_ml = 0
                 """
             )
         )
@@ -43,8 +41,8 @@ def reset():
                 connection.execute(
                     sqlalchemy.text(
                         """
-                        INSERT INTO potion_inventory (red_ml, blue_ml, green_ml, dark_ml, quantity)
-                        VALUES (:red, :green, :blue, :dark, 0)
+                        INSERT INTO potion_inventory (red_ml, blue_ml, green_ml, dark_ml, quantity, price)
+                        VALUES (:red, :green, :blue, :dark, 0, 75)
                         """),
                         [{"red": red, "green" : green, "blue" : blue, "dark" : dark}])
 

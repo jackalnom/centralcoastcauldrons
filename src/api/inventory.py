@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 import sqlalchemy
 from src.api import auth
 from src import database as db
-from src.api.helper import get_global_inventory
+from src.api.helper import get_global_inventory, get_potion_count
 
 router = APIRouter(
     prefix="/inventory",
@@ -34,9 +34,8 @@ def get_inventory():
     """
 
     row = get_global_inventory()
-
-    return InventoryAudit(number_of_potions=sum(row[4:]), 
-                          ml_in_barrels=sum(row[1:4]), 
+    return InventoryAudit(number_of_potions=get_potion_count(), 
+                          ml_in_barrels=sum(row[1:]), 
                           gold=row.gold)
 
 

@@ -10,7 +10,7 @@ def get_global_inventory() -> sqlalchemy.Row[Any]:
         row = connection.execute(
             sqlalchemy.text(
                 """
-                SELECT gold, red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
+                SELECT gold, red_ml, green_ml, blue_ml, dark_ml
                 FROM global_inventory
                 """
             )
@@ -34,7 +34,7 @@ def add_global_inventory(column: str, value: int | float) -> None:
 
 def get_potion_inventory():
     """
-    Return potion invetory as (red_ml, green_ml, blue_ml, dark_ml, quantity)
+    Return potions currently in invetory as (red_ml, green_ml, blue_ml, dark_ml, quantity) 
     """
 
     with db.engine.begin() as connection:
@@ -43,6 +43,7 @@ def get_potion_inventory():
                 """
                 SELECT red_ml, green_ml, blue_ml, dark_ml, quantity
                 FROM potion_inventory
+                WHERE quantity > 0;
                 """
             )
         ).all()

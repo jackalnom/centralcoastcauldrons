@@ -4,7 +4,7 @@ from typing import List, Annotated
 from src import database as db
 import sqlalchemy
 
-from src.api.helper import get_global_inventory
+from src.api.helper import get_global_inventory, get_potion_inventory
 
 router = APIRouter()
 
@@ -25,15 +25,24 @@ class CatalogItem(BaseModel):
 # Placeholder function, you will replace this with a database call
 def create_catalog() -> List[CatalogItem]:
 
-    row = get_global_inventory()
+    inventory = get_global_inventory()
+    with db.engine.begin() as connection:
+        potions = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT *
+                FROM potion_inventory
+                WHERE quantity > 0
+                ORDER BY quantity ASC;
+                """
+            )
+        ).all()
     
     items = []
-    if row.red_potions != 0:
-        items.append(CatalogItem(sku='red_potions', name="red potion", quantity=row.red_potions, price=75, potion_type=[100,0,0,0]))
-    if row.green_potions != 0:
-        items.append(CatalogItem(sku='green_potions', name="green potion", quantity=row.green_potions, price=75, potion_type=[0,100,0,0]))
-    if row.blue_potions != 0:
-        items.append(CatalogItem(sku='blue_potions', name="blue potion", quantity=row.blue_potions, price=75, potion_type=[0,0,100,0]))
+    for p in potions:
+        name = f"R{p.red_ml}G{p.green_ml}B{p.blue_ml}D{p.dark_ml}"
+        items.append(CatalogItem(sku=name, name=name, quantity=p.quantity, price=p.price, 
+                                 potion_type=[p.red_ml, p.green_ml, p.blue_ml, p.dark_ml]))
     return items
 
 

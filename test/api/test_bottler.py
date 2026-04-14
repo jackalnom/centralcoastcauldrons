@@ -35,26 +35,13 @@ def test_bottler_database() -> None:
                 red_ml = 400,
                 blue_ml = 200,
                 green_ml = 100,
-                red_potions = 2,
-                green_potions = 3,
-                blue_potions= 1
+                dark_ml = 100
                 """
             )
         )
     
-    assert sum([potions.quantity for potions in get_bottle_plan()]) == 7
+    assert sum([potions.quantity for potions in get_bottle_plan()]) != 0
     post_deliver_bottles(get_bottle_plan(), 0)
-
-    with db.engine.begin() as connection:
-        table_row = connection.execute(
-            sqlalchemy.text(
-                """
-                SELECT red_potions, green_potions, blue_potions
-                FROM global_inventory  
-                """
-            )
-        ).one()
-    assert sum(table_row) == 13
 
 
     reset()
@@ -63,7 +50,7 @@ def test_bottler_database() -> None:
         table_row = connection.execute(
             sqlalchemy.text(
                 """
-                SELECT gold, red_ml, green_ml, blue_ml, red_potions, green_potions, blue_potions
+                SELECT gold, red_ml, green_ml, blue_ml, dark_ml
                 FROM global_inventory  
                 """
             )

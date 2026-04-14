@@ -17,10 +17,11 @@ def test_potion_variance() -> None:
             )
         )
     assert len(potions.fetchall()) == 35
-    assert len(get_potion_inventory()) == 35
+    assert len(get_potion_inventory()) == 0
     assert get_potion_count() == 0
 
     increase_potions(1, 10)
     assert get_potion_count() == 10
     increase_potions(10, 10)
     assert get_potion_count() == 20
+    assert len(get_potion_inventory()) == 2

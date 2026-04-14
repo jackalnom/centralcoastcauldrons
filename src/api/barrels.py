@@ -102,18 +102,8 @@ def create_barrel_plan(
         default=None,
     )
 
-    with db.engine.begin() as connection:
-        row = connection.execute(
-            sqlalchemy.text(
-                f"""
-                SELECT {potion_options[potion_select]}
-                FROM global_inventory
-                """
-            )
-        ).one()
-
     # make sure we can afford it and need potions
-    if barrel and barrel.price <= gold and row[0] < 5:
+    if barrel and barrel.price <= gold:
         return [BarrelOrder(sku=barrel.sku, quantity=1)]
 
     # return an empty list if no affordable red barrel is found
@@ -137,6 +127,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: List[Barrel]):
         current_red_ml=row.red_ml,
         current_green_ml=row.green_ml,
         current_blue_ml=row.blue_ml,
-        current_dark_ml=0,
-        wholesale_catalog=wholesale_catalog,
+        current_dark_ml=row.dark_ml,
+        wholesale_catalog=wholesale_catalog
     )
