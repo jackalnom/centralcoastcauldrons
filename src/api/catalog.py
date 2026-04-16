@@ -25,7 +25,6 @@ class CatalogItem(BaseModel):
 # Placeholder function, you will replace this with a database call
 def create_catalog() -> List[CatalogItem]:
 
-    inventory = get_global_inventory()
     with db.engine.begin() as connection:
         potions = connection.execute(
             sqlalchemy.text(
@@ -33,15 +32,14 @@ def create_catalog() -> List[CatalogItem]:
                 SELECT *
                 FROM potion_inventory
                 WHERE quantity > 0
-                ORDER BY quantity ASC;
+                ORDER BY quantity DESC;
                 """
             )
         ).all()
     
     items = []
-    for p in potions:
-        name = f"R{p.red_ml}G{p.green_ml}B{p.blue_ml}D{p.dark_ml}"
-        items.append(CatalogItem(sku=name, name=name, quantity=p.quantity, price=p.price, 
+    for p in potions[:6]:
+        items.append(CatalogItem(sku=p.item_sku, name=p.name, quantity=p.quantity, price=p.price, 
                                  potion_type=[p.red_ml, p.green_ml, p.blue_ml, p.dark_ml]))
     return items
 
