@@ -13,6 +13,21 @@ from src.api.barrels import *
 
 
 def test_barrel_delivery() -> None:
+    reset()
+
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory SET 
+                gold = 1000,
+                red_ml = 400,
+                blue_ml = 200,
+                green_ml = 100,
+                dark_ml = 300
+                """
+            )
+        )
     delivery: List[Barrel] = [
         Barrel(
             sku="SMALL_RED_BARREL",
@@ -31,6 +46,7 @@ def test_barrel_delivery() -> None:
     ]
 
     delivery_summary = calculate_barrel_summary(delivery)
+    assert len(create_barrel_plan(1500, 100, 100, 100, 100, 100, delivery)) == 2
 
     assert delivery_summary.gold_paid == 1750
 
@@ -91,7 +107,7 @@ def test_barrel_plan() -> None:
     assert row[4] == 300
 
     plan = get_wholesale_purchase_plan(wholesale_catalog)[0]
-    assert plan.quantity == 1
+    assert plan.quantity == 3
         
 
 

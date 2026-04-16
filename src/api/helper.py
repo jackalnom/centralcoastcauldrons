@@ -56,7 +56,7 @@ def get_potion(id: int):
                 """
                 SELECT *
                 FROM potion_inventory
-                WHERE id == :id;
+                WHERE id = :id;
                 """
             ), {"id" : id}
         ).one()
